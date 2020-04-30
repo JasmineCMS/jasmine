@@ -1,0 +1,25 @@
+{
+    "name": "jasmine/jasmine",
+    "description": "A Laravel based CMS.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mordi Sacks"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Jasmine\\Jasmine\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jasmine\\Jasmine\\JasmineServiceProvider"
+            ],
+            "aliases": {
+                "Jasmine": "Jasmine\\Jasmine\\Facades\\Jasmine"
+            }
+        }
+    }
+}
