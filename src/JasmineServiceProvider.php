@@ -9,6 +9,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 use Jasmine\Jasmine\Console\Commands\CreateUser;
+use Jasmine\Jasmine\Console\Commands\LinkPublicAssets;
 use Jasmine\Jasmine\Console\Commands\Migrate;
 use Jasmine\Jasmine\Http\Middleware\Authenticate;
 
@@ -41,6 +42,9 @@ class JasmineServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/auth.php', 'auth');
 
+        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'jasmine');
+        $this->loadJsonTranslationsFrom(__DIR__.'/../resources/lang');
+
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'jasmine');
 
         $router->aliasMiddleware('jasmineAuth', Authenticate::class);
@@ -51,11 +55,11 @@ class JasmineServiceProvider extends ServiceProvider
     private function registerConsoleCommands()
     {
         $this->commands([
-            Migrate::class,
             CreateUser::class,
+            LinkPublicAssets::class,
+            Migrate::class,
         ]);
     }
-
 
     /**
      * Merge the given configuration with the existing configuration.

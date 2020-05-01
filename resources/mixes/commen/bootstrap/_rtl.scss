@@ -1,0 +1,37 @@
+[dir='rtl'] {
+
+    body {
+        text-align: right;
+    }
+
+    .custom-control {
+        padding-left: unset;
+        padding-right: 1.5rem;
+    }
+
+    .custom-control-label::before {
+        left: unset;
+        right: -1.5rem;
+    }
+
+    .custom-control-label::after {
+        left: unset;
+        right: -1.5rem;
+    }
+
+    .dropdown-menu {
+        left: unset;
+        right: 0;
+        text-align: right;
+    }
+
+    .modal-header {
+        .close {
+            margin: -1rem auto -1rem -1rem;
+        }
+    }
+
+    .nav {
+        padding-right: 0;
+    }
+}

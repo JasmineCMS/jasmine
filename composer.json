@@ -7,6 +7,9 @@
             "name": "Mordi Sacks"
         }
     ],
+    "require": {
+        "ext-json": "*"
+    },
     "autoload": {
         "psr-4": {
             "Jasmine\\Jasmine\\": "src/"

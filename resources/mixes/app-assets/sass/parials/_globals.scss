@@ -1,0 +1,25 @@
+@keyframes liveBg {
+    0% {
+        background-position: 0 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}
+
+.bg-fancy {
+    background: linear-gradient(45deg, $pink, $blue);
+}
+
+.bg-fancy-live {
+    background: linear-gradient(45deg, $pink, $blue, $pink, $blue);
+    background-size: 400% 400%;
+    animation: liveBg 15s ease-in-out infinite;
+}
+
+.form-control {
+    height: unset;
+}

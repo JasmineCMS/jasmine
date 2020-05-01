@@ -1,11 +1,15 @@
 <?php
 
 Route::group([
-    'namespace' => '\\Jasmine\\Jasmine\\Http\Controllers',
-    'as'        => 'jasmine.',
-    'name'      => 'jasmine.',
+    'namespace'  => '\\Jasmine\\Jasmine\\Http\Controllers',
+    'middleware' => [\Jasmine\Jasmine\Http\Middleware\JasmineLocale::class],
+    'as'         => 'jasmine.',
+    'name'       => 'jasmine.',
 ],
     function () {
+    // Change locale
+        Route::get('/locale/{locale}', 'LocaleController@change')->name('change-locale');
+
         // Authentication Routes...
         Route::get('login', 'Auth\LoginController@showLoginForm')->name('login');
         Route::post('login', 'Auth\LoginController@login');

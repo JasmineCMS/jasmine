@@ -2,6 +2,8 @@
 
 namespace Jasmine\Jasmine\Http\Controllers\Auth;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Jasmine\Jasmine\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
@@ -38,5 +40,20 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+
+    protected function guard()
+    {
+        return Auth::guard('jasmine_web');
+    }
+
+    public function showLoginForm()
+    {
+        return view('jasmine::auth.login');
+    }
+
+    protected function loggedOut(Request $request)
+    {
+        return redirect(route('jasmine.login'));
     }
 }
