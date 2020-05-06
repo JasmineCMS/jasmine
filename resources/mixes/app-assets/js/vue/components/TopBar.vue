@@ -31,10 +31,11 @@
         </div>
 
         <div class="center">
-
+            <slot name="center"></slot>
         </div>
 
         <div class="end">
+            <slot name="end"></slot>
         </div>
     </header>
 </template>

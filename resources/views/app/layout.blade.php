@@ -27,12 +27,30 @@
 <div id="app">
     <top-bar :user="{{ Auth::guard('jasmine_web')->user() }}"
              locale-url="{{ route('jasmine.change-locale', '-locale-') }}"
-    ></top-bar>
+    >
+        @if(View::hasSection('top-bar-center'))
+            <template v-slot:center>@yield('top-bar-center')</template>
+        @endif
+        @if(View::hasSection('top-bar-end'))
+            <template v-slot:end>@yield('top-bar-end')</template>
+        @endif
+    </top-bar>
     <div class="wrapper d-flex">
         <side-bar :menu-items="{{ Jasmine::getSideBarMenuItems()->toJson() }}"></side-bar>
-        <main class="flex-fill p-4">
-            @yield('content')
-        </main>
+        <div class="flex-fill has-main">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('jasmine.dashboard') }}">@lang('Dashboard')</a></li>
+                    @stack('breadcrumbs')
+                    @if(Route::current()->getName() !== 'jasmine.dashboard')
+                        <li class="breadcrumb-item active" aria-current="page">@yield('title')</li>
+                    @endif
+                </ol>
+            </nav>
+            <main class="px-4">
+                @yield('content')
+            </main>
+        </div>
     </div>
 
     <form ref="logoutForm" action="{{ route('jasmine.logout') }}" method="post" class="d-none">

@@ -1,13 +1,30 @@
 import Vue from 'vue';
 import VueI18n from 'vue-i18n';
+import VDataTable from "./components/VDataTable";
 
 Vue.use(VueI18n);
 
-const i18n = new VueI18n({locale: document.documentElement.lang});
+Vue.use(VDataTable);
+
+const i18n = new VueI18n({
+    locale: document.documentElement.lang,
+    messages: {
+        en: require('./lang/en').default,
+        he: require('./lang/he').default,
+    },
+});
 
 window.Vue = Vue;
-const files = require.context('./components', true, /\.vue$/i);
-files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
+
+(function () {
+    const files = require.context('./components', true, /\.vue$/i);
+    files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
+})();
+
+(function () {
+    const files = require.context('./directives', true, /\.js$/i);
+    files.keys().map(key => Vue.directive(key.split('/').pop().split('.')[0], files(key).default));
+})();
 
 const app = new Vue({
     el: '#app',
@@ -18,6 +35,14 @@ const app = new Vue({
     methods: {
         logout() {
             this.$refs.logoutForm.submit();
+        },
+
+        remoteSubmit(ref){
+            if(this.$refs[ref]){
+                if(this.$refs[ref].reportValidity()){
+                    this.$refs[ref].submit();
+                }
+            }
         },
     },
 });

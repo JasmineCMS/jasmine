@@ -7,7 +7,7 @@ Route::group([
     'name'       => 'jasmine.',
 ],
     function () {
-    // Change locale
+        // Change locale
         Route::get('/locale/{locale}', 'LocaleController@change')->name('change-locale');
 
         // Authentication Routes...
@@ -25,6 +25,13 @@ Route::group([
             'middleware' => ['jasmineAuth:jasmine_web'],
         ], function () {
             Route::get('/', 'DashboardController@show')->name('dashboard');
+
+            Route::get('/bread/{breadableName}', 'BreadController@index')->name('bread.index');
+            Route::get('/bread/{breadableName}/create', 'BreadController@create')->name('bread.create');
+            Route::post('/bread/{breadableName}', 'BreadController@store')->name('bread.store');
+            Route::get('/bread/{breadableName}/{breadableId}/edit', 'BreadController@edit')->name('bread.edit');
+            Route::patch('/bread/{breadableName}/{breadableId}', 'BreadController@update')->name('bread.update');
+            Route::put('/bread/{breadableName}/{breadableId}', 'BreadController@update')->name('bread.update');
         });
 
     });
