@@ -8,7 +8,7 @@ then run
 `php artisan jasmine:migrate`  
 `php artisan jasmine:link-public-assets`  
 
-To create an admin user run
+To create an admin user run  
 `php artisan jasmine:create-user`
 
 In your `routes/web.php` add
