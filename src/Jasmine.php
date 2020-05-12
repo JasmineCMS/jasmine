@@ -2,12 +2,18 @@
 
 namespace Jasmine\Jasmine;
 
+use Illuminate\Support\Str;
 use Jasmine\Jasmine\Bread\BreadableInterface;
+use Jasmine\Jasmine\Bread\PageInterface;
+use Jasmine\Jasmine\Exceptions\MustExtendJasminePage;
 use Jasmine\Jasmine\Exceptions\MustImplementBreadableInterface;
+use Jasmine\Jasmine\Models\JasminePage;
 
 class Jasmine
 {
     protected $breadables = [];
+
+    protected $pages = [];
 
     public function routes()
     {
@@ -35,6 +41,37 @@ class Jasmine
         return $this->breadables;
     }
 
+    public function registerPage(string $page)
+    {
+        if (!is_subclass_of($page, JasminePage::class)) {
+            throw new MustExtendJasminePage("\"$page\" must extend \"" . JasminePage::class . '"');
+        }
+
+        $name = Str::slug(call_user_func("$page::getPageName"));
+
+        $this->pages[$name] = $page;
+
+    }
+
+    public function getPages(): array
+    {
+        $pages = [];
+        foreach ($this->pages as $name => $page) {
+            $pages[] = [
+                'href'  => route('jasmine.page.edit', Str::slug($name)),
+                'title' => __($name),
+            ];
+        }
+
+        return $pages;
+    }
+
+
+    public function getPage(string $pageSlug)
+    {
+        return $this->pages[$pageSlug] ?? null;
+    }
+
     public function getSideBarMenuItems()
     {
         $items = collect([]);
@@ -48,11 +85,7 @@ class Jasmine
         $items->push([
             'title'    => __('Pages'),
             'icon'     => 'fa-newspaper',
-            'children' => [
-                ['href' => route('jasmine.dashboard'), 'title' => __('Home')],
-                ['href' => route('jasmine.dashboard'), 'title' => __('Home')],
-                ['href' => route('jasmine.dashboard'), 'title' => __('Home')],
-            ],
+            'children' => $this->getPages(),
         ]);
 
         foreach ($this->breadables as $breadable) {

@@ -1,8 +1,10 @@
 <?php
 
-namespace App;
+namespace Jasmine\Jasmine\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use Jasmine\Jasmine\Bread\Fields\FieldsManifest;
 
 /**
  * Class JasminePage
@@ -18,8 +20,10 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\Jasmine\Jasmine\Models\JasmineUser query()
  * @mixin \Eloquent
  */
-class JasminePage extends Model
+abstract class JasminePage extends Model
 {
+    protected $table = 'jasmine_pages';
+
     protected $fillable = [
         'url',
         'name',
@@ -29,4 +33,17 @@ class JasminePage extends Model
     protected $casts = [
         'content' => 'array',
     ];
+
+    public static function getPageName(): string
+    {
+        $name = (new \ReflectionClass(static::class))->getShortName();
+        $name = Str::snake($name);
+        $name = explode('_', $name);
+        $name = array_map('ucfirst', $name);
+        $name = implode(' ', $name);
+
+        return $name;
+    }
+
+    abstract public static function fieldsManifest(): FieldsManifest;
 }

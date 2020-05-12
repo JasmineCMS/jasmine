@@ -29,8 +29,8 @@ Route::group([
             // Bread routes
             Route::group([
                 'prefix' => '/bread/{breadableName}',
-                'as'         => 'bread.',
-                'name'       => 'bread.',
+                'as'     => 'bread.',
+                'name'   => 'bread.',
             ], function () {
                 Route::get('', 'BreadController@index')->name('index');
                 Route::get('/create', 'BreadController@create')->name('create');
@@ -39,6 +39,33 @@ Route::group([
                 Route::patch('/{breadableId}', 'BreadController@update')->name('update');
                 Route::put('/{breadableId}', 'BreadController@update')->name('update');
                 Route::delete('/{breadableId}', 'BreadController@destroy')->name('destroy');
+            });
+
+            // Pages routes
+            Route::bind('jasminePage', function ($slug) {
+                if (!$page = Jasmine::getPage($slug)) {
+                    abort(404);
+                }
+
+                $page = call_user_func_array("$page::firstOrCreate", [
+                    ['name' => $slug],
+                    [
+                        'url'     => $slug,
+                        'content' => [],
+                    ],
+                ]);
+
+                return $page;
+            });
+
+            Route::group([
+                'prefix' => '/page/{jasminePage}',
+                'as'     => 'page.',
+                'name'   => 'page.',
+            ], function () {
+                Route::patch('', 'PageController@update')->name('update');
+                Route::put('', 'PageController@update')->name('update');
+                Route::get('/edit', 'PageController@edit')->name('edit');
             });
 
         });
