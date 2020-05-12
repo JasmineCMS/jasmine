@@ -16,6 +16,11 @@
                 type: String,
             },
 
+            label: {
+                required: true,
+                type: String,
+            },
+
             options: {
                 required: true,
             },

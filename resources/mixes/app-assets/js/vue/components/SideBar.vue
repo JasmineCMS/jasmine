@@ -7,29 +7,31 @@
 
 <template>
     <aside class="side-bar" :class="{opened:opened}">
-        <ul class="nav flex-column">
-            <li v-for="(item, i) in items" :key="i" class="nav-item"
-                :class="item.children && item.children.length ? 'dropdown' : ''">
+        <div class="side-bar-content">
+            <ul class="nav flex-column">
+                <li v-for="(item, i) in items" :key="i" class="nav-item"
+                    :class="item.children && item.children.length ? 'dropdown' : ''">
 
-                <a v-if="item.children && item.children.length" class="nav-link dropdown-toggle d-flex"
-                   :href="item.href || '#'" :title="item.title" role="button" @click="item.opened = !item.opened"
-                   :aria-expanded="item.opened ? 'true' : 'false'" aria-haspopup="true">
-                    <i class="fas" :class="item.icon || 'none'"></i>
-                    <span v-text="item.title"></span>
-                </a>
-                <a v-else class="nav-link d-flex" :href="item.href || '#'" :title="item.title">
-                    <i v-if="item.icon" class="fas" :class="item.icon"></i>
-                    <span v-text="item.title"></span>
-                </a>
-
-                <div v-if="item.children && item.children.length" class="child-menu">
-                    <a v-for="(child, ci) in item.children" :key="ci"
-                       class="nav-link" :href="child.href || '#'" :title="child.title">
-                        {{ child.title }}
+                    <a v-if="item.children && item.children.length" class="nav-link dropdown-toggle d-flex"
+                       :href="item.href || '#'" :title="item.title" role="button" @click="item.opened = !item.opened"
+                       :aria-expanded="item.opened ? 'true' : 'false'" aria-haspopup="true">
+                        <i class="fas" :class="item.icon || 'none'"></i>
+                        <span v-text="item.title"></span>
                     </a>
-                </div>
-            </li>
-        </ul>
+                    <a v-else class="nav-link d-flex" :href="item.href || '#'" :title="item.title">
+                        <i v-if="item.icon" class="fas" :class="item.icon"></i>
+                        <span v-text="item.title"></span>
+                    </a>
+
+                    <div v-if="item.children && item.children.length" class="child-menu">
+                        <a v-for="(child, ci) in item.children" :key="ci"
+                           class="nav-link" :href="child.href || '#'" :title="child.title">
+                            {{ child.title }}
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
     </aside>
 </template>
 
@@ -70,62 +72,70 @@
             width: 200px;
         }
 
-        .nav {
-            .nav-item {
-                .nav-link {
-                    color: lighten($blue, 20);
-                    padding: 0.5rem 0.5rem;
-                    font-size: 1.25em;
-                    justify-content: flex-start;
+        .side-bar-content {
+            position: sticky;
+            top: calc(40px + 0.5rem);
 
-                    .fas {
-                        font-size: 1.25rem;
-                        display: inline-block;
-                        padding-inline-end: 0.5em;
+            .nav {
+                .nav-item {
+                    .nav-link {
+                        color: lighten($blue, 20);
+                        padding: 0.5rem 0.5rem;
+                        font-size: 1.25em;
+                        justify-content: flex-start;
 
-                        & + span {
-                            flex: 1;
-                        }
+                        .fas {
+                            font-size: 1.25rem;
+                            display: inline-block;
+                            padding-inline-end: 0.5em;
 
-                        &.none {
-                            &:before {
-                                content: ' ';
-                                width: 1.15ch;
-                                display: inline-block;
+                            & + span {
+                                flex: 1;
                             }
-                        }
-                    }
-                }
 
-                &:hover {
-                    background-color: darken($pink, 45);
-                    text-shadow: 0 0 10px $blue;
-                }
-
-                &.dropdown {
-                    .child-menu {
-                        display: none;
-                        background-color: darken($pink, 30);
-                        > * {
-                            padding-inline-start: 3rem;
-                            font-size: 1.1em;
-                            &:hover {
-                                background-color: darken($pink, 35);
+                            &.none {
+                                &:before {
+                                    content: ' ';
+                                    width: 1.15ch;
+                                    display: inline-block;
+                                }
                             }
                         }
                     }
 
-                    [aria-haspopup] {
-                        &[aria-expanded='true'] {
-                            & + .child-menu {
-                                display: block;
-                            }
-                        }
+                    &:hover {
+                        background-color: darken($pink, 45);
+                        text-shadow: 0 0 10px $blue;
                     }
 
+                    &.dropdown {
+                        .child-menu {
+                            display: none;
+                            background-color: darken($pink, 30);
+
+                            > * {
+                                padding-inline-start: 3rem;
+                                font-size: 1.1em;
+
+                                &:hover {
+                                    background-color: darken($pink, 35);
+                                }
+                            }
+                        }
+
+                        [aria-haspopup] {
+                            &[aria-expanded='true'] {
+                                & + .child-menu {
+                                    display: block;
+                                }
+                            }
+                        }
+
+                    }
                 }
             }
         }
+
     }
 
 </style>

@@ -1,6 +1,6 @@
 @extends('jasmine::app.layout')
 
-@section('title', call_user_func("$breadableName::getPluralTitle"))
+@section('title', call_user_func("$breadableName::getPluralName"))
 
 @section('content')
     <div class="mt-2">
@@ -18,7 +18,7 @@
                                    class="btn btn-outline-primary">
                                     <i class="fas fa-plus"></i>
                                     {{ __('New') }}
-                                    {{ call_user_func("$breadableName::getSingularTitle") }}
+                                    {{ call_user_func("$breadableName::getSingularName") }}
                                 </a>
                             </div>
                         </div>
@@ -48,7 +48,7 @@
                                 </a>
 
                                 <a role="button" class="btn btn-danger" :data-title="data" v-delete
-                                   :href="'{{ route('jasmine.bread.edit', [$breadableName, '-id-']) }}'.replace('-id-', data)">
+                                   :href="'{{ route('jasmine.bread.destroy', [$breadableName, '-id-']) }}'.replace('-id-', data)">
                                     <i class="fas fa-trash"></i>
                                 </a>
                             </template>

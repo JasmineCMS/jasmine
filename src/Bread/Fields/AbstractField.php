@@ -24,6 +24,9 @@ abstract class AbstractField implements Arrayable, Jsonable
     /** @var string */
     protected $label;
 
+    /** @var mixed */
+    protected $default;
+
     /** @var string */
     protected $description;
 
@@ -50,6 +53,7 @@ abstract class AbstractField implements Arrayable, Jsonable
         $this->id = uniqid('jf');
         $this->label = __(Str::title(preg_replace('/[\-_]/', ' ', $name)));
         $this->width = 'col-12';
+        $this->default = '';
     }
 
     public function setId(string $id)
@@ -61,6 +65,12 @@ abstract class AbstractField implements Arrayable, Jsonable
     public function setLabel(string $label)
     {
         $this->label = $label;
+        return $this;
+    }
+
+    public function setDefault($default)
+    {
+        $this->default = $default;
         return $this;
     }
 
@@ -96,6 +106,7 @@ abstract class AbstractField implements Arrayable, Jsonable
 
     /**
      * @return array
+     * @throws \ReflectionException
      */
     public function toArray()
     {
@@ -105,20 +116,23 @@ abstract class AbstractField implements Arrayable, Jsonable
         }
 
         return [
+            'type'        => (new \ReflectionClass($this))->getShortName(),
             'component'   => $this->component,
             'name'        => $this->name,
             'id'          => $this->id,
             'label'       => $this->label,
+            'default'     => $this->default,
             'description' => $this->description,
             'repeats'     => $this->repeats,
             'validation'  => $this->validation,
-            'options'     => $this->options,
+            'options'     => $this->options ? $this->options : new \stdClass(),
             'width'       => $this->width,
         ];
     }
 
     public function toJson($options = 0)
     {
-        return json_encode($this->toArray(), $options);
+        $array = $this->toArray();
+        return json_encode($array, $options);
     }
 }

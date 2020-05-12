@@ -15,7 +15,9 @@ export default {
                 confirmButtonText: vnode.context.$t('swal.Yes'),
             }).then(r => {
                 if (r.value) {
-                    //axios.delete(el.href).then(response => {});
+                    axios.delete(el.href).then(response => {
+                        document.location.reload();
+                    });
                 }
             });
         });

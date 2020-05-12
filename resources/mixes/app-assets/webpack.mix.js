@@ -29,12 +29,15 @@ mix
     .setPublicPath(`public/${process.env.section}`)
     .i18n()
     .extract([
+        '@kazupon/vue-i18n-loader',
         'axios',
         'sweetalert2',
         'vue',
         'vue-i18n',
+        'vuedraggable',
     ])
     .js(`resources/mixes/${process.env.section}/js/app.js`, `public/${process.env.section}/js`)
     .sass(`resources/mixes/${process.env.section}/sass/vendor.scss`, `public/${process.env.section}/css`)
     .sass(`resources/mixes/${process.env.section}/sass/app.scss`, `public/${process.env.section}/css`)
+    .copy('node_modules/tinymce/skins', `public/${process.env.section}/js/skins`);
 ;

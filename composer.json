@@ -8,6 +8,7 @@
         }
     ],
     "require": {
+        "laravel/framework": "^6.2",
         "yajra/laravel-datatables-oracle": "^9.9",
         "ext-json": "*"
     },

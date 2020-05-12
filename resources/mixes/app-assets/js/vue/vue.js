@@ -1,8 +1,13 @@
 import Vue from 'vue';
 import VueI18n from 'vue-i18n';
 import VDataTable from "./components/VDataTable";
+import Editor from '@tinymce/tinymce-vue';
+import Croppa from 'vue-croppa';
+import draggable from 'vuedraggable';
 
 Vue.use(VueI18n);
+
+Vue.use(Croppa);
 
 Vue.use(VDataTable);
 
@@ -26,6 +31,10 @@ window.Vue = Vue;
     files.keys().map(key => Vue.directive(key.split('/').pop().split('.')[0], files(key).default));
 })();
 
+Vue.component('draggable', draggable);
+
+Vue.component('editor', Editor);
+
 const app = new Vue({
     el: '#app',
     i18n,
@@ -37,9 +46,9 @@ const app = new Vue({
             this.$refs.logoutForm.submit();
         },
 
-        remoteSubmit(ref){
-            if(this.$refs[ref]){
-                if(this.$refs[ref].reportValidity()){
+        remoteSubmit(ref) {
+            if (this.$refs[ref]) {
+                if (this.$refs[ref].reportValidity()) {
                     this.$refs[ref].submit();
                 }
             }

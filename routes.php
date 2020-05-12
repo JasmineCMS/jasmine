@@ -26,12 +26,21 @@ Route::group([
         ], function () {
             Route::get('/', 'DashboardController@show')->name('dashboard');
 
-            Route::get('/bread/{breadableName}', 'BreadController@index')->name('bread.index');
-            Route::get('/bread/{breadableName}/create', 'BreadController@create')->name('bread.create');
-            Route::post('/bread/{breadableName}', 'BreadController@store')->name('bread.store');
-            Route::get('/bread/{breadableName}/{breadableId}/edit', 'BreadController@edit')->name('bread.edit');
-            Route::patch('/bread/{breadableName}/{breadableId}', 'BreadController@update')->name('bread.update');
-            Route::put('/bread/{breadableName}/{breadableId}', 'BreadController@update')->name('bread.update');
+            // Bread routes
+            Route::group([
+                'prefix' => '/bread/{breadableName}',
+                'as'         => 'bread.',
+                'name'       => 'bread.',
+            ], function () {
+                Route::get('', 'BreadController@index')->name('index');
+                Route::get('/create', 'BreadController@create')->name('create');
+                Route::post('', 'BreadController@store')->name('store');
+                Route::get('/{breadableId}/edit', 'BreadController@edit')->name('edit');
+                Route::patch('/{breadableId}', 'BreadController@update')->name('update');
+                Route::put('/{breadableId}', 'BreadController@update')->name('update');
+                Route::delete('/{breadableId}', 'BreadController@destroy')->name('destroy');
+            });
+
         });
 
     });

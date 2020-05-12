@@ -8,9 +8,9 @@ use Jasmine\Jasmine\Bread\Fields\FieldsManifest;
 
 interface BreadableInterface
 {
-    public static function getPluralTitle(): string;
+    public static function getPluralName(): string;
 
-    public static function getSingularTitle(): string;
+    public static function getSingularName(): string;
 
     public static function getMenuIcon(): string;
 

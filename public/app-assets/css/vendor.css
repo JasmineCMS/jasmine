@@ -4554,7 +4554,7 @@ readers do not read off random characters that represent icons */
  */
 
 :root {
-  --blue: #4e90fe;
+  --blue: #4285f4;
   --indigo: #6610f2;
   --purple: #6f42c1;
   --pink: #da46ae;
@@ -9750,7 +9750,7 @@ input[type=button].btn-block {
   display: inline-block;
   padding-right: 0.5rem;
   color: #6c757d;
-  content: "/";
+  content: ">";
 }
 
 .breadcrumb-item + .breadcrumb-item:hover::before {

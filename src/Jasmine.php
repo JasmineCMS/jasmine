@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Jasmine\Jasmine;
-
 
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Exceptions\MustImplementBreadableInterface;
@@ -60,7 +58,7 @@ class Jasmine
         foreach ($this->breadables as $breadable) {
             $item = [];
             $item['href'] = route('jasmine.bread.index', $breadable);
-            $item['title'] = call_user_func("$breadable::getPluralTitle");
+            $item['title'] = call_user_func("$breadable::getPluralName");
 
             if ($icon = call_user_func("$breadable::getMenuIcon")) {
                 $item['icon'] = $icon;

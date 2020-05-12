@@ -12,7 +12,7 @@
 </i18n>
 
 <template>
-    <header class="top-bar d-flex justify-content-between align-items-center bg-fancy-live">
+    <header class="top-bar sticky-top d-flex justify-content-between align-items-center bg-fancy-live">
         <div class="start px-2">
             <dropdown btn-class="btn text-white">
                 <template v-slot:btn>

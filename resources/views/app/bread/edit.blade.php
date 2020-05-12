@@ -20,11 +20,11 @@ $manifest = call_user_func("$breadableName::fieldsManifest");
 @section('title')
     @if(isset($breadable))
         @lang('Edit')
-        {{ call_user_func("$breadableName::getSingularTitle") }}
+        {{ call_user_func("$breadableName::getSingularName") }}
         {{ $breadable->{$breadable->getRouteKeyName()} }}
     @else
         @lang('New')
-        {{ call_user_func("$breadableName::getSingularTitle") }}
+        {{ call_user_func("$breadableName::getSingularName") }}
     @endif
 @endsection
 
@@ -34,7 +34,7 @@ $manifest = call_user_func("$breadableName::fieldsManifest");
 
 @push('breadcrumbs')
     <li class="breadcrumb-item"><a href="{{ route('jasmine.bread.index', $breadableName) }}">
-            {{ call_user_func("$breadableName::getPluralTitle") }}
+            {{ call_user_func("$breadableName::getPluralName") }}
         </a></li>
 @endpush
 

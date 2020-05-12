@@ -22,6 +22,8 @@ class JasmineServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        require_once __DIR__ . '/../helpers.php';
+
         $this->app->singleton('jasmine', function () {
             return new Jasmine();
         });
@@ -40,10 +42,11 @@ class JasmineServiceProvider extends ServiceProvider
      */
     public function boot(Router $router)
     {
+
         $this->mergeConfigFrom(__DIR__ . '/../config/auth.php', 'auth');
 
-        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'jasmine');
-        $this->loadJsonTranslationsFrom(__DIR__.'/../resources/lang');
+        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'jasmine');
+        $this->loadJsonTranslationsFrom(__DIR__ . '/../resources/lang');
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'jasmine');
 

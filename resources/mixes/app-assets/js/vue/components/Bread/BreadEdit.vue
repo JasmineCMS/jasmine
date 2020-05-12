@@ -20,32 +20,46 @@
 
                             <!-- Repeatable field -->
                             <template v-if="field.repeats > 1">
-                                <div class="d-flex" v-for="(value, vi) in values[field.name]" :key="vi">
-                                    <div class="form-group flex-fill">
-                                        <label :for="field.id+vi">
-                                            {{ field.label }} ({{ vi + 1 }})
-                                        </label>
-                                        <component :is="field.component" :id="field.id+vi" :name="field.name + '[]'"
-                                                   :invalid="!!errors[field.name]" v-model="values[field.name][vi]"
-                                                   :options="field.options" :validation="field.validation"
-                                        ></component>
-                                    </div>
+                                <draggable
+                                    :list="values[field.name]"
+                                    ghost-class="ghost"
+                                    handle=".dnd-handler"
+                                >
+                                    <div class="d-flex" v-for="(value, vi) in values[field.name]" :key="vi">
+                                        <div class="form-group flex-fill">
+                                            <label :for="field.id+vi">
+                                                {{ field.label }} ({{ vi + 1 }})
+                                            </label>
+                                            <component :is="field.component" :id="field.id+vi"
+                                                       :name="field.name + '['+vi+']'"
+                                                       :invalid="!!errors[field.name]" v-model="values[field.name][vi]"
+                                                       :label="field.label" :options="field.options"
+                                                       :validation="field.validation"
+                                            ></component>
+                                        </div>
 
-                                    <div style="padding-top: 1.5rem;padding-inline-start: 1.25rem">
-                                        <button class="btn btn-danger" @click="removeRepeatedField(field.name, vi)"
-                                                :disabled="values[field.name].length === 1"
-                                                type="button" :title="$t('Remove')+' '+ field.label + ' ('+(vi+1)+')'">
-                                            <i class="fas fa-trash"></i>
+                                        <div style="padding-top: 1.5rem;padding-inline-start: 1.25rem">
+                                            <button class="btn btn-primary dnd-handler"
+                                                    type="button" :title="$t('Reorder') +' '+ field.label">
+                                                <i class="fas fa-arrows-alt"></i>
+                                            </button>
+
+                                            <button class="btn btn-danger" @click="removeRepeatedField(field.name, vi)"
+                                                    :disabled="values[field.name].length === 1"
+                                                    type="button"
+                                                    :title="$t('Remove')+' '+ field.label + ' ('+(vi+1)+')'">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mb-5">
+                                        <button class="btn btn-primary" @click="repeatField(field)"
+                                                :disabled="values[field.name].length >= field.repeats"
+                                                type="button" :title="$t('Add') +' '+ field.label">
+                                            <i class="fas fa-plus"></i>
                                         </button>
                                     </div>
-                                </div>
-                                <div class="mb-5">
-                                    <button class="btn btn-primary" @click="repeatField(field.name)"
-                                            :disabled="values[field.name].length >= field.repeats"
-                                            type="button" :title="$t('Add') +' '+ field.label">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </div>
+                                </draggable>
                             </template>
 
                             <!-- Single field -->
@@ -55,7 +69,7 @@
                                 </label>
                                 <component :is="field.component" :id="field.id" :name="field.name"
                                            :invalid="!!errors[field.name]" v-model="values[field.name]"
-                                           :options="field.options" :validation="field.validation"
+                                           :label="field.label" :options="field.options" :validation="field.validation"
                                 ></component>
                                 <small v-if="field.description" :id="field.id+ 'Help'" class="form-text text-muted">
                                     {{ field.description }}
@@ -112,15 +126,15 @@
 
                 vm.fields.forEach(field => {
                     if (field.repeats > 1) {
-                        Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || ['']);
+                        Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || [field.getDefault()]);
                     } else {
-                        vm.values[field.name] = vm.old[field.name] || vm.breadable[field.name] || '';
+                        Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || field.getDefault());
                     }
                 });
             },
 
-            repeatField(fieldName) {
-                this.values[fieldName].push('');
+            repeatField(field) {
+                this.values[field.name].push(field.getDefault());
             },
 
             removeRepeatedField(fieldName, i) {
@@ -136,7 +150,15 @@
 
                 Object.keys(vm.manifest).forEach((col, ci) => {
                     Object.keys(vm.manifest[col]).forEach((group, gi) => {
-                        vm.manifest[col][group].forEach(f => fields.push(f));
+                        vm.manifest[col][group].forEach(f => {
+                            f.getDefault = () => {
+                                if (typeof f.default === 'object') {
+                                    return JSON.parse(JSON.stringify(f.default));
+                                }
+                                return f.default;
+                            };
+                            fields.push(f);
+                        });
                     });
                 });
 
