@@ -4,7 +4,7 @@ A Laravel based CMS inspired by voyager
 ## Installation
 create a new laravel ^6.2 project  
 `composer require jasminecms/jasmine`  
-then run 
+then run  
 `php artisan jasmine:migrate`  
 `php artisan jasmine:link-public-assets`  
 
