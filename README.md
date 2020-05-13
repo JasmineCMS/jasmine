@@ -21,9 +21,20 @@ Route::group(['prefix' => 'jasmine'], function () {
 you may change the prefix to anything you like
 then navigate to /jasmine
 
+Register available locales in AppServiceProvider
+```php
+Jasmine::registerLocales(['en', 'he']);
+```
+
+Register pages in AppServiceProvider
+```php
+Jasmine::registerPage(\App\Pages\Home::class);
+```
+
+Register breadable models in AppServiceProvider
+```php
+Jasmine::registerBreadable(\App\Article::class);
+```
+
 ### Progress
 This package is a work in progress, don't use in production.  
-
-known issues
-* Image update does not work properly
- 
