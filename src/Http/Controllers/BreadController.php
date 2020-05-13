@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
 use Jasmine\Jasmine\Bread\Translatable;
+use function Jasmine\Jasmine\setUrlGetParam;
 
 class BreadController extends Controller
 {

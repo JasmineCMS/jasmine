@@ -37,6 +37,15 @@ $manifest = call_user_func("$breadableName::fieldsManifest");
 @endsection
 
 @push('top-bar-center')
+    @foreach(Jasmine::getLocales() as $local)
+        <a href="{{ \Jasmine\Jasmine\setUrlGetParam('_locale', $local) }}"
+           class="btn btn-info @if(request('_locale') === $local) active @endif">
+            {{ \Illuminate\Support\Str::title($local) }}
+        </a>
+    @endforeach
+@endpush
+
+@push('top-bar-end')
     <button class="btn btn-primary" @click="remoteSubmit('breadEditForm')">@lang('Save')</button>
 @endpush
 
