@@ -2,15 +2,15 @@
 
 namespace Jasmine\Jasmine\Http\Controllers;
 
+use App\Article;
+use App\Project;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
-use function Jasmine\Jasmine\is_assoc_array;
+use Jasmine\Jasmine\Bread\Translatable;
 
 class BreadController extends Controller
 {
@@ -57,6 +57,13 @@ class BreadController extends Controller
 
     public function create($breadableName)
     {
+        if (
+            in_array(Translatable::class, class_uses($breadableName))
+            && \request()->get('_locale') == null
+        ) {
+            return redirect(route('jasmine.bread.create', ['breadableName' => $breadableName, '_locale' => 'en']));
+        }
+
         return view('jasmine::app.bread.edit', compact('breadableName'));
     }
 
@@ -84,20 +91,48 @@ class BreadController extends Controller
 
         $data = $request->validate($rules);
 
-        /** @var BreadableInterface|Model $breadable */
-        $breadable = call_user_func_array("$breadableName::forceCreate", [$data]);
+        $routeParams = [];
 
-        return redirect(route('jasmine.bread.edit', [$breadableName, $breadable->{$breadable->getRouteKeyName()}]));
+        /** @var BreadableInterface|Model|Translatable $breadable */
+        $breadable = new $breadableName();
+        if (in_array(Translatable::class, class_uses($breadableName))) {
+            $breadable->setLocale(\request()->get('_locale', 'en'));
+            $routeParams['_locale'] = $breadable->getLocale();
+        }
+
+        $breadable->forceFill($data)->save();
+
+        $routeParams['breadableName'] = $breadableName;
+        $routeParams['breadableId'] = $breadable->{$breadable->getRouteKeyName()};
+
+        return redirect(route('jasmine.bread.edit', $routeParams));
     }
 
     public function edit($breadableName, $breadableId)
     {
-        /** @var null|Model|BreadableInterface $breadable */
+        /** @var null|Model|BreadableInterface|Translatable $breadable */
         $breadable = call_user_func("$breadableName::find", $breadableId);
 
         if (!$breadable) {
             abort(404);
         }
+
+        if (
+            in_array(Translatable::class, class_uses($breadableName))
+            && \request()->get('_locale') == null
+        ) {
+            return redirect(route('jasmine.bread.edit', [
+                'breadableName' => $breadableName,
+                'breadableId'   => $breadable->{$breadable->getRouteKeyName()},
+                '_locale'       => 'en',
+            ]));
+        }
+
+        if (in_array(Translatable::class, class_uses($breadableName))) {
+            $breadable->setLocale(\request()->get('_locale', 'en'));
+        }
+
+        //dd($breadable->toArray());
 
         return view('jasmine::app.bread.edit', compact('breadableName', 'breadable'));
     }
@@ -118,12 +153,22 @@ class BreadController extends Controller
 
         $data = $request->validate($rules);
 
-        /** @var null|Model|BreadableInterface $breadable */
+        /** @var null|Model|BreadableInterface|Translatable $breadable */
         $breadable = call_user_func("$breadableName::find", $breadableId);
+
+        $routeParams = [];
+
+        if (in_array(Translatable::class, class_uses($breadableName))) {
+            $breadable->setLocale(\request()->get('_locale', 'en'));
+            $routeParams['_locale'] = $breadable->getLocale();
+        }
 
         $breadable->forceFill($data)->save();
 
-        return redirect(route('jasmine.bread.edit', [$breadableName, $breadable->{$breadable->getRouteKeyName()}]));
+        $routeParams['breadableName'] = $breadableName;
+        $routeParams['breadableId'] = $breadable->{$breadable->getRouteKeyName()};
+
+        return redirect(route('jasmine.bread.edit', $routeParams));
     }
 
     /**

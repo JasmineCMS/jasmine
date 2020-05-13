@@ -1,5 +1,9 @@
 @extends('jasmine::app.layout')
 
+@php
+
+@endphp
+
 @section('title', call_user_func("$breadableName::getPluralName"))
 
 @section('content')

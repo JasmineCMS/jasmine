@@ -1,13 +1,21 @@
 <?php
 /** @var string $breadableName */
 
+use Jasmine\Jasmine\Bread\Translatable;
+
 /**
- * @var \Jasmine\Jasmine\Bread\BreadableInterface|\Illuminate\Database\Eloquent\Model $breadable
+ * @var \Jasmine\Jasmine\Bread\BreadableInterface|\Illuminate\Database\Eloquent\Model|Translatable $breadable
  */
 
+$actionParams = ['breadableName' => $breadableName];
+
+if (in_array(Translatable::class, class_uses($breadableName))) {
+    $actionParams['_locale'] = \request()->get('_locale', 'en');
+}
+
 $action = isset($breadable)
-    ? route('jasmine.bread.update', [$breadableName, $breadable->{$breadable->getRouteKeyName()}])
-    : route('jasmine.bread.store', $breadableName);
+    ? route('jasmine.bread.update', array_merge($actionParams, ['breadableId' => $breadable->{$breadable->getRouteKeyName()}]))
+    : route('jasmine.bread.store', $actionParams);
 
 /** @var \Jasmine\Jasmine\Bread\Fields\FieldsManifest $manifest */
 $manifest = call_user_func("$breadableName::fieldsManifest");
@@ -28,9 +36,9 @@ $manifest = call_user_func("$breadableName::fieldsManifest");
     @endif
 @endsection
 
-@section('top-bar-center')
+@push('top-bar-center')
     <button class="btn btn-primary" @click="remoteSubmit('breadEditForm')">@lang('Save')</button>
-@endsection
+@endpush
 
 @push('breadcrumbs')
     <li class="breadcrumb-item"><a href="{{ route('jasmine.bread.index', $breadableName) }}">

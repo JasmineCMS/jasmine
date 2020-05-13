@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ __('jasmine::vars.dir') === 'rtl' ? 'rtl' : 'ltr' }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      dir="{{ __('jasmine::vars.dir') === 'rtl' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -28,12 +29,8 @@
     <top-bar :user="{{ Auth::guard('jasmine_web')->user() }}"
              locale-url="{{ route('jasmine.change-locale', '-locale-') }}"
     >
-        @if(View::hasSection('top-bar-center'))
-            <template v-slot:center>@yield('top-bar-center')</template>
-        @endif
-        @if(View::hasSection('top-bar-end'))
-            <template v-slot:end>@yield('top-bar-end')</template>
-        @endif
+        <template v-slot:center>@stack('top-bar-center')</template>
+        <template v-slot:end>@stack('top-bar-end')</template>
     </top-bar>
     <div class="wrapper d-flex">
         <side-bar :menu-items="{{ Jasmine::getSideBarMenuItems()->toJson() }}"></side-bar>

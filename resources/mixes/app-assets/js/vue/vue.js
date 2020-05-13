@@ -47,7 +47,6 @@ const app = new Vue({
     store,
 
     data: {
-
     },
 
     methods: {

@@ -15,10 +15,13 @@ class Jasmine
 
     protected $pages = [];
 
+    protected $locales = [];
+
     public function routes()
     {
         require __DIR__ . '/../routes.php';
     }
+
 
     /**
      * Register a breadable model
@@ -36,11 +39,13 @@ class Jasmine
         $this->breadables[] = $breadable;
     }
 
-    public function getBreadables(): array
-    {
-        return $this->breadables;
-    }
-
+    /**
+     * Register a page
+     *
+     * @param string $page
+     *
+     * @throws MustExtendJasminePage
+     */
     public function registerPage(string $page)
     {
         if (!is_subclass_of($page, JasminePage::class)) {
@@ -51,6 +56,21 @@ class Jasmine
 
         $this->pages[$name] = $page;
 
+    }
+
+    /**
+     * Set available locales, overwrites existing
+     *
+     * @param array $locales
+     */
+    public function registerLocales(array $locales)
+    {
+        $this->locales = $locales;
+    }
+
+    public function getBreadables(): array
+    {
+        return $this->breadables;
     }
 
     public function getPages(): array
@@ -66,10 +86,14 @@ class Jasmine
         return $pages;
     }
 
-
     public function getPage(string $pageSlug)
     {
         return $this->pages[$pageSlug] ?? null;
+    }
+
+    public function getLocales()
+    {
+        return $this->locales;
     }
 
     public function getSideBarMenuItems()
