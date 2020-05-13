@@ -42,7 +42,6 @@ class JasmineServiceProvider extends ServiceProvider
      */
     public function boot(Router $router)
     {
-
         $this->mergeConfigFrom(__DIR__ . '/../config/auth.php', 'auth');
 
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'jasmine');
@@ -51,8 +50,6 @@ class JasmineServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'jasmine');
 
         $router->aliasMiddleware('jasmineAuth', Authenticate::class);
-
-        //$this->assureAssetsSymlink();
     }
 
     private function registerConsoleCommands()

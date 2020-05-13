@@ -1,9 +1,15 @@
 import Vue from 'vue';
+import Vuex from 'vuex';
 import VueI18n from 'vue-i18n';
 import VDataTable from "./components/VDataTable";
 import Editor from '@tinymce/tinymce-vue';
 import Croppa from 'vue-croppa';
 import draggable from 'vuedraggable';
+import FileManager from 'laravel-file-manager';
+
+Vue.use(Vuex);
+const store = new Vuex.Store({});
+Vue.use(FileManager, {store});
 
 Vue.use(VueI18n);
 
@@ -38,8 +44,11 @@ Vue.component('editor', Editor);
 const app = new Vue({
     el: '#app',
     i18n,
+    store,
 
-    data: {},
+    data: {
+
+    },
 
     methods: {
         logout() {

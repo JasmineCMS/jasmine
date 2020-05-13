@@ -83,6 +83,12 @@ class Jasmine
         ]);
 
         $items->push([
+            'href'  => route('jasmine.fm.show'),
+            'title' => __('File Manager'),
+            'icon'  => 'fa-folder',
+        ]);
+
+        $items->push([
             'title'    => __('Pages'),
             'icon'     => 'fa-newspaper',
             'children' => $this->getPages(),

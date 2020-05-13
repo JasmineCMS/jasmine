@@ -84,61 +84,8 @@ class BreadController extends Controller
 
         $data = $request->validate($rules);
 
-        // handle images
-        $images = [];
-        foreach ($fields->where('type', 'ImageField') as $imageField) {
-            $images[$imageField['name']] = $data[$imageField['name']];
-            $data[$imageField['name']] = [];
-        }
-
         /** @var BreadableInterface|Model $breadable */
         $breadable = call_user_func_array("$breadableName::forceCreate", [$data]);
-
-        foreach ($images as $fieldName => $image) {
-            if (!\Jasmine\Jasmine\is_assoc_array($image)) {
-                $imageValue = [];
-                foreach ($image as $key => $oneImage) {
-                    /** @var UploadedFile $img */
-                    $img = $oneImage['img'];
-
-                    $imgPath = $img->storePubliclyAs('/public/files/'
-                        . Str::slug(call_user_func("$breadableName::getSingularName"))
-                        . '/' . $breadable->{$breadable->getRouteKeyName()},
-                        $key . '-' .
-                        $fieldName . '.' . $img->extension()
-                    );
-
-                    $imageValue[] = [
-                        'path' => $imgPath,
-                        'src'  => \Storage::url($imgPath) . '?v=' . md5(time() . microtime()),
-                        'alt'  => $oneImage['alt'],
-                        'w'    => $oneImage['w'],
-                        'h'    => $oneImage['h'],
-                    ];
-                }
-            } else {
-                /** @var UploadedFile $img */
-                $img = $image['img'];
-
-                $imgPath = $img->storePubliclyAs('/public/files/'
-                    . Str::slug(call_user_func("$breadableName::getSingularName"))
-                    . '/' . $breadable->{$breadable->getRouteKeyName()},
-                    $fieldName . '.' . $img->extension()
-                );
-
-                $imageValue = [
-                    'path' => $imgPath,
-                    'src'  => \Storage::url($imgPath) . '?v=' . md5(time() . microtime()),
-                    'alt'  => $image['alt'],
-                    'w'    => $image['w'],
-                    'h'    => $image['h'],
-                ];
-            }
-
-            $breadable->{$fieldName} = $imageValue;
-        }
-
-        $breadable->save();
 
         return redirect(route('jasmine.bread.edit', [$breadableName, $breadable->{$breadable->getRouteKeyName()}]));
     }
@@ -174,66 +121,7 @@ class BreadController extends Controller
         /** @var null|Model|BreadableInterface $breadable */
         $breadable = call_user_func("$breadableName::find", $breadableId);
 
-        // handle images
-        foreach ($fields->where('type', 'ImageField') as $imageField) {
-            $dataImg = $data[$imageField['name']];
-
-            if (!is_assoc_array($dataImg)) {
-                $imageValue = [];
-                foreach ($dataImg as $oneKey => $one) {
-                    // skip if no new image sent
-                    if (!isset($one['img'])) {
-                        continue;
-                    }
-
-                    // delete old
-                    \Storage::delete($one['path']);
-
-                    /** @var UploadedFile $img */
-                    $img = $one['img'];
-
-                    $imgPath = $img->storePubliclyAs('/public/files/'
-                        . Str::slug(call_user_func("$breadableName::getSingularName"))
-                        . '/' . $breadable->{$breadable->getRouteKeyName()},
-                        $oneKey . '-' .
-                        $imageField['name'] . '.' . $img->extension()
-                    );
-
-                    $imageValue[] = [
-                        'path' => $imgPath,
-                        'src'  => \Storage::url($imgPath) . '?v=' . md5(time() . microtime()),
-                        'alt'  => $one['alt'],
-                        'w'    => $one['w'],
-                        'h'    => $one['h'],
-                    ];
-                }
-            } else {
-                // delete old
-                \Storage::delete($dataImg['path']);
-
-                /** @var UploadedFile $img */
-                $img = $dataImg['img'];
-
-                $imgPath = $img->storePubliclyAs('/public/files/'
-                    . Str::slug(call_user_func("$breadableName::getSingularName"))
-                    . '/' . $breadable->{$breadable->getRouteKeyName()},
-                    $imageField['name'] . '.' . $img->extension()
-                );
-
-                $imageValue = [
-                    'path' => $imgPath,
-                    'src'  => \Storage::url($imgPath) . '?v=' . md5(time() . microtime()),
-                    'alt'  => $dataImg['alt'],
-                    'w'    => $dataImg['w'],
-                    'h'    => $dataImg['h'],
-                ];
-            }
-
-            $breadable->{$fieldName} = $imageValue;
-        }
-
         $breadable->forceFill($data)->save();
-
 
         return redirect(route('jasmine.bread.edit', [$breadableName, $breadable->{$breadable->getRouteKeyName()}]));
     }

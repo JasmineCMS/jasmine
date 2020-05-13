@@ -1,10 +1,8 @@
 <template>
     <div>
-        <input type="file" :name="name+'[img]'" ref="file" class="d-none" accept="image/*"
-               @change="onFileChange">
         <input type="hidden" :name="name+'[w]'" v-model="field_value.w">
         <input type="hidden" :name="name+'[h]'" v-model="field_value.h">
-        <input type="hidden" :name="name+'[path]'" v-model="field_value.path">
+        <input type="hidden" :name="name+'[src]'" v-model="field_value.src">
 
         <div class="form-control w-auto d-inline-block p-4">
             <img :src="field_value.src" alt="preview" class="preview" @click="changeImage" ref="preview">
@@ -16,6 +14,24 @@
             </label>
             <input class="form-control" type="text" :name="name+'[alt]'" v-model="field_value.alt">
         </div>
+
+        <div v-if="showFm" class="modal fade show d-block" tabindex="-1" role="dialog"
+             aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">File Manager | Choose image for {{ label }}</h5>
+                        <button type="button" class="close" aria-label="Close" @click="showFm = false">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <file-manager-wrapper ref="fmw"></file-manager-wrapper>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-if="showFm" class="modal-backdrop fade show"></div>
     </div>
 </template>
 
@@ -29,33 +45,37 @@
                 opts: Object.assign({
                     options: [],
                 }, this.options),
+
+                showFm: false,
             };
         },
 
         methods: {
             changeImage() {
-                this.$refs.file.click();
-            },
+                this.showFm = true;
 
-            onFileChange(evt) {
-                let files = evt.target.files || evt.dataTransfer.files;
-                if (!files.length) {
-                    return;
-                }
+                Vue.nextTick(() => {
+                    let vm = this;
+                    let fm = this.$refs.fmw.$refs.fm;
+                    fm.$store.commit('fm/setFileCallBack', function (fileUrl) {
+                        // todo: if note image
+                        vm.field_value.src = fileUrl;
 
-                let reader = new FileReader();
-                reader.onload = (rEvt) => {
-                    this.field_value.src = rEvt.target.result;
-                    setTimeout(() => {
-                        this.field_value.w = this.$refs.preview.naturalWidth;
-                        this.field_value.h = this.$refs.preview.naturalHeight;
-                        //this.field_value.path = null;
-                    }, 250);
-                };
+                        vm.showFm = false;
 
-                reader.readAsDataURL(files[0]);
+                        Vue.nextTick(() => {
+                            setTimeout(() => {
+                                vm.field_value.w = vm.$refs.preview.naturalWidth;
+                                vm.field_value.h = vm.$refs.preview.naturalHeight;
+                                //this.field_value.path = null;
+                            }, 250);
+                        });
+                    });
+                });
             },
         },
+
+        watch: {},
 
         beforeMount() {
             this.field_value.src = this.field_value.src || `https://placehold.it/150x150`;

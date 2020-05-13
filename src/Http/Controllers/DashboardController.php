@@ -9,6 +9,6 @@ class DashboardController extends Controller
 {
     public function show()
     {
-        return view('jasmine::app.layout');
+        return view('jasmine::app.dashboard');
     }
 }

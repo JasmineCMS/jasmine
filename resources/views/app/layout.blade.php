@@ -24,7 +24,7 @@
     <link href="{{ asset(mix('css/app.css', 'jasmine-public/app-assets')) }}" rel="stylesheet">
 </head>
 <body>
-<div id="app">
+<div id="app" data-fm-url="{{ url('file-manager') }}">
     <top-bar :user="{{ Auth::guard('jasmine_web')->user() }}"
              locale-url="{{ route('jasmine.change-locale', '-locale-') }}"
     >

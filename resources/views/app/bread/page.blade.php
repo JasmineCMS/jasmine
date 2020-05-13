@@ -29,7 +29,7 @@ $manifest = call_user_func(get_class($page) . "::fieldsManifest");
             @csrf
             @method('put')
             <bread-edit :manifest="{{ $manifest->toJson() }}"
-                        :breadable="{{ $page ?? '{}' }}"
+                        :breadable="{{ json_encode($page->content) ?? '{}' }}"
                         :errors="{{ $errors->any() ? json_encode($errors->getMessages()) : '{}' }}"
                         :old="{{ count(old()) ? json_encode(old()) : '{}' }}"></bread-edit>
         </form>

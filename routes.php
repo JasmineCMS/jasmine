@@ -26,6 +26,8 @@ Route::group([
         ], function () {
             Route::get('/', 'DashboardController@show')->name('dashboard');
 
+            Route::get('/file-manager', 'FileManagerController@show')->name('fm.show');
+
             // Bread routes
             Route::group([
                 'prefix' => '/bread/{breadableName}',
