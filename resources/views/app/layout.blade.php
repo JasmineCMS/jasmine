@@ -34,7 +34,7 @@
     </top-bar>
     <div class="wrapper d-flex">
         <side-bar :menu-items="{{ Jasmine::getSideBarMenuItems()->toJson() }}"></side-bar>
-        <div class="flex-fill has-main">
+        <div class="flex-fill has-main d-flex flex-column">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('jasmine.dashboard') }}">@lang('Dashboard')</a></li>
@@ -44,7 +44,7 @@
                     @endif
                 </ol>
             </nav>
-            <main class="px-4">
+            <main class="px-4 flex-fill">
                 @yield('content')
             </main>
         </div>

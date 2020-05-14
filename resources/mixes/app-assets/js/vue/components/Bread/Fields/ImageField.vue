@@ -18,7 +18,7 @@
         <div v-if="showFm" class="modal fade show d-block" tabindex="-1" role="dialog"
              aria-hidden="true">
             <div class="modal-dialog modal-xl" role="document">
-                <div class="modal-content">
+                <div class="modal-content" style="min-height: 80vh">
                     <div class="modal-header">
                         <h5 class="modal-title">File Manager | Choose image for {{ label }}</h5>
                         <button type="button" class="close" aria-label="Close" @click="showFm = false">

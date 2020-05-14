@@ -6,7 +6,7 @@
 
 
 @section('content')
-    <div class="mt-2 h-100">
+    <div class="h-100 pb-4">
         <file-manager-wrapper></file-manager-wrapper>
     </div>
 @endsection
