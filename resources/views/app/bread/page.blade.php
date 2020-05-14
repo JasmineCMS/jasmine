@@ -18,18 +18,28 @@ $manifest = call_user_func(get_class($page) . "::fieldsManifest");
     <li class="breadcrumb-item">@lang('Pages')</li>
 @endpush
 
-@section('top-bar-center')
+@push('top-bar-center')
+    @foreach(Jasmine::getLocales() as $local)
+        <a href="{{ \Jasmine\Jasmine\setUrlGetParam('_locale', $local) }}"
+           class="btn btn-info @if(request('_locale') === $local) active @endif">
+            {{ \Illuminate\Support\Str::title($local) }}
+        </a>
+    @endforeach
+@endpush
+
+@push('top-bar-end')
     <button class="btn btn-primary" @click="remoteSubmit('breadEditForm')">@lang('Save')</button>
-@endsection
+@endpush
 
 @section('content')
     <div class="mt-2">
-        <form action="{{ route('jasmine.page.update', $page->name) }}" method="post" enctype="multipart/form-data"
+        <form method="post" enctype="multipart/form-data"
+              action="{{ route('jasmine.page.update', ['jasminePage' => $page->name, '_locale' => request()->get('_locale')]) }}"
               ref="breadEditForm">
             @csrf
             @method('put')
             <bread-edit :manifest="{{ $manifest->toJson() }}"
-                        :breadable="{{ json_encode($page->content) ?? '{}' }}"
+                        :breadable="{{ count($page->content) ? json_encode($page->content) : '{}' }}"
                         :errors="{{ $errors->any() ? json_encode($errors->getMessages()) : '{}' }}"
                         :old="{{ count(old()) ? json_encode(old()) : '{}' }}"></bread-edit>
         </form>

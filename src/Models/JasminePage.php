@@ -24,6 +24,8 @@ abstract class JasminePage extends Model
 {
     protected $table = 'jasmine_pages';
 
+    public $translatable = ['content'];
+
     protected $fillable = [
         'url',
         'name',

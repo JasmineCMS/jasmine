@@ -4,23 +4,35 @@ namespace Jasmine\Jasmine\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
+use Jasmine\Jasmine\Bread\Translatable;
 use Jasmine\Jasmine\Models\JasminePage;
 
 class PageController extends Controller
 {
     /**
-     * @param JasminePage $page
+     * @param JasminePage|Translatable $page
      *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector|\Illuminate\View\View
      */
     public function edit($page)
     {
+        if (
+            in_array(Translatable::class, class_uses($page))
+            && \request()->get('_locale') == null
+        ) {
+            return redirect(route('jasmine.page.edit', ['jasminePage' => $page->name, '_locale' => 'en']));
+        }
+
+        if (in_array(Translatable::class, class_uses($page))) {
+            $page->setLocale(\request()->get('_locale', 'en'));
+        }
+
         return view('jasmine::app.bread.page', compact('page'));
     }
 
     /**
-     * @param Request     $request
-     * @param JasminePage $page
+     * @param Request                  $request
+     * @param JasminePage|Translatable $page
      */
     public function update(Request $request, $page)
     {
@@ -38,9 +50,13 @@ class PageController extends Controller
 
         $data = $request->validate($rules);
 
+        if (in_array(Translatable::class, class_uses($page))) {
+            $page->setLocale(\request()->get('_locale', 'en'));
+        }
+
         $page->content = $data;
         $page->save();
 
-        return redirect(route('jasmine.page.edit', $page->name));
+        return redirect(route('jasmine.page.edit', ['jasminePage' => $page->name, '_locale' => $page->getLocale()]));
     }
 }
