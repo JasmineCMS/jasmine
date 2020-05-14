@@ -55,7 +55,7 @@ function setUrlGetParam($key, $value, $url = null)
 
     $url = parse_url($url);
 
-    if (!$url['query']) {
+    if (!isset($url['query'])) {
         $url['query'] = http_build_query([$key => $value]);
     } else {
         $url['query'] = parse_query($url['query']);
