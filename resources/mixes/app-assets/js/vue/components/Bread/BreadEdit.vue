@@ -13,7 +13,6 @@
                 </div>
                 <div class="card-body">
                     <div class="form-row">
-
                         <!-- Loop fields -->
                         <div v-for="(field, fi) in fields" :key="fi"
                              class="field form-group" :class="field.width">
@@ -25,7 +24,7 @@
                                     ghost-class="ghost"
                                     handle=".dnd-handler"
                                 >
-                                    <div class="d-flex" v-for="(value, vi) in values[field.name]" :key="vi">
+                                    <div class="d-flex" v-for="(value, vi) in values[field.name]" :key="field.id+vi">
                                         <div class="form-group flex-fill">
                                             <label :for="field.id+vi">
                                                 {{ field.label }} ({{ vi + 1 }})
@@ -80,7 +79,6 @@
                             </template>
                         </div>
                         <!-- /Loop fields -->
-
                     </div>
                 </div>
             </div>
