@@ -15,7 +15,7 @@
                     <div class="form-row">
                         <!-- Loop fields -->
                         <div v-for="(field, fi) in fields" :key="fi"
-                             class="field form-group" :class="field.width">
+                             class="field p-4 form-group" :class="field.width">
 
                             <!-- Repeatable field -->
                             <template v-if="field.repeats > 1">
@@ -174,5 +174,8 @@
 </script>
 
 <style scoped>
+    .field {
+        background-color: #f3f3f3;
 
+    }
 </style>

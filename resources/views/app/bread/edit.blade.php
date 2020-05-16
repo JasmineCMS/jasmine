@@ -37,12 +37,14 @@ $manifest = call_user_func("$breadableName::fieldsManifest");
 @endsection
 
 @push('top-bar-center')
-    @foreach(Jasmine::getLocales() as $local)
-        <a href="{{ \Jasmine\Jasmine\setUrlGetParam('_locale', $local) }}"
-           class="btn btn-info @if(request('_locale') === $local) active @endif">
-            {{ \Illuminate\Support\Str::title($local) }}
-        </a>
-    @endforeach
+    @if(in_array(Translatable::class, class_uses($breadableName)))
+        @foreach(Jasmine::getLocales() as $local)
+            <a href="{{ \Jasmine\Jasmine\setUrlGetParam('_locale', $local) }}"
+               class="btn @if(request('_locale') === $local) active btn-success @else btn-secondary @endif">
+                {{ \Illuminate\Support\Str::title($local) }}
+            </a>
+        @endforeach
+    @endif
 @endpush
 
 @push('top-bar-end')
