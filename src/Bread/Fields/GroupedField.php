@@ -38,7 +38,11 @@ class GroupedField extends AbstractField
         }, $this->fields);
 
         foreach ($array['options']['fields'] as $field) {
-            $array['default'][$field['name']] = $field['default'];
+            if ($field['type'] === 'GroupedField') {
+                $array['default'][$field['name']] = [];
+            } else {
+                $array['default'][$field['name']] = $field['default'];
+            }
         }
 
         return $array;
