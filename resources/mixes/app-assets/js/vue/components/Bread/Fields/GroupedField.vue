@@ -1,5 +1,5 @@
 <template>
-    <div class="form-row">
+    <div class="form-row grouped">
         <!-- Loop fields -->
         <div v-for="(field, fi) in fields" :key="field.id+fi"
              class="field p-4 form-group" :class="field.width">
@@ -20,6 +20,7 @@
                                        :invalid="!!errors[field.name]" v-model="field_value[field.name][vi]"
                                        :label="field.label" :options="field.options"
                                        :validation="field.validation"
+                                       :locale="locale" :is-locale-rtl="isLocaleRtl"
                             ></component>
                         </div>
 
@@ -55,6 +56,7 @@
                 <component :is="field.component" :id="field.id" :name="name + '[' + field.name + ']'"
                            :invalid="!!errors[field.name]" v-model="field_value[field.name]"
                            :label="field.label" :options="field.options" :validation="field.validation"
+                           :locale="locale" :is-locale-rtl="isLocaleRtl"
                 ></component>
                 <small v-if="field.description" :id="field.id+ 'Help'" class="form-text text-muted">
                     {{ field.description }}
@@ -135,7 +137,7 @@
 </script>
 
 <style scoped>
-    .field {
+    .form-row.grouped {
         background-color: #e1f4ff;
     }
 </style>

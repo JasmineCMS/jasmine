@@ -15,11 +15,16 @@
                     options: [],
                 }, this.options),
 
-                config: {
+            };
+        },
+
+        computed: {
+            config() {
+                return {
                     height: 500,
                     menubar: false,
                     //language: 'he_IL',
-                    //directionality: 'rtl',
+                    directionality: this.isLocaleRtl ? 'rtl' : 'ltr',
                     //file_picker_callback:
                     plugins: 'link, table, code, lists, image, media',
                     toolbar: [
@@ -33,11 +38,9 @@
                         'image media',
                         'code',
                     ].join(' | '),
-                },
-
-            };
+                };
+            },
         },
-
     }
 </script>
 

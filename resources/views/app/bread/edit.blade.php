@@ -66,6 +66,7 @@ $manifest = call_user_func("$breadableName::fieldsManifest");
             @endif
             <bread-edit :manifest="{{ $manifest->toJson() }}"
                         :breadable="{{ $breadable ?? '{}' }}"
+                        locale="{{ request('_locale') }}"
                         :errors="{{ $errors->any() ? json_encode($errors->getMessages()) : '{}' }}"
                         :old="{{ count(old()) ? json_encode(old()) : '{}' }}"></bread-edit>
         </form>

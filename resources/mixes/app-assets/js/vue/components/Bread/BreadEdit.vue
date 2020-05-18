@@ -1,5 +1,5 @@
 <template>
-    <div class="bread-edit row">
+    <div class="bread-edit row" :class="{'writing-rtl': isLocaleRtl}">
 
         <!-- Loop columns -->
         <div v-for="(column, classId) in manifest" :key="classId"
@@ -34,6 +34,7 @@
                                                        :invalid="!!errors[field.name]" v-model="values[field.name][vi]"
                                                        :label="field.label" :options="field.options"
                                                        :validation="field.validation"
+                                                       :locale="locale" :is-locale-rtl="isLocaleRtl"
                                             ></component>
                                         </div>
 
@@ -69,6 +70,7 @@
                                 <component :is="field.component" :id="field.id" :name="field.name"
                                            :invalid="!!errors[field.name]" v-model="values[field.name]"
                                            :label="field.label" :options="field.options" :validation="field.validation"
+                                           :locale="locale" :is-locale-rtl="isLocaleRtl"
                                 ></component>
                                 <small v-if="field.description" :id="field.id+ 'Help'" class="form-text text-muted">
                                     {{ field.description }}
@@ -94,6 +96,10 @@
     export default {
         name: "BreadEdit",
         props: {
+            locale: {
+                required: true,
+                type: String,
+            },
             manifest: {
                 required: true,
                 type: Object,
@@ -162,6 +168,10 @@
 
                 return fields;
             },
+
+            isLocaleRtl() {
+                return ['ar', 'he', 'iw'].indexOf(this.locale) > -1;
+            },
         },
 
         created() {
@@ -173,9 +183,15 @@
     }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+    .writing-rtl ::v-deep {
+        input,
+        textarea {
+            direction: rtl;
+        }
+    }
+
     .field {
         background-color: #f3f3f3;
-
     }
 </style>

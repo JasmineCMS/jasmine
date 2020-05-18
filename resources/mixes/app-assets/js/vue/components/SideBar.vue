@@ -70,6 +70,7 @@
 
         &.opened {
             width: 200px;
+            flex: 0 0 200px;
         }
 
         .side-bar-content {

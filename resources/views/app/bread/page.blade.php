@@ -21,7 +21,7 @@ $manifest = call_user_func(get_class($page) . "::fieldsManifest");
 @push('top-bar-center')
     @foreach(Jasmine::getLocales() as $local)
         <a href="{{ \Jasmine\Jasmine\setUrlGetParam('_locale', $local) }}"
-           class="btn btn-info @if(request('_locale') === $local) active @endif">
+           class="btn @if(request('_locale') === $local) active btn-success @else btn-secondary @endif">
             {{ \Illuminate\Support\Str::title($local) }}
         </a>
     @endforeach
@@ -39,6 +39,7 @@ $manifest = call_user_func(get_class($page) . "::fieldsManifest");
             @csrf
             @method('put')
             <bread-edit :manifest="{{ $manifest->toJson() }}"
+                        locale="{{ request('_locale') }}"
                         :breadable="{{ count($page->content) ? json_encode($page->content) : '{}' }}"
                         :errors="{{ $errors->any() ? json_encode($errors->getMessages()) : '{}' }}"
                         :old="{{ count(old()) ? json_encode(old()) : '{}' }}"></bread-edit>

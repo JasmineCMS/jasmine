@@ -34,6 +34,15 @@
                 required: true,
                 type: Boolean,
             },
+
+            locale: {
+                required: true,
+            },
+
+            isLocaleRtl: {
+                required: true,
+                type: Boolean,
+            },
         },
 
         data() {
