@@ -184,8 +184,17 @@
 </script>
 
 <style scoped lang="scss">
-    .writing-rtl ::v-deep {
+    .bread-edit ::v-deep {
         input,
+        select,
+        textarea {
+            direction: ltr;
+        }
+    }
+
+    .bread-edit.writing-rtl ::v-deep {
+        input,
+        select,
         textarea {
             direction: rtl;
         }
