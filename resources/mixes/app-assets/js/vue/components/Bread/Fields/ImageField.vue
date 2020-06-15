@@ -59,6 +59,8 @@
                     let fm = this.$refs.fmw.$refs.fm;
                     fm.$store.commit('fm/setFileCallBack', function (fileUrl) {
                         // todo: if note image
+                        console.log(fileUrl);
+                        window.fm = fm;
 
                         if (fileUrl.startsWith(document.location.origin)) {
                             fileUrl = fileUrl.replace(document.location.origin, '');
