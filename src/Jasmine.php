@@ -17,11 +17,14 @@ class Jasmine
 
     protected $locales = [];
 
+    protected $appJs = [];
+
+    protected $appStyles = [];
+
     public function routes()
     {
         require __DIR__ . '/../routes.php';
     }
-
 
     /**
      * Register a breadable model
@@ -144,5 +147,35 @@ class Jasmine
 
             return $item;
         });
+    }
+
+    /**
+     * Register custom js file to run on backend
+     *
+     * @param string $path full url of the js file (prefer https)
+     */
+    public function registerCustomJs(string $path)
+    {
+        $this->appJs[] = $path;
+    }
+
+    public function getCustomJses()
+    {
+        return $this->appJs;
+    }
+
+    /**
+     * Register custom stylesheet file to run on backend
+     *
+     * @param string $path full url of the stylesheet file (prefer https)
+     */
+    public function registerCustomStyle(string $path)
+    {
+        $this->appStyles[] = $path;
+    }
+
+    public function getCustomStyles()
+    {
+        return $this->appStyles;
     }
 }

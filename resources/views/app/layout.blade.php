@@ -23,6 +23,10 @@
     {{-- Styles --}}
     <link href="{{ asset(mix('css/vendor.css', 'jasmine-public/app-assets')) }}" rel="stylesheet">
     <link href="{{ asset(mix('css/app.css', 'jasmine-public/app-assets')) }}" rel="stylesheet">
+
+    @foreach(Jasmine::getCustomStyles() as $style)
+        <link rel="stylesheet" href="{{ $style }}">
+    @endforeach
 </head>
 <body>
 <div id="app" data-fm-url="{{ url('file-manager') }}">
@@ -56,5 +60,8 @@
 </div>
 
 @stack('scripts')
+@foreach(Jasmine::getCustomJses() as $js)
+    <script src="{{ $js }}" defer></script>
+@endforeach
 </body>
 </html>
