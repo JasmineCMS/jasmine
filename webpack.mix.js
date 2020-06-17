@@ -1,8 +1,11 @@
 const mix = require('laravel-mix');
 
+require('laravel-mix-bundle-analyzer');
+
 if (!mix.inProduction()) {
     mix.sourceMaps();
     mix.webpackConfig({devtool: 'inline-source-map'});
+    mix.bundleAnalyzer();
 } else {
     mix.version();
 }
