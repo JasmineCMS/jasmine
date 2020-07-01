@@ -2,7 +2,7 @@
 
 @php
 
-@endphp
+    @endphp
 
 @section('title', call_user_func("$breadableName::getPluralName"))
 
@@ -30,6 +30,10 @@
 
                     <div class="card-body">
                         <v-data-table table-class="table table-striped table-responsive-md"
+                                      ref="dt"
+                                      key-column="{{ $breadableIdColumn }}"
+                                      sort-url="{{ route('jasmine.bread.reorder', $breadableName) }}"
+                                      sort-column="{{ $order_column }}"
                                       data-url="{{ route('jasmine.bread.index', $breadableName) }}">
                             <template v-slot:thead="{t}">
                                 <tr>
@@ -45,7 +49,21 @@
                                 </tr>
                             </template>
 
-                            <template v-slot:td_{{ count($browseableColumns) }}="{data,row}">
+                            @if(in_array(\Spatie\EloquentSortable\SortableTrait::class, class_uses($breadableName)))
+                                <template v-slot:td_0="{data,row,col}">
+                                    <template v-if="$refs.dt.request.order.length
+                                    && $refs.dt.request.order[0].column === 0
+                                    && $refs.dt.request.order[0].dir === 'asc'
+">
+                                        <span v-text="data"></span>
+                                        <button class="btn btn-secondary mx-2 dnd-handler" type="button">
+                                            <i class="fas fa-arrows-alt"></i>
+                                        </button>
+                                    </template>
+                                </template>
+                            @endif
+
+                            <template v-slot:td_{{ count($browseableColumns) }}="{data,row,col}">
                                 <a class="btn btn-info"
                                    :href="'{{ route('jasmine.bread.edit', [$breadableName, '-id-']) }}'.replace('-id-', data)">
                                     <i class="fas fa-pen"></i>

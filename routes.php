@@ -35,6 +35,7 @@ Route::group([
                 'name'   => 'bread.',
             ], function () {
                 Route::get('', 'BreadController@index')->name('index');
+                Route::put('/reorder', 'BreadController@reorder')->name('reorder');
                 Route::get('/create', 'BreadController@create')->name('create');
                 Route::post('', 'BreadController@store')->name('store');
                 Route::get('/{breadableId}/edit', 'BreadController@edit')->name('edit');

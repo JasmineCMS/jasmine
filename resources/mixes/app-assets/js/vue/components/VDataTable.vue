@@ -28,15 +28,21 @@
             <thead @click="order">
             <slot name="thead" :t="this"></slot>
             </thead>
-            <tbody>
-            <tr v-for="(row, ri) in response.data">
-                <td v-for="(column, ci) in columns">
-                    <slot :name="'td_'+ci" :data="row[column.data]" :row="row">
-                        {{ row[column.data] }}
-                    </slot>
-                </td>
-            </tr>
-            </tbody>
+            <draggable
+                :list="response.data"
+                tag="tbody"
+                ghost-class="ghost"
+                handle=".dnd-handler"
+                @change="reorder"
+            >
+                <tr v-for="(row, ri) in response.data">
+                    <td v-for="(column, ci) in columns">
+                        <slot :name="'td_'+ci" :data="row[column.data]" :row="row" :column="column">
+                            {{ row[column.data] }}
+                        </slot>
+                    </td>
+                </tr>
+            </draggable>
         </table>
 
         <div class="vDataTable-footer d-flex flex-wrap justify-content-between align-content-center">
@@ -155,6 +161,21 @@
                 type: String,
             },
 
+            sortUrl: {
+                required: false,
+                type: String,
+            },
+
+            sortColumn: {
+                required: false,
+                type: String,
+            },
+
+            keyColumn: {
+                required: false,
+                type: String,
+            },
+
             tableClass: {
                 required: false,
                 type: [Array, String],
@@ -237,6 +258,24 @@
                 if (this.currentPage > 1) {
                     this.request.start -= this.request.length;
                 }
+            },
+
+            reorder(change) {
+                if (!change.moved) {
+                    return;
+                }
+
+                if (!this.sortUrl) {
+                    return;
+                }
+
+                let newOrder = this.response.data.map((i, n) => {
+                    return {id: i[this.keyColumn], order: n + 1};
+                });
+
+                axios.put(this.sortUrl, {order: newOrder}).then(r => {
+                    this.load();
+                });
             },
         },
 
@@ -344,3 +383,25 @@
 
     export default VDataTable;
 </script>
+
+<style scoped lang="scss">
+    .vDataTable-asc {
+        &:before {
+            content: ' ';
+            background: url('data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 301.219 301.219"><path d="M149.365 262.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h139.365c5.522 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM10 229.736h120.586c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM10 166.736h101.805c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM10 96.736h83.025c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM10 33.736h64.244c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM298.29 216.877l-7.07-7.071a10.001 10.001 0 00-14.142 0l-34.394 34.393V18.736c0-5.523-4.477-10-10-10h-10c-5.522 0-10 4.477-10 10v225.462l-34.394-34.393a9.999 9.999 0 00-14.142 0l-7.07 7.071c-3.905 3.905-3.905 10.237 0 14.142l63.535 63.536a10.003 10.003 0 0014.142 0l63.535-63.536c3.905-3.905 3.905-10.236 0-14.141z"/></svg>') no-repeat center /100% 100%;
+            display: inline-block;
+            height: 0.8125rem;
+            width: 1rem;
+        }
+    }
+
+    .vDataTable-desc {
+        &:before {
+            content: ' ';
+            background: url('data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 301.219 301.219"><path d="M159.365 23.736v-10c0-5.523-4.477-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h139.365c5.523 0 10-4.477 10-10zM130.586 66.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h120.586c5.523 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM111.805 129.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h101.805c5.523 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM93.025 199.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h83.025c5.522 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM74.244 262.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h64.244c5.522 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM298.29 216.877l-7.071-7.071a10.001 10.001 0 00-14.143 0l-34.393 34.393V18.736c0-5.523-4.477-10-10-10h-10c-5.523 0-10 4.477-10 10v225.462l-34.393-34.393a10.003 10.003 0 00-14.142 0l-7.072 7.071c-3.904 3.905-3.904 10.237 0 14.142l63.536 63.536a9.968 9.968 0 007.071 2.929 9.966 9.966 0 007.071-2.929l63.536-63.536c3.905-3.905 3.905-10.237 0-14.141z"/></svg>') no-repeat center /100% 100%;
+            display: inline-block;
+            height: 0.8125rem;
+            width: 1rem;
+        }
+    }
+</style>

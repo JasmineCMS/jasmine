@@ -2,8 +2,6 @@
 
 namespace Jasmine\Jasmine\Http\Controllers;
 
-use App\Article;
-use App\Project;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -11,7 +9,7 @@ use Illuminate\Support\Collection;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
 use Jasmine\Jasmine\Bread\Translatable;
-use function Jasmine\Jasmine\setUrlGetParam;
+use Spatie\EloquentSortable\SortableTrait;
 
 class BreadController extends Controller
 {
@@ -30,9 +28,22 @@ class BreadController extends Controller
 
         $browseableColumns = call_user_func("$breadableName::browseableColumns");
 
+        $order_column = null;
+
         // Assure key
         if (!in_array($breadableIdColumn, $browseableColumns)) {
             array_unshift($browseableColumns, $breadableIdColumn);
+        }
+
+        // Assure sort column
+        if (in_array(SortableTrait::class, class_uses($breadableName))) {
+            /** @var Model|BreadableInterface|SortableTrait $model */
+            $model = new $breadableName;
+            $order_column = $model->sortable['order_column_name'] ?? 'order_column';
+
+            if (!in_array($order_column, $browseableColumns)) {
+                array_unshift($browseableColumns, $order_column);
+            }
         }
 
         // Timestamps
@@ -53,7 +64,30 @@ class BreadController extends Controller
             return datatables($query)->make();
         }
 
-        return view('jasmine::app.bread.index', compact('breadableName', 'browseableColumns', 'breadableIdColumn'));
+        return view('jasmine::app.bread.index', compact(
+            'breadableName', 'browseableColumns', 'breadableIdColumn', 'order_column'
+        ));
+    }
+
+    public function reorder(Request $request, $breadableName)
+    {
+        $data = $request->validate([
+            'order'         => 'required|array',
+            'order.*.id'    => 'required',
+            'order.*.order' => 'required|integer',
+        ]);
+
+        \DB::transaction(function () use ($breadableName, $data) {
+            /** @var Model|BreadableInterface|SortableTrait $model */
+            $model = new $breadableName;
+            $order_column = $model->sortable['order_column_name'] ?? 'order_column';
+            foreach ($data['order'] as $row) {
+                \DB::table($model->getTable())
+                   ->where($model->getKeyName(), $row['id'])
+                   ->update([$order_column => $row['order']])
+                ;
+            }
+        });
     }
 
     public function create($breadableName)
