@@ -11,6 +11,8 @@ use Jasmine\Jasmine\Models\JasminePage;
 
 class Jasmine
 {
+    protected $minifiedAssets = true;
+
     protected $breadables = [];
 
     protected $pages = [];
@@ -177,5 +179,15 @@ class Jasmine
     public function getCustomStyles()
     {
         return $this->appStyles;
+    }
+
+    public function useUnMinifiedAssets()
+    {
+        $this->minifiedAssets = false;
+    }
+
+    public function appAssetsManifest()
+    {
+        return 'jasmine-public/app-assets' . ($this->minifiedAssets ? '/min' : '');
     }
 }

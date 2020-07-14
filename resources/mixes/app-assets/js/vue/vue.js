@@ -7,6 +7,8 @@ import Croppa from 'vue-croppa';
 import draggable from 'vuedraggable';
 import FileManager from 'laravel-file-manager';
 
+Vue.config.devtools = true;
+
 Vue.use(Vuex);
 const store = new Vuex.Store({});
 Vue.use(FileManager, {store});

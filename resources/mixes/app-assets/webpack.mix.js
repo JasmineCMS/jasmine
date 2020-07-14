@@ -26,7 +26,7 @@ mix.extend('i18n', new class {
 
 mix
     .setResourceRoot(`../`)
-    .setPublicPath(`public/${process.env.section}`)
+    .setPublicPath(`public/${process.env.section + global.prefix}`)
     .i18n()
     .extract([
         '@tinymce/tinymce-vue',
@@ -48,8 +48,8 @@ mix
         'vuedraggable',
         'vuex',
     ])
-    .js(`resources/mixes/${process.env.section}/js/app.js`, `public/${process.env.section}/js`)
-    .sass(`resources/mixes/${process.env.section}/sass/vendor.scss`, `public/${process.env.section}/css`)
-    .sass(`resources/mixes/${process.env.section}/sass/app.scss`, `public/${process.env.section}/css`)
-    .copy('node_modules/tinymce/skins', `public/${process.env.section}/js/skins`)
+    .js(`resources/mixes/${process.env.section}/js/app.js`, `public/${process.env.section + global.prefix}/js`)
+    .sass(`resources/mixes/${process.env.section}/sass/vendor.scss`, `public/${process.env.section + global.prefix}/css`)
+    .sass(`resources/mixes/${process.env.section}/sass/app.scss`, `public/${process.env.section + global.prefix}/css`)
+    .copy('node_modules/tinymce/skins', `public/${process.env.section + global.prefix}/js/skins`)
 ;
