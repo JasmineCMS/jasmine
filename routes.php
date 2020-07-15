@@ -2,7 +2,10 @@
 
 Route::group([
     'namespace'  => '\\Jasmine\\Jasmine\\Http\Controllers',
-    'middleware' => [\Jasmine\Jasmine\Http\Middleware\JasmineLocale::class],
+    'middleware' => [
+        \Jasmine\Jasmine\Http\Middleware\Robots::class,
+        \Jasmine\Jasmine\Http\Middleware\JasmineLocale::class,
+    ],
     'as'         => 'jasmine.',
     'name'       => 'jasmine.',
 ],
