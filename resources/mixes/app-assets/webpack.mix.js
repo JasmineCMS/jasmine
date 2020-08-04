@@ -52,4 +52,5 @@ mix
     .sass(`resources/mixes/${process.env.section}/sass/vendor.scss`, `public/${process.env.section + global.prefix}/css`)
     .sass(`resources/mixes/${process.env.section}/sass/app.scss`, `public/${process.env.section + global.prefix}/css`)
     .copy('node_modules/tinymce/skins', `public/${process.env.section + global.prefix}/js/skins`)
+    .copy('node_modules/tinymce/icons', `public/${process.env.section + global.prefix}/js/icons`)
 ;
