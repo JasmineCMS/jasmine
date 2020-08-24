@@ -37,8 +37,8 @@
             >
                 <tr v-for="(row, ri) in response.data">
                     <td v-for="(column, ci) in columns">
-                        <slot :name="'td_'+ci" :data="row[column.data]" :row="row" :column="column">
-                            {{ row[column.data] }}
+                        <slot :name="'td_'+ci" :data="$get(row, column.name)" :row="row" :column="column">
+                            {{ $get(row, column.name) }}
                         </slot>
                     </td>
                 </tr>
@@ -120,7 +120,7 @@
                         </li>
                         <li v-for="n in 5" :key="n"
                             :class="{'vDataTable-pagination-current': pages +(n-5) === currentPage}">
-                            <a class="page-link" @click.prevent="goToPage(pages +(n-5))">{{ pages +(n-5) }}</a>
+                            <a class="page-link" @click.prevent="goToPage(pages +(n-5))">{{ pages + (n - 5) }}</a>
                         </li>
 
                     </template>
@@ -137,271 +137,291 @@
 </template>
 
 <script>
-    let axios = require('axios');
-    axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+let axios = require('axios');
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-    let qs = require('qs');
+let qs = require('qs');
 
-    function indexInParent(node) {
-        let children = node.parentNode.childNodes;
-        let num = 0;
-        for (let i = 0; i < children.length; i++) {
-            if (children[i] === node) return num;
-            if (children[i].nodeType === 1) num++;
-        }
-        return -1;
+function indexInParent(node) {
+    let children = node.parentNode.childNodes;
+    let num = 0;
+    for (let i = 0; i < children.length; i++) {
+        if (children[i] === node) return num;
+        if (children[i].nodeType === 1) num++;
     }
+    return -1;
+}
 
-    let VDataTable = {
-        name: 'VDataTable',
+let VDataTable = {
+    name: 'VDataTable',
 
-        props: {
-            dataUrl: {
-                required: true,
-                type: String,
-            },
-
-            sortUrl: {
-                required: false,
-                type: String,
-            },
-
-            sortColumn: {
-                required: false,
-                type: String,
-            },
-
-            keyColumn: {
-                required: false,
-                type: String,
-            },
-
-            tableClass: {
-                required: false,
-                type: [Array, String],
-                default: '',
-            },
-
-            lengths: {
-                required: false,
-                type: Array,
-                default() {
-                    return [10, 25, 50, 100];
-                },
-            },
+    props: {
+        dataUrl: {
+            required: true,
+            type: String,
         },
 
-        data() {
-            return {
+        sortUrl: {
+            required: false,
+            type: String,
+        },
+
+        sortColumn: {
+            required: false,
+            type: String,
+        },
+
+        keyColumn: {
+            required: false,
+            type: String,
+        },
+
+        tableClass: {
+            required: false,
+            type: [Array, String],
+            default: '',
+        },
+
+        lengths: {
+            required: false,
+            type: Array,
+            default() {
+                return [10, 25, 50, 100];
+            },
+        },
+    },
+
+    data() {
+        return {
+            columns: [],
+
+            request: {
+                draw: 0,
+                start: 0,
+                length: 10,
                 columns: [],
-
-                request: {
-                    draw: 0,
-                    start: 0,
-                    length: 10,
-                    columns: [],
-                    order: [],
-                    search: {
-                        value: null,
-                        regex: false,
-                    },
+                order: [],
+                search: {
+                    value: null,
+                    regex: false,
                 },
+            },
 
-                response: {
-                    draw: 0,
-                    recordsTotal: 0,
-                    recordsFiltered: 0,
-                    data: [],
-                    error: null,
-                },
+            response: {
+                draw: 0,
+                recordsTotal: 0,
+                recordsFiltered: 0,
+                data: [],
+                error: null,
+            },
 
-                loading: true,
-            };
+            loading: true,
+        };
+    },
+
+    methods: {
+        load() {
+            let vm = this;
+
+            vm.loading = true;
+
+            vm.request.columns = vm.columns;
+
+            vm.request.draw++;
+
+            axios.get(vm.dataUrl, {
+                params: vm.request,
+                paramsSerializer: params => {
+                    return qs.stringify(params);
+                }
+            }).then(r => {
+                vm.response = r.data;
+                vm.loading = false;
+            });
         },
 
-        methods: {
-            load() {
-                let vm = this;
-
-                vm.loading = true;
-
-                vm.request.columns = vm.columns;
-
-                vm.request.draw++;
-
-                axios.get(vm.dataUrl, {
-                    params: vm.request,
-                    paramsSerializer: params => {
-                        return qs.stringify(params);
-                    }
-                }).then(r => {
-                    vm.response = r.data;
-                    vm.loading = false;
-                });
-            },
-
-            order($event) {
-                window.e = $event;
-            },
-
-            goToPage(n) {
-                this.request.start = this.request.length * (n - 1);
-            },
-
-            next() {
-                if (this.currentPage !== this.pages) {
-                    this.request.start += this.request.length;
-                }
-            },
-
-            prev() {
-                if (this.currentPage > 1) {
-                    this.request.start -= this.request.length;
-                }
-            },
-
-            reorder(change) {
-                if (!change.moved) {
-                    return;
-                }
-
-                if (!this.sortUrl) {
-                    return;
-                }
-
-                let newOrder = this.response.data.map((i, n) => {
-                    return {id: i[this.keyColumn], order: n + 1};
-                });
-
-                axios.put(this.sortUrl, {order: newOrder}).then(r => {
-                    this.load();
-                });
-            },
+        order($event) {
+            window.e = $event;
         },
 
-        computed: {
-            pages() {
-                return Math.ceil(this.response.recordsFiltered / this.request.length);
-            },
-
-            currentPage() {
-                return (this.request.start / this.request.length) + 1;
-            },
+        goToPage(n) {
+            this.request.start = this.request.length * (n - 1);
         },
 
-        watch: {
-            'request.start'() {
-                this.load();
-            },
-
-            'request.length'() {
-                this.request.start = 0;
-                this.load();
-            },
-
-            'request.search.value'() {
-                this.load();
-            },
-
-            'request.search.regex'() {
-                this.load();
-            },
+        next() {
+            if (this.currentPage !== this.pages) {
+                this.request.start += this.request.length;
+            }
         },
 
-        mounted() {
-            if (this.lengths.length > 0) {
-                this.request.length = this.lengths[0];
+        prev() {
+            if (this.currentPage > 1) {
+                this.request.start -= this.request.length;
+            }
+        },
+
+        reorder(change) {
+            if (!change.moved) {
+                return;
             }
 
+            if (!this.sortUrl) {
+                return;
+            }
+
+            let newOrder = this.response.data.map((i, n) => {
+                return {id: i[this.keyColumn], order: n + 1};
+            });
+
+            axios.put(this.sortUrl, {order: newOrder}).then(r => {
+                this.load();
+            });
+        },
+
+        $get(obj, path) {
+            let vm = this;
+
+            if (typeof obj === "string") {
+                obj = vm[obj];
+            }
+
+            function index(obj, i) {
+                return obj[i];
+            }
+
+            return path.split('.').reduce(index, obj);
+        },
+    },
+
+    computed: {
+        pages() {
+            return Math.ceil(this.response.recordsFiltered / this.request.length);
+        },
+
+        currentPage() {
+            return (this.request.start / this.request.length) + 1;
+        },
+    },
+
+    watch: {
+        'request.start'() {
             this.load();
         },
 
-        install(Vue, options) {
-            Vue.component('v-data-table', this);
+        'request.length'() {
+            this.request.start = 0;
+            this.load();
+        },
 
-            Vue.directive('dt-column', {
-                inserted(el, binding, vnode) {
-                    let vdt = binding.value[0] || null;
+        'request.search.value'() {
+            this.load();
+        },
 
-                    if (vdt && vdt.$options && vdt.$options.name === 'VDataTable') {
-                        let settings = Object.assign({
-                            name: null,
-                            data: null,
-                            searchable: true,
-                            orderable: true,
-                        }, binding.value[1] || {});
+        'request.search.regex'() {
+            this.load();
+        },
+    },
 
-                        let i = vdt.columns.push(settings) - 1;
+    mounted() {
+        if (this.lengths.length > 0) {
+            this.request.length = this.lengths[0];
+        }
 
-                        // handle order
-                        if (settings.orderable) {
-                            el.addEventListener('click', function (evt) {
-                                let th = this;
-                                let thI = indexInParent(th);
-                                let dir;
-                                if (th.classList.contains('vDataTable-asc')) {
-                                    th.classList.remove('vDataTable-asc');
-                                    th.classList.add('vDataTable-desc');
-                                    dir = 'desc';
-                                } else {
-                                    th.classList.remove('vDataTable-desc');
-                                    th.classList.add('vDataTable-asc');
-                                    dir = 'asc';
-                                }
+        this.load();
+    },
 
-                                // clear all sorting
-                                th.parentNode.querySelectorAll('th')
-                                    .forEach((oneTh, oneThI) => {
-                                        if (oneThI === thI) {
-                                            return;
-                                        }
+    install(Vue, options) {
+        Vue.component('v-data-table', this);
 
-                                        oneTh.classList.remove('vDataTable-asc');
-                                        oneTh.classList.remove('vDataTable-desc');
-                                    });
+        Vue.directive('dt-column', {
+            inserted(el, binding, vnode) {
+                let vdt = binding.value[0] || null;
 
-                                vdt.request.order = [];
-                                vdt.request.order.push({
-                                    column: thI,
-                                    dir: dir,
-                                });
+                if (vdt && vdt.$options && vdt.$options.name === 'VDataTable') {
+                    let givenSettings = binding.value[1];
 
-                                vdt.load();
-                            });
-                        }
-
-                        return;
+                    if (givenSettings.data.indexOf('.') > 0) {
+                        givenSettings.data = givenSettings.data.split('.')[0];
                     }
 
-                    console.error(el, 'VDataTable is required');
-                },
-            });
-        },
-    };
+                    let settings = Object.assign({
+                        name: null,
+                        data: null,
+                        searchable: true,
+                        orderable: true,
+                    }, givenSettings || {});
 
-    window.VDataTable = VDataTable;
+                    let i = vdt.columns.push(settings) - 1;
 
-    export default VDataTable;
+                    // handle order
+                    if (settings.orderable) {
+                        el.addEventListener('click', function (evt) {
+                            let th = this;
+                            let thI = indexInParent(th);
+                            let dir;
+                            if (th.classList.contains('vDataTable-asc')) {
+                                th.classList.remove('vDataTable-asc');
+                                th.classList.add('vDataTable-desc');
+                                dir = 'desc';
+                            } else {
+                                th.classList.remove('vDataTable-desc');
+                                th.classList.add('vDataTable-asc');
+                                dir = 'asc';
+                            }
+
+                            // clear all sorting
+                            th.parentNode.querySelectorAll('th')
+                                .forEach((oneTh, oneThI) => {
+                                    if (oneThI === thI) {
+                                        return;
+                                    }
+
+                                    oneTh.classList.remove('vDataTable-asc');
+                                    oneTh.classList.remove('vDataTable-desc');
+                                });
+
+                            vdt.request.order = [];
+                            vdt.request.order.push({
+                                column: thI,
+                                dir: dir,
+                            });
+
+                            vdt.load();
+                        });
+                    }
+
+                    return;
+                }
+
+                console.error(el, 'VDataTable is required');
+            },
+        });
+    },
+};
+
+window.VDataTable = VDataTable;
+
+export default VDataTable;
 </script>
 
 <style scoped lang="scss">
-    .vDataTable-asc {
-        &:before {
-            content: ' ';
-            background: url('data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 301.219 301.219"><path d="M149.365 262.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h139.365c5.522 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM10 229.736h120.586c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM10 166.736h101.805c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM10 96.736h83.025c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM10 33.736h64.244c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM298.29 216.877l-7.07-7.071a10.001 10.001 0 00-14.142 0l-34.394 34.393V18.736c0-5.523-4.477-10-10-10h-10c-5.522 0-10 4.477-10 10v225.462l-34.394-34.393a9.999 9.999 0 00-14.142 0l-7.07 7.071c-3.905 3.905-3.905 10.237 0 14.142l63.535 63.536a10.003 10.003 0 0014.142 0l63.535-63.536c3.905-3.905 3.905-10.236 0-14.141z"/></svg>') no-repeat center /100% 100%;
-            display: inline-block;
-            height: 0.8125rem;
-            width: 1rem;
-        }
+.vDataTable-asc {
+    &:before {
+        content: ' ';
+        background: url('data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 301.219 301.219"><path d="M149.365 262.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h139.365c5.522 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM10 229.736h120.586c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM10 166.736h101.805c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM10 96.736h83.025c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM10 33.736h64.244c5.522 0 10-4.477 10-10v-10c0-5.523-4.478-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10zM298.29 216.877l-7.07-7.071a10.001 10.001 0 00-14.142 0l-34.394 34.393V18.736c0-5.523-4.477-10-10-10h-10c-5.522 0-10 4.477-10 10v225.462l-34.394-34.393a9.999 9.999 0 00-14.142 0l-7.07 7.071c-3.905 3.905-3.905 10.237 0 14.142l63.535 63.536a10.003 10.003 0 0014.142 0l63.535-63.536c3.905-3.905 3.905-10.236 0-14.141z"/></svg>') no-repeat center /100% 100%;
+        display: inline-block;
+        height: 0.8125rem;
+        width: 1rem;
     }
+}
 
-    .vDataTable-desc {
-        &:before {
-            content: ' ';
-            background: url('data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 301.219 301.219"><path d="M159.365 23.736v-10c0-5.523-4.477-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h139.365c5.523 0 10-4.477 10-10zM130.586 66.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h120.586c5.523 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM111.805 129.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h101.805c5.523 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM93.025 199.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h83.025c5.522 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM74.244 262.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h64.244c5.522 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM298.29 216.877l-7.071-7.071a10.001 10.001 0 00-14.143 0l-34.393 34.393V18.736c0-5.523-4.477-10-10-10h-10c-5.523 0-10 4.477-10 10v225.462l-34.393-34.393a10.003 10.003 0 00-14.142 0l-7.072 7.071c-3.904 3.905-3.904 10.237 0 14.142l63.536 63.536a9.968 9.968 0 007.071 2.929 9.966 9.966 0 007.071-2.929l63.536-63.536c3.905-3.905 3.905-10.237 0-14.141z"/></svg>') no-repeat center /100% 100%;
-            display: inline-block;
-            height: 0.8125rem;
-            width: 1rem;
-        }
+.vDataTable-desc {
+    &:before {
+        content: ' ';
+        background: url('data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 301.219 301.219"><path d="M159.365 23.736v-10c0-5.523-4.477-10-10-10H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h139.365c5.523 0 10-4.477 10-10zM130.586 66.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h120.586c5.523 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM111.805 129.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h101.805c5.523 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM93.025 199.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h83.025c5.522 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM74.244 262.736H10c-5.523 0-10 4.477-10 10v10c0 5.523 4.477 10 10 10h64.244c5.522 0 10-4.477 10-10v-10c0-5.523-4.477-10-10-10zM298.29 216.877l-7.071-7.071a10.001 10.001 0 00-14.143 0l-34.393 34.393V18.736c0-5.523-4.477-10-10-10h-10c-5.523 0-10 4.477-10 10v225.462l-34.393-34.393a10.003 10.003 0 00-14.142 0l-7.072 7.071c-3.904 3.905-3.904 10.237 0 14.142l63.536 63.536a9.968 9.968 0 007.071 2.929 9.966 9.966 0 007.071-2.929l63.536-63.536c3.905-3.905 3.905-10.237 0-14.141z"/></svg>') no-repeat center /100% 100%;
+        display: inline-block;
+        height: 0.8125rem;
+        width: 1rem;
     }
+}
 </style>

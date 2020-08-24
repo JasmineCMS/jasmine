@@ -2,6 +2,7 @@
 
 namespace Jasmine\Jasmine\Http\Controllers;
 
+use App\Models\Update;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -23,6 +24,8 @@ class BreadController extends Controller
     {
         /** @var Builder $query */
         $query = call_user_func("$breadableName::query");
+
+        $tableName = $query->getModel()->getTable();
 
         $breadableIdColumn = $query->getModel()->getKeyName();
 
@@ -59,7 +62,37 @@ class BreadController extends Controller
 
         if (\request()->ajax()) {
 
-            $query->select($browseableColumns);
+            // handle relation columns
+            $relationColumns = array_filter($browseableColumns, function ($column) {
+                return strpos($column, '.') !== false;
+            });
+
+            $rTables = [];
+            foreach ($relationColumns as $relationColumn) {
+                [$table, $column] = explode('.', $relationColumn);
+                $rTables[$table][] = $column;
+            }
+
+            $withs = [];
+            foreach ($rTables as $rTable => $rColumns) {
+                $withs[$rTable] = function ($q) use ($rColumns) {
+                    $q->select($rColumns);
+                };
+            }
+
+            if (count($withs)) {
+                //dd($withs);
+                $query->with($withs);
+            }
+
+            // handle regular columns
+            $selectableColumns = array_filter($browseableColumns, function ($column) {
+                return strpos($column, '.') === false;
+            });
+
+            $query->select(array_map(function ($column) use ($tableName) {
+                return $tableName . '.' . (strpos($column, '_') === 0 ? substr($column, 1) : $column);
+            }, $selectableColumns));
 
             return datatables($query)->make();
         }
