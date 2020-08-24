@@ -45,6 +45,7 @@ mix
         'vue-codemirror',
         'vue-croppa',
         'vue-i18n',
+        'vuejs-datepicker',
         'vuedraggable',
         'vuex',
     ])

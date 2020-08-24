@@ -6,6 +6,7 @@ import Editor from '@tinymce/tinymce-vue';
 import Croppa from 'vue-croppa';
 import draggable from 'vuedraggable';
 import FileManager from 'laravel-file-manager';
+import Datepicker from 'vuejs-datepicker';
 
 Vue.config.devtools = true;
 
@@ -43,13 +44,14 @@ Vue.component('draggable', draggable);
 
 Vue.component('editor', Editor);
 
+Vue.component('vuejs-datepicker', Datepicker);
+
 const app = new Vue({
     el: '#app',
     i18n,
     store,
 
-    data: {
-    },
+    data: {},
 
     methods: {
         logout() {
