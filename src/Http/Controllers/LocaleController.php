@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 
 class LocaleController extends Controller
 {
-    public function change(Request $request, $locale)
+    public function change(Request $request, $jasmineLocale)
     {
-        session(['jasmine.locale' => $locale]);
+        session(['jasmine.locale' => $jasmineLocale]);
 
         return redirect()->back();
     }

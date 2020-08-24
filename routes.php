@@ -11,7 +11,7 @@ Route::group([
 ],
     function () {
         // Change locale
-        Route::get('/locale/{locale}', 'LocaleController@change')->name('change-locale');
+        Route::get('/locale/{jasmineLocale}', 'LocaleController@change')->name('change-locale');
 
         // Authentication Routes...
         Route::get('login', 'Auth\LoginController@showLoginForm')->name('login');
