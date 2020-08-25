@@ -70,6 +70,7 @@ class BreadController extends Controller
             $rTables = [];
             foreach ($relationColumns as $relationColumn) {
                 [$table, $column] = explode('.', $relationColumn);
+                $table = (strpos($table, '_') === 0 ? substr($table, 1) : $table);
                 $rTables[$table][] = $column;
             }
 
@@ -81,7 +82,6 @@ class BreadController extends Controller
             }
 
             if (count($withs)) {
-                //dd($withs);
                 $query->with($withs);
             }
 
