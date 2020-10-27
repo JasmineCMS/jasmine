@@ -9,7 +9,7 @@
     ],
     "require": {
         "alexusmai/laravel-file-manager": "^2.4",
-        "laravel/framework": "^6.2",
+        "laravel/framework": "^6.2|^7.0",
         "spatie/laravel-translatable": "^4.3",
         "yajra/laravel-datatables-oracle": "^9.9",
         "ext-json": "*"
