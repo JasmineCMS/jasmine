@@ -53,8 +53,10 @@ class ResetPasswordController extends Controller
      *
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function showResetForm(Request $request, $token = null)
+    public function showResetForm(Request $request)
     {
+        $token = $request->route()->parameter('token');
+
         return view('jasmine::auth.passwords.reset')->with(
             ['token' => $token, 'email' => $request->email]
         );
