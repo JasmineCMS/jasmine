@@ -37,7 +37,7 @@ class VerificationController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('jasmineAuth:jasmine_web');
+        $this->middleware('jasmineAuth:' . config('jasmine.auth.guard'));
         $this->middleware('signed')->only('verify');
         $this->middleware('throttle:6,1')->only('verify', 'resend');
     }

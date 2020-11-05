@@ -37,6 +37,6 @@ class ConfirmPasswordController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('jasmineAuth:jasmine_web');
+        $this->middleware('jasmineAuth:'. config('jasmine.auth.guard'));
     }
 }

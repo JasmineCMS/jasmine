@@ -19,7 +19,7 @@ class MaintenanceMode
      */
     public function handle($request, Closure $next, $time)
     {
-        if (\Auth::guard('jasmine_web')->guest()) {
+        if (\Auth::guard(config('jasmine.auth.guard'))->guest()) {
             throw new MaintenanceModeException($time, null);
         }
 

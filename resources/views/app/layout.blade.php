@@ -30,7 +30,7 @@
 </head>
 <body>
 <div id="app" data-fm-url="{{ url('file-manager') }}">
-    <top-bar :user="{{ Auth::guard('jasmine_web')->user() }}"
+    <top-bar :user="{{ Auth::guard(config('jasmine.auth.guard'))->user() }}"
              locale-url="{{ route('jasmine.change-locale', '-locale-') }}"
     >
         <template v-slot:center>@stack('top-bar-center')</template>

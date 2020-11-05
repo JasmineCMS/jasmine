@@ -23,7 +23,7 @@ class ForgotPasswordController extends Controller
 
     public function broker()
     {
-        return Password::broker('jasmine_users');
+        return Password::broker(config('jasmine.auth.broker'));
     }
 
     public function showLinkRequestForm()

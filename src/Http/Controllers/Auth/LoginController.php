@@ -44,7 +44,7 @@ class LoginController extends Controller
 
     protected function guard()
     {
-        return Auth::guard('jasmine_web');
+        return Auth::guard(config('jasmine.auth.guard'));
     }
 
     public function showLoginForm()

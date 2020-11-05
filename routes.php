@@ -25,7 +25,7 @@ Route::group([
 
         // Authenticated routes
         Route::group([
-            'middleware' => ['jasmineAuth:jasmine_web'],
+            'middleware' => ['jasmineAuth:' . config('jasmine.auth.guard')],
         ], function () {
             Route::get('/', 'DashboardController@show')->name('dashboard');
 

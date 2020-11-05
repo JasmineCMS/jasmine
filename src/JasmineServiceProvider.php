@@ -43,7 +43,13 @@ class JasmineServiceProvider extends ServiceProvider
      */
     public function boot(Router $router)
     {
+        $this->publishes([
+            __DIR__ . '/../config/jasmine.php' => config_path('jasmine.php'),
+        ]);
+
         $this->mergeConfigFrom(__DIR__ . '/../config/auth.php', 'auth');
+
+        $this->mergeConfigFrom(__DIR__ . '/../config/jasmine.php', 'jasmine');
 
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'jasmine');
         $this->loadJsonTranslationsFrom(__DIR__ . '/../resources/lang');
