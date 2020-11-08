@@ -107,23 +107,23 @@ class Jasmine
     {
         $items = collect([]);
 
-        $items->push([
+        $items['dashboard'] = [
             'href'  => route('jasmine.dashboard'),
             'title' => __('Dashboard'),
             'icon'  => 'fa-tachometer-alt',
-        ]);
+        ];
 
-        $items->push([
+        $items['file_manager'] = [
             'href'  => route('jasmine.fm.show'),
             'title' => __('File Manager'),
             'icon'  => 'fa-folder',
-        ]);
+        ];
 
-        $items->push([
+        $items['pages'] = [
             'title'    => __('Pages'),
             'icon'     => 'fa-newspaper',
             'children' => $this->getPages(),
-        ]);
+        ];
 
         foreach ($this->breadables as $breadable) {
             $item = [];
@@ -134,14 +134,14 @@ class Jasmine
                 $item['icon'] = $icon;
             }
 
-            $items->push($item);
+            $items[$breadable] = $item;
         }
 
-        $items->push([
-            'href'  => route('jasmine.dashboard'),
+        $items['settings'] = [
+            'href'  => '#',
             'title' => __('Settings'),
             'icon'  => 'fa-sliders-h',
-        ]);
+        ];
 
 
         $items = $items->map(function ($item) {
