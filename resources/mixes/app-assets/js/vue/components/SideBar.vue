@@ -10,9 +10,9 @@
         <div class="side-bar-content">
             <ul class="nav flex-column">
                 <li v-for="(item, i) in items" :key="i" class="nav-item"
-                    :class="item.children && item.children.length ? 'dropdown' : ''">
+                    :class="item.children && agnosticLength(item.children) ? 'dropdown' : ''">
 
-                    <a v-if="item.children && item.children.length" class="nav-link dropdown-toggle d-flex"
+                    <a v-if="item.children && agnosticLength(item.children)" class="nav-link dropdown-toggle d-flex"
                        :href="item.href || '#'" :target="item.target || '_self'"
                        :title="item.title" role="button" @click="item.opened = !item.opened"
                        :aria-expanded="item.opened ? 'true' : 'false'" aria-haspopup="true">
@@ -25,7 +25,7 @@
                         <span v-text="item.title"></span>
                     </a>
 
-                    <div v-if="item.children && item.children.length" class="child-menu">
+                    <div v-if="item.children && agnosticLength(item.children)" class="child-menu">
                         <a v-for="(child, ci) in item.children" :key="ci"
                            class="nav-link" :href="child.href || '#'" :target="item.target || '_self'"
                            :title="child.title">
@@ -44,7 +44,7 @@ export default {
     props: {
         menuItems: {
             required: true,
-            type: Array,
+            type: [Array, Object],
         },
     },
 
@@ -55,9 +55,15 @@ export default {
         };
     },
 
+    methods: {
+        agnosticLength(thing) {
+            return (Array.isArray(thing) ? thing : Object.keys(thing)).length;
+        },
+    },
+
     mounted() {
-        this.items = this.menuItems;
-    }
+        Vue.set(this, 'items', this.menuItems);
+    },
 }
 </script>
 

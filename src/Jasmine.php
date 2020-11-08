@@ -84,7 +84,7 @@ class Jasmine
     {
         $pages = [];
         foreach ($this->pages as $name => $page) {
-            $pages[] = [
+            $pages[$name] = [
                 'href'  => route('jasmine.page.edit', Str::slug($name)),
                 'title' => __($name),
             ];
