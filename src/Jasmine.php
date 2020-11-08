@@ -143,6 +143,9 @@ class Jasmine
             'icon'  => 'fa-sliders-h',
         ];
 
+        foreach ($this->sideBarMenuFilters as $filter) {
+            $items = $filter($items);
+        }
 
         $items = $items->map(function ($item) {
             if (isset($item['children']) && count($item['children']) > 0) {
@@ -151,10 +154,6 @@ class Jasmine
 
             return $item;
         });
-
-        foreach ($this->sideBarMenuFilters as $filter) {
-            $items = $filter($items);
-        }
 
         return $items;
     }
