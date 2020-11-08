@@ -7,7 +7,7 @@ global.prefix = '';
 if (!mix.inProduction()) {
     mix.sourceMaps();
     mix.webpackConfig({devtool: 'inline-source-map'});
-    mix.bundleAnalyzer();
+    //mix.bundleAnalyzer();
 } else {
     global.prefix = '/min';
     mix.version();

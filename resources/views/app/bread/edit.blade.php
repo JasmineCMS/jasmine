@@ -59,7 +59,7 @@ $manifest = call_user_func("$breadableName::fieldsManifest");
 
 @section('content')
     <div class="mt-2">
-        <form action="{{ $action }}" method="post" enctype="multipart/form-data" ref="breadEditForm">
+        <form action="{{ $action }}" method="post" enctype="multipart/form-data" ref="breadEditForm" @submit.prevent>
             @csrf
             @if(isset($breadable))
                 @method('put')

@@ -4186,7 +4186,7 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-laravel-file-manager@^2.4.14:
+laravel-file-manager@^2.5:
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/laravel-file-manager/-/laravel-file-manager-2.5.2.tgz#ba462880f33c663720fa191f1af3f648329439e5"
   integrity sha512-zao1jF+MSmSf3hIMin0LRe0vmzbrh6wBAFMi68h4SfZLev9gRPqTH/4/+xmDqJ7fVJvOgiFc6Jk+YcYO/IEfaw==
