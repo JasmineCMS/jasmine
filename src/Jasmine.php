@@ -23,6 +23,8 @@ class Jasmine
 
     protected $appStyles = [];
 
+    protected $sideBarMenuFilters = [];
+
     public function routes()
     {
         require __DIR__ . '/../routes.php';
@@ -142,13 +144,24 @@ class Jasmine
         ]);
 
 
-        return $items->map(function ($item) {
+        $items = $items->map(function ($item) {
             if (isset($item['children']) && count($item['children']) > 0) {
                 $item['opened'] = $item['opened'] ?? false;
             }
 
             return $item;
         });
+
+        foreach ($this->sideBarMenuFilters as $filter) {
+            $items = $filter($items);
+        }
+
+        return $items;
+    }
+
+    public function addSideBarMenuFilter(callable $cb)
+    {
+        $this->sideBarMenuFilters[] = $cb;
     }
 
     /**

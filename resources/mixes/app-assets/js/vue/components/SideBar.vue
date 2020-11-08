@@ -1,8 +1,8 @@
 <i18n>
-    {
-        "en": {
-        }
+{
+    "en": {
     }
+}
 </i18n>
 
 <template>
@@ -13,19 +13,22 @@
                     :class="item.children && item.children.length ? 'dropdown' : ''">
 
                     <a v-if="item.children && item.children.length" class="nav-link dropdown-toggle d-flex"
-                       :href="item.href || '#'" :title="item.title" role="button" @click="item.opened = !item.opened"
+                       :href="item.href || '#'" :target="item.target || '_self'"
+                       :title="item.title" role="button" @click="item.opened = !item.opened"
                        :aria-expanded="item.opened ? 'true' : 'false'" aria-haspopup="true">
                         <i class="fas" :class="item.icon || 'none'"></i>
                         <span v-text="item.title"></span>
                     </a>
-                    <a v-else class="nav-link d-flex" :href="item.href || '#'" :title="item.title">
+                    <a v-else class="nav-link d-flex" :href="item.href || '#'" :target="item.target || '_self'"
+                       :title="item.title">
                         <i v-if="item.icon" class="fas" :class="item.icon"></i>
                         <span v-text="item.title"></span>
                     </a>
 
                     <div v-if="item.children && item.children.length" class="child-menu">
                         <a v-for="(child, ci) in item.children" :key="ci"
-                           class="nav-link" :href="child.href || '#'" :title="child.title">
+                           class="nav-link" :href="child.href || '#'" :target="item.target || '_self'"
+                           :title="child.title">
                             {{ child.title }}
                         </a>
                     </div>
@@ -36,107 +39,107 @@
 </template>
 
 <script>
-    export default {
-        name: "SideBar",
-        props: {
-            menuItems: {
-                required: true,
-                type: Array,
-            },
+export default {
+    name: "SideBar",
+    props: {
+        menuItems: {
+            required: true,
+            type: Array,
         },
+    },
 
-        data() {
-            return {
-                opened: true,
-                items: [],
-            };
-        },
+    data() {
+        return {
+            opened: true,
+            items: [],
+        };
+    },
 
-        mounted() {
-            this.items = this.menuItems;
-        }
+    mounted() {
+        this.items = this.menuItems;
     }
+}
 </script>
 
 <style scoped lang="scss">
-    @import "../../../sass/_variables.scss";
+@import "../../../sass/_variables.scss";
 
-    .side-bar {
-        background-color: darken($pink, 40);
-        min-height: calc(100vh - 40px);
-        width: 65px;
-        padding: 0.5rem 0;
-        transition: width 0.3s ease-in-out;
+.side-bar {
+    background-color: darken($pink, 40);
+    min-height: calc(100vh - 40px);
+    width: 65px;
+    padding: 0.5rem 0;
+    transition: width 0.3s ease-in-out;
 
-        &.opened {
-            width: 200px;
-            flex: 0 0 200px;
-        }
+    &.opened {
+        width: 200px;
+        flex: 0 0 200px;
+    }
 
-        .side-bar-content {
-            position: sticky;
-            top: calc(40px + 0.5rem);
+    .side-bar-content {
+        position: sticky;
+        top: calc(40px + 0.5rem);
 
-            .nav {
-                .nav-item {
-                    .nav-link {
-                        color: lighten($blue, 20);
-                        padding: 0.5rem 0.5rem;
-                        font-size: 1.25em;
-                        justify-content: flex-start;
+        .nav {
+            .nav-item {
+                .nav-link {
+                    color: lighten($blue, 20);
+                    padding: 0.5rem 0.5rem;
+                    font-size: 1.25em;
+                    justify-content: flex-start;
 
-                        .fas {
-                            font-size: 1.25rem;
-                            display: inline-block;
-                            padding-inline-end: 0.5em;
+                    .fas {
+                        font-size: 1.25rem;
+                        display: inline-block;
+                        padding-inline-end: 0.5em;
 
-                            & + span {
-                                flex: 1;
+                        & + span {
+                            flex: 1;
+                        }
+
+                        &.none {
+                            &:before {
+                                content: ' ';
+                                width: 1.15ch;
+                                display: inline-block;
                             }
+                        }
+                    }
+                }
 
-                            &.none {
-                                &:before {
-                                    content: ' ';
-                                    width: 1.15ch;
-                                    display: inline-block;
-                                }
+                &:hover {
+                    background-color: darken($pink, 45);
+                    text-shadow: 0 0 10px $blue;
+                }
+
+                &.dropdown {
+                    .child-menu {
+                        display: none;
+                        background-color: darken($pink, 30);
+
+                        > * {
+                            padding-inline-start: 3rem;
+                            font-size: 1.1em;
+
+                            &:hover {
+                                background-color: darken($pink, 35);
                             }
                         }
                     }
 
-                    &:hover {
-                        background-color: darken($pink, 45);
-                        text-shadow: 0 0 10px $blue;
-                    }
-
-                    &.dropdown {
-                        .child-menu {
-                            display: none;
-                            background-color: darken($pink, 30);
-
-                            > * {
-                                padding-inline-start: 3rem;
-                                font-size: 1.1em;
-
-                                &:hover {
-                                    background-color: darken($pink, 35);
-                                }
+                    [aria-haspopup] {
+                        &[aria-expanded='true'] {
+                            & + .child-menu {
+                                display: block;
                             }
                         }
-
-                        [aria-haspopup] {
-                            &[aria-expanded='true'] {
-                                & + .child-menu {
-                                    display: block;
-                                }
-                            }
-                        }
-
                     }
+
                 }
             }
         }
-
     }
+
+}
 
 </style>
