@@ -24,7 +24,11 @@ class BreadController extends Controller
         $breadableName = \request()->route()->parameter('breadableName');
 
         /** @var Builder $query */
-        $query = call_user_func("$breadableName::query");
+        if (method_exists($breadableName, 'jasmineQuery')) {
+            $query = call_user_func("$breadableName::jasmineQuery");
+        } else {
+            $query = call_user_func("$breadableName::query");
+        }
 
         $tableName = $query->getModel()->getTable();
 
