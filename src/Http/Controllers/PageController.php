@@ -10,12 +10,13 @@ use Jasmine\Jasmine\Models\JasminePage;
 class PageController extends Controller
 {
     /**
-     * @param JasminePage|Translatable $page
      *
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector|\Illuminate\View\View
      */
-    public function edit($page)
+    public function edit()
     {
+        $page = \request()->route()->parameter('jasminePage');
+
         if (
             in_array(Translatable::class, class_uses($page))
             && \request()->get('_locale') == null
@@ -31,11 +32,12 @@ class PageController extends Controller
     }
 
     /**
-     * @param Request                  $request
-     * @param JasminePage|Translatable $page
+     * @param Request $request
      */
-    public function update(Request $request, $page)
+    public function update(Request $request)
     {
+        $page = \request()->route()->parameter('jasminePage');
+
         /** @var AbstractField[] $fields */
         $fields = collect(call_user_func(get_class($page) . "::fieldsManifest")->toArray())->flatten(2);
         $rules = [];

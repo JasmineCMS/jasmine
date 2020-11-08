@@ -15,13 +15,14 @@ use Spatie\EloquentSortable\SortableTrait;
 class BreadController extends Controller
 {
     /**
-     * @param $breadableName
      *
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\JsonResponse|\Illuminate\View\View|mixed
      * @throws \Exception
      */
-    public function index($breadableName)
+    public function index()
     {
+        $breadableName = \request()->route()->parameter('breadableName');
+
         /** @var Builder $query */
         $query = call_user_func("$breadableName::query");
 
@@ -102,8 +103,10 @@ class BreadController extends Controller
         ));
     }
 
-    public function reorder(Request $request, $breadableName)
+    public function reorder(Request $request)
     {
+        $breadableName = \request()->route()->parameter('breadableName');
+
         $data = $request->validate([
             'order'         => 'required|array',
             'order.*.id'    => 'required',
@@ -123,8 +126,10 @@ class BreadController extends Controller
         });
     }
 
-    public function create($breadableName)
+    public function create()
     {
+        $breadableName = \request()->route()->parameter('breadableName');
+
         if (
             in_array(Translatable::class, class_uses($breadableName))
             && \request()->get('_locale') == null
@@ -139,12 +144,13 @@ class BreadController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @param                          $breadableName
      *
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function store(Request $request, $breadableName)
+    public function store(Request $request)
     {
+        $breadableName = \request()->route()->parameter('breadableName');
+
         /** @var AbstractField[]|Collection $fields */
         $fields = collect(call_user_func("$breadableName::fieldsManifest")->toArray())->flatten(2);
         $rules = [];
@@ -176,8 +182,11 @@ class BreadController extends Controller
         return redirect(route('jasmine.bread.edit', $routeParams));
     }
 
-    public function edit($breadableName, $breadableId)
+    public function edit()
     {
+        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableId = \request()->route()->parameter('breadableId');
+
         /** @var null|Model|BreadableInterface|Translatable $breadable */
         $breadable = call_user_func("$breadableName::find", $breadableId);
 
@@ -205,8 +214,11 @@ class BreadController extends Controller
         return view('jasmine::app.bread.edit', compact('breadableName', 'breadable'));
     }
 
-    public function update(Request $request, $breadableName, $breadableId)
+    public function update(Request $request)
     {
+        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableId = \request()->route()->parameter('breadableId');
+
         /** @var AbstractField[] $fields */
         $fields = collect(call_user_func("$breadableName::fieldsManifest")->toArray())->flatten(2);
         $rules = [];
@@ -240,14 +252,15 @@ class BreadController extends Controller
     }
 
     /**
-     * @param $breadableName
-     * @param $breadableId
      *
      * @return array
      * @throws \Exception
      */
-    public function destroy($breadableName, $breadableId)
+    public function destroy()
     {
+        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableId = \request()->route()->parameter('breadableId');
+
         /** @var null|Model|BreadableInterface $breadable */
         $breadable = call_user_func("$breadableName::find", $breadableId);
 
