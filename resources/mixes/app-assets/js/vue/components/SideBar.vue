@@ -71,7 +71,7 @@ export default {
 @import "../../../sass/_variables.scss";
 
 .side-bar {
-    background-color: darken($pink, 40);
+    background-color: lighten($black, 15);
     min-height: calc(100vh - 40px);
     width: 65px;
     padding: 0.5rem 0;
@@ -89,7 +89,7 @@ export default {
         .nav {
             .nav-item {
                 .nav-link {
-                    color: lighten($blue, 20);
+                    color: lighten($white, 20);
                     padding: 0.5rem 0.5rem;
                     font-size: 1.25em;
                     justify-content: flex-start;
@@ -114,21 +114,21 @@ export default {
                 }
 
                 &:hover {
-                    background-color: darken($pink, 45);
-                    text-shadow: 0 0 10px $blue;
+                    background-color: rgba($white, 0.1);
                 }
 
                 &.dropdown {
                     .child-menu {
                         display: none;
-                        background-color: darken($pink, 30);
+                        background-color: lighten($black, 15);
 
                         > * {
                             padding-inline-start: 3rem;
                             font-size: 1.1em;
 
                             &:hover {
-                                background-color: darken($pink, 35);
+                                color: $blue;
+                                background-color: rgba($white, 0.05);
                             }
                         }
                     }

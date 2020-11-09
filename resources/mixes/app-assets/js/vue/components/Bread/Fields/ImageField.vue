@@ -4,7 +4,7 @@
         <input type="hidden" :name="name+'[h]'" v-model="field_value.h">
         <input type="hidden" :name="name+'[src]'" v-model="field_value.src">
 
-        <div class="form-control w-auto d-inline-block p-4">
+        <div class="form-control w-auto d-inline-block p-2">
             <img :src="field_value.src" alt="preview" class="preview" @click="changeImage" ref="preview">
         </div>
 

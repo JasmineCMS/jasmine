@@ -15,7 +15,7 @@
                     <div class="form-row">
                         <!-- Loop fields -->
                         <div v-for="(field, fi) in fields" :key="fi"
-                             class="field p-4 form-group" :class="field.width">
+                             class="field p-1 form-group" :class="field.width">
 
                             <!-- Repeatable field -->
                             <template v-if="field.repeats > 1">
@@ -93,114 +93,151 @@
 </template>
 
 <script>
-    export default {
-        name: "BreadEdit",
-        props: {
-            locale: {
-                required: true,
-                type: String,
-            },
-            manifest: {
-                required: true,
-                type: Object,
-            },
-            breadable: {
-                required: true,
-                type: Object,
-            },
-            errors: {
-                required: true,
-                type: Object,
-            },
-            old: {
-                required: true,
-                type: Object,
-            },
+export default {
+    name: "BreadEdit",
+    props: {
+        locale: {
+            required: true,
+            type: String,
+        },
+        manifest: {
+            required: true,
+            type: Object,
+        },
+        breadable: {
+            required: true,
+            type: Object,
+        },
+        errors: {
+            required: true,
+            type: Object,
+        },
+        old: {
+            required: true,
+            type: Object,
+        },
+    },
+
+    data() {
+        return {
+            values: {},
+        };
+    },
+
+    methods: {
+        loadValues() {
+            let vm = this;
+
+            vm.fields.forEach(field => {
+                if (field.repeats > 1) {
+                    Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || [field.getDefault()]);
+                } else {
+                    Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || field.getDefault());
+                }
+            });
         },
 
-        data() {
-            return {
-                values: {},
-            };
+        repeatField(field) {
+            this.values[field.name].push(field.getDefault());
         },
 
-        methods: {
-            loadValues() {
-                let vm = this;
-
-                vm.fields.forEach(field => {
-                    if (field.repeats > 1) {
-                        Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || [field.getDefault()]);
-                    } else {
-                        Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || field.getDefault());
-                    }
-                });
-            },
-
-            repeatField(field) {
-                this.values[field.name].push(field.getDefault());
-            },
-
-            removeRepeatedField(fieldName, i) {
-                this.values[fieldName].splice(i, 1);
-            },
+        removeRepeatedField(fieldName, i) {
+            this.values[fieldName].splice(i, 1);
         },
+    },
 
-        computed: {
-            fields() {
-                let vm = this;
+    computed: {
+        fields() {
+            let vm = this;
 
-                let fields = [];
+            let fields = [];
 
-                Object.keys(vm.manifest).forEach((col, ci) => {
-                    Object.keys(vm.manifest[col]).forEach((group, gi) => {
-                        vm.manifest[col][group].forEach(f => {
-                            f.getDefault = () => {
-                                if (typeof f.default === 'object') {
-                                    return JSON.parse(JSON.stringify(f.default));
-                                }
-                                return f.default;
-                            };
-                            fields.push(f);
-                        });
+            Object.keys(vm.manifest).forEach((col, ci) => {
+                Object.keys(vm.manifest[col]).forEach((group, gi) => {
+                    vm.manifest[col][group].forEach(f => {
+                        f.getDefault = () => {
+                            if (typeof f.default === 'object') {
+                                return JSON.parse(JSON.stringify(f.default));
+                            }
+                            return f.default;
+                        };
+                        fields.push(f);
                     });
                 });
+            });
 
-                return fields;
-            },
-
-            isLocaleRtl() {
-                return ['ar', 'he', 'iw'].indexOf(this.locale) > -1;
-            },
+            return fields;
         },
 
-        created() {
-            this.loadValues();
+        isLocaleRtl() {
+            return ['ar', 'he', 'iw'].indexOf(this.locale) > -1;
         },
+    },
 
-        mounted() {
-        }
+    created() {
+        this.loadValues();
+    },
+
+    mounted() {
     }
+}
 </script>
 
 <style scoped lang="scss">
-    .bread-edit ::v-deep {
-        input,
-        select,
-        textarea {
-            direction: ltr;
+@import "../../../../sass/variables";
+
+.bread-edit ::v-deep {
+    input,
+    select,
+    textarea {
+        direction: ltr;
+    }
+
+    .card {
+
+        .card-header {
+            padding: 0.75rem;
+            border-bottom: 0;
+            background: transparent;
+            color: darken($blue, 0);
+
+            h4 {
+                font-size: 1.25rem;
+            }
+        }
+
+        .card-body {
+            padding: 0.75rem;
         }
     }
 
-    .bread-edit.writing-rtl ::v-deep {
-        input,
-        select,
-        textarea {
-            direction: rtl;
-        }
-    }
+    /* .card {
+         background: transparent;
+         border: none;
 
-    .field {
-        background-color: #f3f3f3;
+         .card-header {
+             background: transparent;
+             padding: 0.75rem 0;
+         }
+
+         .card-body {
+             padding: 0 0 1.25rem 0;
+         }
+
+     }*/
+}
+
+.bread-edit.writing-rtl ::v-deep {
+    input,
+    select,
+    textarea {
+        direction: rtl;
     }
+}
+
+.field {
+    //background-color: #f3f3f3;
+
+    margin-bottom: 0.25rem;
+}
 </style>
