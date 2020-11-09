@@ -27,6 +27,8 @@
     @foreach(Jasmine::getCustomStyles() as $style)
         <link rel="stylesheet" href="{{ $style }}">
     @endforeach
+
+    @stack('styles')
 </head>
 <body>
 <div id="app" data-fm-url="{{ url('file-manager') }}">
