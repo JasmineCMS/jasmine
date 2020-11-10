@@ -16,9 +16,10 @@ trait Translatable
 
     protected $_locale;
 
-    public function setLocale($locale)
+    public function setLocale($locale): self
     {
-        return $this->_locale = $locale;
+        $this->_locale = $locale;
+        return $this;
     }
 
     public function getLocale(): string
