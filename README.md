@@ -19,7 +19,12 @@ Route::group(['prefix' => 'jasmine'], function () {
 ``` 
 
 you may change the prefix to anything you like
-then navigate to /jasmine
+then navigate to /jasmine  
+
+To enable redirections add this to the end of your `routes/web.php` file 
+```php
+Route::fallback([\Jasmine\Jasmine\Http\Controllers\RedirectionController::class, 'redirect']);
+```
 
 Register available locales in AppServiceProvider
 ```php

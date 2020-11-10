@@ -32,20 +32,23 @@ Route::group([
             Route::get('/file-manager', 'FileManagerController@show')->name('fm.show');
 
             // Bread routes
-            Route::group([
-                'prefix' => '/bread/{breadableName}',
-                'as'     => 'bread.',
-                'name'   => 'bread.',
-            ], function () {
-                Route::get('', 'BreadController@index')->name('index');
-                Route::put('/reorder', 'BreadController@reorder')->name('reorder');
-                Route::get('/create', 'BreadController@create')->name('create');
-                Route::post('', 'BreadController@store')->name('store');
-                Route::get('/{breadableId}/edit', 'BreadController@edit')->name('edit');
-                Route::patch('/{breadableId}', 'BreadController@update')->name('update');
-                Route::put('/{breadableId}', 'BreadController@update')->name('update');
-                Route::delete('/{breadableId}', 'BreadController@destroy')->name('destroy');
-            });
+            Route::group(
+                [
+                    'prefix' => '/bread/{breadableName}',
+                    'as'     => 'bread.',
+                    'name'   => 'bread.',
+                ],
+                function () {
+                    Route::get('', 'BreadController@index')->name('index');
+                    Route::put('/reorder', 'BreadController@reorder')->name('reorder');
+                    Route::get('/create', 'BreadController@create')->name('create');
+                    Route::post('', 'BreadController@store')->name('store');
+                    Route::get('/{breadableId}/edit', 'BreadController@edit')->name('edit');
+                    Route::patch('/{breadableId}', 'BreadController@update')->name('update');
+                    Route::put('/{breadableId}', 'BreadController@update')->name('update');
+                    Route::delete('/{breadableId}', 'BreadController@destroy')->name('destroy');
+                }
+            );
 
             // Pages routes
             Route::bind('jasminePage', function ($slug) {
@@ -64,15 +67,23 @@ Route::group([
                 return $page;
             });
 
-            Route::group([
-                'prefix' => '/page/{jasminePage}',
-                'as'     => 'page.',
-                'name'   => 'page.',
-            ], function () {
-                Route::patch('', 'PageController@update')->name('update');
-                Route::put('', 'PageController@update')->name('update');
-                Route::get('/edit', 'PageController@edit')->name('edit');
-            });
+            Route::group(
+                [
+                    'prefix' => '/page/{jasminePage}',
+                    'as'     => 'page.',
+                    'name'   => 'page.',
+                ],
+                function () {
+                    Route::patch('', 'PageController@update')->name('update');
+                    Route::put('', 'PageController@update')->name('update');
+                    Route::get('/edit', 'PageController@edit')->name('edit');
+                }
+            );
+
+            // Redirection routes
+            Route::get('/redirection', 'RedirectionController@manage')->name('redirection.index');
+            Route::post('/redirection', 'RedirectionController@save')->name('redirection.save');
+            Route::delete('/redirection', 'RedirectionController@delete')->name('redirection.delete');
 
         });
 

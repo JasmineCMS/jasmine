@@ -61,11 +61,11 @@
                             <a href="https://github.com/JasmineCMS/jasmine" target="_blank">
                                 JasmineCMS
                             </a>
-                            v0.3.0
+                            v0.3.3
                         </small>,
 
                         <small>
-                            Sponsored by
+                            Sponsored byap
                         </small>
                         <a href="https://triple.co.il/en" target="_blank" title="Triple Internet Solutions">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24"

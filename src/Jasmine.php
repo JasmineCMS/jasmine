@@ -143,6 +143,18 @@ class Jasmine
             'icon'  => 'fa-sliders-h',
         ];
 
+        // tools
+        $items['tools'] = [
+            'title'    => __('Tools'),
+            'icon'     => 'fa-tools',
+            'children' => [
+                'redirections' => [
+                    'href'  => route('jasmine.redirection.index'),
+                    'title' => __('Redirections'),
+                ],
+            ],
+        ];
+
         foreach ($this->sideBarMenuFilters as $filter) {
             $items = $filter($items);
         }

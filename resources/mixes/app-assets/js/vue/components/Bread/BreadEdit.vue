@@ -192,39 +192,6 @@ export default {
     textarea {
         direction: ltr;
     }
-
-    .card {
-
-        .card-header {
-            padding: 0.75rem;
-            border-bottom: 0;
-            background: transparent;
-            color: darken($blue, 0);
-
-            h4 {
-                font-size: 1.25rem;
-            }
-        }
-
-        .card-body {
-            padding: 0.75rem;
-        }
-    }
-
-    /* .card {
-         background: transparent;
-         border: none;
-
-         .card-header {
-             background: transparent;
-             padding: 0.75rem 0;
-         }
-
-         .card-body {
-             padding: 0 0 1.25rem 0;
-         }
-
-     }*/
 }
 
 .bread-edit.writing-rtl ::v-deep {

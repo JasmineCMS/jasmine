@@ -3,8 +3,6 @@ export default {
         el.addEventListener('click', function (evt) {
             evt.preventDefault();
 
-            console.log(binding, vnode);
-
             Swal.fire({
                 title: vnode.context.$t('swal.Delete'),
                 //text: `Are you sure you want to delete "${el.dataset.title}"?`,
