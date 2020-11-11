@@ -84,6 +84,8 @@ Route::group([
             Route::get('/redirection', 'RedirectionController@manage')->name('redirection.index');
             Route::post('/redirection', 'RedirectionController@save')->name('redirection.save');
             Route::delete('/redirection', 'RedirectionController@delete')->name('redirection.delete');
+            Route::get('/redirection/export', 'RedirectionController@export')->name('redirection.export');
+            Route::post('/redirection/import', 'RedirectionController@import')->name('redirection.import');
 
         });
 

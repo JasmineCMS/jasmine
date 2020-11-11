@@ -1,8 +1,21 @@
 <template>
     <div>
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between">
                 <div class="h4 mb-0" v-text="$t('Redirections')"></div>
+
+                <div>
+                    <a :href="exportUrl" target="_blank" class="btn btn-outline-info">
+                        <i class="fas fa-download"></i>
+                        {{ $t('Export') }}
+                    </a>
+
+
+                    <button type="button" @click="importRedirections" class="btn btn-outline-success">
+                        <i class="fas fa-upload"></i>
+                        {{ $t('Import') }}
+                    </button>
+                </div>
             </div>
 
             <div class="card-body">
@@ -13,14 +26,14 @@
                             <div class="form-row">
                                 <div class="form-group px-2 col-md-5">
                                     <label :for="'from_'+r.id">
-                                        {{ $t('From') }}
+                                        {{ $t('From (old url)') }}
                                     </label>
                                     <input type="text" :id="'from_'+r.id" v-model="r.from" class="form-control">
                                 </div>
 
                                 <div class="form-group px-2 col-md-5">
                                     <label :for="'to_'+r.id">
-                                        {{ $t('To') }}
+                                        {{ $t('To (new url)') }}
                                     </label>
                                     <input type="text" :id="'to_'+r.id" v-model="r.to" class="form-control">
                                 </div>
@@ -55,6 +68,18 @@
                                     </div>
                                 </div>
 
+                                <div class="form-group px-2">
+                                    <button class="btn btn-outline-info" :disabled="r.regex"
+                                            type="button" @click="appendQuery(r)">
+                                        {{ $t('Catch query') }}
+                                    </button>
+
+                                    <button class="btn btn-outline-info"
+                                            type="button" @click="httpAndS(r)">
+                                        {{ $t('HTTP/HTTPS') }}
+                                    </button>
+                                </div>
+
                                 <div class="flex-fill"></div>
 
                                 <div class="form-group px-2">
@@ -79,14 +104,14 @@
                             <div class="form-row">
                                 <div class="form-group px-2 col-md-5">
                                     <label for="new_from">
-                                        {{ $t('From') }}
+                                        {{ $t('From (old url)') }}
                                     </label>
                                     <input type="text" id="new_from" v-model="newRedirection.from" class="form-control">
                                 </div>
 
                                 <div class="form-group px-2 col-md-5">
                                     <label for="new_to">
-                                        {{ $t('To') }}
+                                        {{ $t('To (new url)') }}
                                     </label>
                                     <input type="text" id="new_to" v-model="newRedirection.to" class="form-control">
                                 </div>
@@ -122,6 +147,18 @@
                                     </div>
                                 </div>
 
+                                <div class="form-group px-2">
+                                    <button class="btn btn-outline-info" :disabled="newRedirection.regex"
+                                            type="button" @click="appendQuery(newRedirection)">
+                                        {{ $t('Catch query') }}
+                                    </button>
+
+                                    <button class="btn btn-outline-info"
+                                            type="button" @click="httpAndS(newRedirection)">
+                                        {{ $t('HTTP/HTTPS') }}
+                                    </button>
+                                </div>
+
                                 <div class="flex-fill"></div>
 
                                 <div class="form-group px-2">
@@ -135,6 +172,13 @@
                 </div>
             </div>
         </div>
+
+        <form :action="importUrl" method="post" enctype="multipart/form-data"
+              class="d-none" ref="importForm">
+            <input type="hidden" name="_token" :value="$csrf_token">
+            <input ref="importFormInput"
+                   type="file" name="file" accept=".*csv" class="d-none">
+        </form>
     </div>
 </template>
 
@@ -151,6 +195,14 @@ export default {
             type: String,
         },
         deleteUrl: {
+            required: true,
+            type: String,
+        },
+        exportUrl: {
+            required: true,
+            type: String,
+        },
+        importUrl: {
             required: true,
             type: String,
         },
@@ -211,6 +263,39 @@ export default {
                     });
                 }
             });
+        },
+
+        appendQuery(r) {
+            if (r.regex) {
+                return;
+            }
+
+            r.regex = true;
+
+            // remove query string if exists;
+            r.from = r.from.split('?')[0];
+
+            r.from = `^${r.from}(\\?.*)?$`;
+            r.to = `${r.to}$1`;
+
+        },
+
+        httpAndS(r) {
+            r.regex = true;
+
+            r.from = r.from.replace(/https?:\/\//, 'https?://');
+        },
+
+        importRedirections() {
+            let vm = this;
+            vm.$refs.importFormInput.click();
+
+            vm.$refs.importFormInput.addEventListener('change', function (evt) {
+                setTimeout(function () {
+                    vm.$refs.importForm.submit();
+                }, 250);
+            });
+
         },
     },
 

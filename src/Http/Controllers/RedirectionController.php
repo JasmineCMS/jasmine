@@ -6,12 +6,15 @@ use App\Models\Update;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
 use Jasmine\Jasmine\Bread\Translatable;
 use Jasmine\Jasmine\Models\JasmineRedirection;
 use Spatie\EloquentSortable\SortableTrait;
+use function Jasmine\Jasmine\array2csv;
+use function Jasmine\Jasmine\csv2array;
 
 class RedirectionController extends Controller
 {
@@ -61,6 +64,54 @@ class RedirectionController extends Controller
         return ['success' => $redirect->delete()];
     }
 
+    public function export(Request $request)
+    {
+        $redirections = JasmineRedirection::all()->toArray();
+
+        header('Content-Type: application/csv');
+        header('Content-Disposition: attachment; filename=' . config('app.name') . '-redirections-' . now()->format('Y-m-d_H-i-s') . '.csv');
+        header('Pragma: no-cache');
+
+        echo "\xEF\xBB\xBF";
+        return array2csv($redirections);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file'],
+        ]);
+
+        $file = $request->file('file');
+
+        $array = csv2array($file->getRealPath());
+
+        $redirects = collect($array)
+            ->filter(function ($r) {
+                return isset($r['from'])
+                    && isset($r['to'])
+                    && isset($r['regex'])
+                    && isset($r['permanent'])
+                    && isset($r['enabled']);
+            })
+            ->map(function ($r) {
+                return [
+                    'from'       => $r['from'],
+                    'to'         => $r['to'],
+                    'regex'      => $r['regex'] == 1,
+                    'permanent'  => $r['permanent'] == 1,
+                    'enabled'    => $r['enabled'] == 1,
+                    'updated_at' => Carbon::parse($r['updated_at'] ?? null),
+                    'created_at' => Carbon::parse($r['created_at'] ?? null),
+                ];
+            })->toArray()
+        ;
+
+        JasmineRedirection::insert($redirects);
+
+        return redirect(route('jasmine.redirection.index'));
+    }
+
     public function redirect(Request $request)
     {
         $from = $request->fullUrl();
@@ -85,4 +136,5 @@ class RedirectionController extends Controller
 
         abort(404);
     }
+
 }

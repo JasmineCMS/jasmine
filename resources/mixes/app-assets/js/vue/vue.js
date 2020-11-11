@@ -46,6 +46,14 @@ Vue.component('editor', Editor);
 
 Vue.component('vuejs-datepicker', Datepicker);
 
+Vue.mixin({
+    computed: {
+        '$csrf_token'() {
+            return document.head.querySelector('meta[name="csrf-token"]').content;
+        },
+    },
+});
+
 const app = new Vue({
     el: '#app',
     i18n,
