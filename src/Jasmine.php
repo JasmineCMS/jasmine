@@ -25,7 +25,7 @@ class Jasmine
 
     protected $sideBarMenuFilters = [];
 
-    public function routes()
+    public function routes(callable $group = null, callable $authedGroup = null)
     {
         require __DIR__ . '/../routes.php';
     }

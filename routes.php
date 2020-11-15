@@ -1,15 +1,18 @@
 <?php
+/** @var callable|null $group */
+/** @var callable|null $authedGroup */
 
-Route::group([
-    'namespace'  => '\\Jasmine\\Jasmine\\Http\Controllers',
-    'middleware' => [
-        \Jasmine\Jasmine\Http\Middleware\Robots::class,
-        \Jasmine\Jasmine\Http\Middleware\JasmineLocale::class,
+Route::group(
+    [
+        'namespace'  => '\\Jasmine\\Jasmine\\Http\Controllers',
+        'middleware' => [
+            \Jasmine\Jasmine\Http\Middleware\Robots::class,
+            \Jasmine\Jasmine\Http\Middleware\JasmineLocale::class,
+        ],
+        'as'         => 'jasmine.',
+        'name'       => 'jasmine.',
     ],
-    'as'         => 'jasmine.',
-    'name'       => 'jasmine.',
-],
-    function () {
+    function () use ($group, $authedGroup) {
         // Change locale
         Route::get('/locale/{jasmineLocale}', 'LocaleController@change')->name('change-locale');
 
@@ -24,69 +27,80 @@ Route::group([
         Route::post('password/reset', 'Auth\ResetPasswordController@reset')->name('password.update');
 
         // Authenticated routes
-        Route::group([
-            'middleware' => ['jasmineAuth:' . config('jasmine.auth.guard')],
-        ], function () {
-            Route::get('/', 'DashboardController@show')->name('dashboard');
+        Route::group(
+            [
+                'middleware' => ['jasmineAuth:' . config('jasmine.auth.guard')],
+            ],
+            function () use ($authedGroup) {
+                Route::get('/', 'DashboardController@show')->name('dashboard');
 
-            Route::get('/file-manager', 'FileManagerController@show')->name('fm.show');
+                Route::get('/file-manager', 'FileManagerController@show')->name('fm.show');
 
-            // Bread routes
-            Route::group(
-                [
-                    'prefix' => '/bread/{breadableName}',
-                    'as'     => 'bread.',
-                    'name'   => 'bread.',
-                ],
-                function () {
-                    Route::get('', 'BreadController@index')->name('index');
-                    Route::put('/reorder', 'BreadController@reorder')->name('reorder');
-                    Route::get('/create', 'BreadController@create')->name('create');
-                    Route::post('', 'BreadController@store')->name('store');
-                    Route::get('/{breadableId}/edit', 'BreadController@edit')->name('edit');
-                    Route::patch('/{breadableId}', 'BreadController@update')->name('update');
-                    Route::put('/{breadableId}', 'BreadController@update')->name('update');
-                    Route::delete('/{breadableId}', 'BreadController@destroy')->name('destroy');
-                }
-            );
-
-            // Pages routes
-            Route::bind('jasminePage', function ($slug) {
-                if (!$page = Jasmine::getPage($slug)) {
-                    abort(404);
-                }
-
-                $page = call_user_func_array("$page::firstOrCreate", [
-                    ['name' => $slug],
+                // Bread routes
+                Route::group(
                     [
-                        'url'     => $slug,
-                        'content' => [],
+                        'prefix' => '/bread/{breadableName}',
+                        'as'     => 'bread.',
+                        'name'   => 'bread.',
                     ],
-                ]);
+                    function () {
+                        Route::get('', 'BreadController@index')->name('index');
+                        Route::put('/reorder', 'BreadController@reorder')->name('reorder');
+                        Route::get('/create', 'BreadController@create')->name('create');
+                        Route::post('', 'BreadController@store')->name('store');
+                        Route::get('/{breadableId}/edit', 'BreadController@edit')->name('edit');
+                        Route::patch('/{breadableId}', 'BreadController@update')->name('update');
+                        Route::put('/{breadableId}', 'BreadController@update')->name('update');
+                        Route::delete('/{breadableId}', 'BreadController@destroy')->name('destroy');
+                    }
+                );
 
-                return $page;
-            });
+                // Pages routes
+                Route::bind('jasminePage', function ($slug) {
+                    if (!$page = Jasmine::getPage($slug)) {
+                        abort(404);
+                    }
 
-            Route::group(
-                [
-                    'prefix' => '/page/{jasminePage}',
-                    'as'     => 'page.',
-                    'name'   => 'page.',
-                ],
-                function () {
-                    Route::patch('', 'PageController@update')->name('update');
-                    Route::put('', 'PageController@update')->name('update');
-                    Route::get('/edit', 'PageController@edit')->name('edit');
+                    $page = call_user_func_array("$page::firstOrCreate", [
+                        ['name' => $slug],
+                        [
+                            'url'     => $slug,
+                            'content' => [],
+                        ],
+                    ]);
+
+                    return $page;
+                });
+
+                Route::group(
+                    [
+                        'prefix' => '/page/{jasminePage}',
+                        'as'     => 'page.',
+                        'name'   => 'page.',
+                    ],
+                    function () {
+                        Route::patch('', 'PageController@update')->name('update');
+                        Route::put('', 'PageController@update')->name('update');
+                        Route::get('/edit', 'PageController@edit')->name('edit');
+                    }
+                );
+
+                // Redirection routes
+                Route::get('/redirection', 'RedirectionController@manage')->name('redirection.index');
+                Route::post('/redirection', 'RedirectionController@save')->name('redirection.save');
+                Route::delete('/redirection', 'RedirectionController@delete')->name('redirection.delete');
+                Route::get('/redirection/export', 'RedirectionController@export')->name('redirection.export');
+                Route::post('/redirection/import', 'RedirectionController@import')->name('redirection.import');
+
+                if($authedGroup){
+                    $authedGroup();
                 }
-            );
+            }
+        );
 
-            // Redirection routes
-            Route::get('/redirection', 'RedirectionController@manage')->name('redirection.index');
-            Route::post('/redirection', 'RedirectionController@save')->name('redirection.save');
-            Route::delete('/redirection', 'RedirectionController@delete')->name('redirection.delete');
-            Route::get('/redirection/export', 'RedirectionController@export')->name('redirection.export');
-            Route::post('/redirection/import', 'RedirectionController@import')->name('redirection.import');
+        if($group){
+            $group();
+        }
 
-        });
-
-    });
+    }
+);
