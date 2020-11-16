@@ -103,7 +103,13 @@ class BreadController extends Controller
             }, $selectableColumns));
 
             if ($export) {
-                return $query;
+                return [
+                    'query'             => $query,
+                    'browseableColumns' => $browseableColumns,
+                    'relationColumns'   => $relationColumns,
+                    'rTables'           => $rTables,
+                    'selectableColumns' => $selectableColumns,
+                ];
             }
 
             return datatables($query)->make();
@@ -118,9 +124,32 @@ class BreadController extends Controller
     {
         $breadableName = \request()->route()->parameter('breadableName');
 
-        $query = $this->index();
+        $result = $this->index();
 
-        return response("\xEF\xBB\xBF" . array2csv($query->get()->toArray()), 200, [
+        $array = $result['query']
+            ->get()
+            ->map(function (BreadableInterface $breadable) use ($result) {
+                /** @var BreadableInterface|Model $breadable */
+                $tmp = [];
+                foreach ($breadable->toArray() as $key => $prop) {
+                    if (in_array($key, $result['selectableColumns'])) {
+                        $tmp[$key] = $prop;
+                    }
+
+                    // relations
+                    if (isset($result['rTables'][$key])) {
+                        foreach ($result['rTables'][$key] as $rKey) {
+                            $tmp["$key.$rKey"] = $prop[$rKey];
+                        }
+                    }
+                }
+
+                return $tmp;
+            })
+            ->toArray()
+        ;
+
+        return response("\xEF\xBB\xBF" . array2csv($array), 200, [
             'Content-Type'              => 'text/csv',
             'Content-Transfer-Encoding' => 'binary',
             'Content-Disposition'       => 'attachment; filename='
