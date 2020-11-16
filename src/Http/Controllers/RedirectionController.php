@@ -2,17 +2,9 @@
 
 namespace Jasmine\Jasmine\Http\Controllers;
 
-use App\Models\Update;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
-use Jasmine\Jasmine\Bread\BreadableInterface;
-use Jasmine\Jasmine\Bread\Fields\AbstractField;
-use Jasmine\Jasmine\Bread\Translatable;
 use Jasmine\Jasmine\Models\JasmineRedirection;
-use Spatie\EloquentSortable\SortableTrait;
 use function Jasmine\Jasmine\array2csv;
 use function Jasmine\Jasmine\csv2array;
 

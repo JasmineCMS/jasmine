@@ -45,6 +45,7 @@ Route::group(
                     ],
                     function () {
                         Route::get('', 'BreadController@index')->name('index');
+                        Route::get('/export', 'BreadController@export')->name('export');
                         Route::put('/reorder', 'BreadController@reorder')->name('reorder');
                         Route::get('/create', 'BreadController@create')->name('create');
                         Route::post('', 'BreadController@store')->name('store');
@@ -92,13 +93,13 @@ Route::group(
                 Route::get('/redirection/export', 'RedirectionController@export')->name('redirection.export');
                 Route::post('/redirection/import', 'RedirectionController@import')->name('redirection.import');
 
-                if($authedGroup){
+                if ($authedGroup) {
                     $authedGroup();
                 }
             }
         );
 
-        if($group){
+        if ($group) {
             $group();
         }
 

@@ -18,6 +18,15 @@
                             </div>
 
                             <div>
+                                @if(property_exists($breadableName, 'exportable'))
+                                    <a href="{{ route('jasmine.bread.export', $breadableName) }}"
+                                       target="_blank"
+                                       class="btn btn-outline-info">
+                                        <i class="fas fa-table"></i>
+                                        {{ __('Export') }}
+                                    </a>
+                                @endif
+
                                 <a href="{{ route('jasmine.bread.create', $breadableName) }}"
                                    class="btn btn-outline-primary">
                                     <i class="fas fa-plus"></i>
