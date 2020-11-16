@@ -2,7 +2,6 @@
 
 namespace Jasmine\Jasmine\Http\Controllers;
 
-use App\Models\Update;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -11,14 +10,20 @@ use Illuminate\Support\Str;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
 use Jasmine\Jasmine\Bread\Translatable;
-use Jasmine\Jasmine\Models\JasmineRedirection;
 use Spatie\EloquentSortable\SortableTrait;
 use function Jasmine\Jasmine\array2csv;
 
 class BreadController extends Controller
 {
-    protected function buildIndexQuery(string $breadableName, &$order_column = null, &$browseableColumns = null)
+    /**
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\JsonResponse|\Illuminate\View\View|mixed
+     * @throws \Exception
+     */
+    public function index()
     {
+        $breadableName = \request()->route()->parameter('breadableName');
+
         /** @var Builder $query */
         if (method_exists($breadableName, 'jasmineQuery')) {
             $query = call_user_func("$breadableName::jasmineQuery");
@@ -31,6 +36,8 @@ class BreadController extends Controller
         $breadableIdColumn = $query->getModel()->getKeyName();
 
         $browseableColumns = call_user_func("$breadableName::browseableColumns");
+
+        $order_column = null;
 
         // Assure key
         if (!in_array($breadableIdColumn, $browseableColumns)) {
@@ -48,7 +55,6 @@ class BreadController extends Controller
             }
         }
 
-
         // Timestamps
         if ($query->getModel()->usesTimestamps()) {
             if (!in_array('created_at', $browseableColumns)) {
@@ -60,7 +66,9 @@ class BreadController extends Controller
             }
         }
 
-        if (\request()->ajax()) {
+        $export = request()->routeIs('jasmine.bread.export');
+
+        if (\request()->ajax() || $export) {
 
             // handle relation columns
             $relationColumns = array_filter($browseableColumns, function ($column) {
@@ -94,32 +102,12 @@ class BreadController extends Controller
                 return $tableName . '.' . (strpos($column, '_') === 0 ? substr($column, 1) : $column);
             }, $selectableColumns));
 
+            if ($export) {
+                return $query;
+            }
+
             return datatables($query)->make();
         }
-
-        return $query;
-    }
-
-    /**
-     *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\JsonResponse|\Illuminate\View\View|mixed
-     * @throws \Exception
-     */
-    public function index()
-    {
-        $breadableName = \request()->route()->parameter('breadableName');
-
-        $browseableColumns = call_user_func("$breadableName::browseableColumns");
-
-        $order_column = null;
-
-        $query = $this->buildIndexQuery($breadableName, $order_column);
-
-        if (\request()->ajax()) {
-            return $query;
-        }
-
-        $breadableIdColumn = $query->getModel()->getKeyName();
 
         return view('jasmine::app.bread.index', compact(
             'breadableName', 'browseableColumns', 'breadableIdColumn', 'order_column'
@@ -130,27 +118,16 @@ class BreadController extends Controller
     {
         $breadableName = \request()->route()->parameter('breadableName');
 
-        $query = $this->buildIndexQuery($breadableName, $order_column, $browseableColumns);
+        $query = $this->index();
 
-        $models = $query->get()->map(function ($item) use ($browseableColumns) {
-            $tmp = [];
-            foreach ($browseableColumns as $column) {
-                $tmp[$column] = $item[$column];
-            }
-
-            return $tmp;
-        })->toArray()
-        ;
-
-        header('Content-Type: application/csv');
-        header('Content-Disposition: attachment; filename='
-            . config('app.name') . '-' . Str::slug(call_user_func("$breadableName::getPluralName")) . '-'
-            . now()->format('Y-m-d_H-i-s') . '.csv'
-        );
-        header('Pragma: no-cache');
-
-        echo "\xEF\xBB\xBF";
-        return array2csv($models);
+        return response("\xEF\xBB\xBF" . array2csv($query->get()->toArray()), 200, [
+            'Content-Type'              => 'text/csv',
+            'Content-Transfer-Encoding' => 'binary',
+            'Content-Disposition'       => 'attachment; filename='
+                . config('app.name') . '-' . Str::slug(call_user_func("$breadableName::getPluralName")) . '-'
+                . now()->format('Y-m-d_H-i-s') . '.csv',
+            'Pragma'                    => 'no-cache',
+        ]);
     }
 
     public function reorder(Request $request)
