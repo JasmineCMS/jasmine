@@ -61,7 +61,7 @@
                             <a href="https://github.com/JasmineCMS/jasmine" target="_blank">
                                 JasmineCMS
                             </a>
-                            v0.3.8
+                            v0.3.9
                         </small>,
 
                         <small>
