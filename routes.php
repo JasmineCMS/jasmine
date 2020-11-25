@@ -94,9 +94,9 @@ Route::group(
                         'name'   => 'page.',
                     ],
                     function () {
-                        Route::patch('', [BreadController::class, 'index'])->name('update');
-                        Route::put('', [BreadController::class, 'update'])->name('update');
-                        Route::get('/edit', [BreadController::class, 'edit'])->name('edit');
+                        Route::patch('', [PageController::class, 'index'])->name('update');
+                        Route::put('', [PageController::class, 'update'])->name('update');
+                        Route::get('/edit', [PageController::class, 'edit'])->name('edit');
                     }
                 );
 
