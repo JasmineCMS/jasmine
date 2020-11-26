@@ -190,7 +190,8 @@ class BreadController extends Controller
             in_array(Translatable::class, class_uses($breadableName))
             && \request()->get('_locale') == null
         ) {
-            return redirect(route('jasmine.bread.create', ['breadableName' => $breadableName, '_locale' => 'en']));
+            $locale = in_array(app()->getLocale(), \Jasmine::getLocales()) ? app()->getLocale() : \Jasmine::getLocales()[0];
+            return redirect(route('jasmine.bread.create', ['breadableName' => $breadableName, '_locale' => $locale]));
         }
 
         return view('jasmine::app.bread.edit', compact('breadableName'));
@@ -254,10 +255,11 @@ class BreadController extends Controller
             in_array(Translatable::class, class_uses($breadableName))
             && \request()->get('_locale') == null
         ) {
+            $locale = in_array(app()->getLocale(), \Jasmine::getLocales()) ? app()->getLocale() : \Jasmine::getLocales()[0];
             return redirect(route('jasmine.bread.edit', [
                 'breadableName' => $breadableName,
                 'breadableId'   => $breadable->{$breadable->getRouteKeyName()},
-                '_locale'       => 'en',
+                '_locale'       => $locale,
             ]));
         }
 

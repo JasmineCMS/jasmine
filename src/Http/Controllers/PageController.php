@@ -21,7 +21,8 @@ class PageController extends Controller
             in_array(Translatable::class, class_uses($page))
             && \request()->get('_locale') == null
         ) {
-            return redirect(route('jasmine.page.edit', ['jasminePage' => $page->name, '_locale' => 'en']));
+            $locale = in_array(app()->getLocale(), \Jasmine::getLocales()) ? app()->getLocale() : \Jasmine::getLocales()[0];
+            return redirect(route('jasmine.page.edit', ['jasminePage' => $page->name, '_locale' => $locale]));
         }
 
         if (in_array(Translatable::class, class_uses($page))) {
