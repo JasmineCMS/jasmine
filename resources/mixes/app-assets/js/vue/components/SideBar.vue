@@ -10,7 +10,9 @@
         <div class="side-bar-content">
             <ul class="nav flex-column">
                 <li v-for="(item, i) in items" :key="i" class="nav-item"
-                    :class="item.children && agnosticLength(item.children) ? 'dropdown' : ''">
+                    :class="{
+                    'dropdown': item.children && agnosticLength(item.children),
+                    }">
 
                     <a v-if="item.children && agnosticLength(item.children)" class="nav-link dropdown-toggle d-flex"
                        :href="item.href || '#'" :target="item.target || '_self'"
@@ -50,6 +52,8 @@ export default {
 
     data() {
         return {
+            w: window,
+            d: document,
             opened: true,
             items: [],
         };
@@ -141,6 +145,15 @@ export default {
                         }
                     }
 
+                }
+
+                &.active {
+                    color: #262626;
+                    background: #f2f2f2;
+
+                    a {
+                        color: inherit;
+                    }
                 }
             }
         }
