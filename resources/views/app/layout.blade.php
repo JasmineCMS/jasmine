@@ -54,18 +54,18 @@
                 @yield('content')
             </main>
 
-            <footer class="d-flex mt-4 justify-content-center align-items-center">
+            <footer class="d-flex mt-4 justify-content-center align-items-center" dir="ltr">
                 <div class="p-2">
                     <p class="m-0">
                         <small>
                             <a href="https://github.com/JasmineCMS/jasmine" target="_blank">
                                 JasmineCMS
                             </a>
-                            v0.3.13
+                            v0.3.14
                         </small>,
 
                         <small>
-                            Sponsored byap
+                            Sponsored by
                         </small>
                         <a href="https://triple.co.il/en" target="_blank" title="Triple Internet Solutions">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24"
