@@ -49,7 +49,7 @@
                                     @foreach($browseableColumns as $column)
                                         @if(strpos($column, '_') === 0) @continue @endif
                                         <th v-dt-column="[t, {name: '{{ $column }}', data:'{{ $column }}'}]">
-                                            {{ \Illuminate\Support\Str::title(preg_replace('/[_\.]/', ' ', $column)) }}
+                                            {{ __(\Illuminate\Support\Str::title(preg_replace('/[_\.]/', ' ', $column))) }}
                                         </th>
                                     @endforeach
 

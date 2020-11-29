@@ -1,3 +1,22 @@
+<i18n>
+{
+    "he": {
+        "Redirections": "הפניות",
+        "Export": "ייצוא",
+        "Import": "ייבוא",
+        "From (old url)": "ישן",
+        "To (new url)": "חדש",
+        "Type": "סוג",
+        "Temporary": "זמני",
+        "Permanent": "קבוע",
+        "Regular Expression": "ביטוי רגולרי",
+        "Enabled": "פעיל",
+        "Catch query": "תפוס פרמטרים",
+        "Save": "שמירה",
+        "Delete": "מחיקה"
+    }
+}
+</i18n>
 <template>
     <div>
         <div class="card">
@@ -28,14 +47,14 @@
                                     <label :for="'from_'+r.id">
                                         {{ $t('From (old url)') }}
                                     </label>
-                                    <input type="text" :id="'from_'+r.id" v-model="r.from" class="form-control">
+                                    <input type="text" :id="'from_'+r.id" v-model="r.from" class="form-control" dir="ltr">
                                 </div>
 
                                 <div class="form-group px-2 col-md-5">
                                     <label :for="'to_'+r.id">
                                         {{ $t('To (new url)') }}
                                     </label>
-                                    <input type="text" :id="'to_'+r.id" v-model="r.to" class="form-control">
+                                    <input type="text" :id="'to_'+r.id" v-model="r.to" class="form-control" dir="ltr">
                                 </div>
 
                                 <div class="form-group px-2 flex-fill">
@@ -106,14 +125,14 @@
                                     <label for="new_from">
                                         {{ $t('From (old url)') }}
                                     </label>
-                                    <input type="text" id="new_from" v-model="newRedirection.from" class="form-control">
+                                    <input type="text" id="new_from" v-model="newRedirection.from" class="form-control" dir="ltr">
                                 </div>
 
                                 <div class="form-group px-2 col-md-5">
                                     <label for="new_to">
                                         {{ $t('To (new url)') }}
                                     </label>
-                                    <input type="text" id="new_to" v-model="newRedirection.to" class="form-control">
+                                    <input type="text" id="new_to" v-model="newRedirection.to" class="form-control" dir="ltr">
                                 </div>
 
                                 <div class="form-group px-2 flex-fill">
