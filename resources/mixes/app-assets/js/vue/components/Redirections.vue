@@ -13,7 +13,8 @@
         "Enabled": "פעיל",
         "Catch query": "תפוס פרמטרים",
         "Save": "שמירה",
-        "Delete": "מחיקה"
+        "Delete": "מחיקה",
+        "New Redirection": "הפניה חדשה"
     }
 }
 </i18n>

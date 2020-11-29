@@ -1,20 +1,35 @@
+<i18n>
+{
+    "he": {
+        "Search": "חיפוש",
+        "Regex": "ביטוי רגולרי",
+        "Show": "הצג",
+        "Showing": "מציג",
+        "to": "עד",
+        "of": "מתוך",
+        "entries": "רשומות",
+        "Filtered from": "מסונן",
+        "total entries": "מסך"
+    }
+}
+</i18n>
 <template>
     <div class="vDataTable" :class="{'vDataTable-loading': loading}">
         <div class="vDataTable-toolbar d-flex flex-wrap justify-content-between align-content-center">
             <div class="vDataTable-search">
                 <label>
-                    <span>Search:</span>
+                    <span>{{ $t('Search') }}:</span>
                     <input type="search" v-model="request.search.value">
                 </label>
                 <label>
-                    <span>Regex:</span>
+                    <span>{{ $t('Regex') }}:</span>
                     <input type="checkbox" v-model="request.search.regex">
                 </label>
             </div>
 
             <div class="vDataTable-pageLength" v-if="lengths.length > 0">
                 <label>
-                    Show
+                    {{ $t('Show')}}
                     <select v-model="request.length">
                         <option v-for="(length,li) in lengths" :key="li" :value="length">
                             {{ length }}
@@ -47,18 +62,18 @@
 
         <div class="vDataTable-footer d-flex flex-wrap justify-content-between align-content-center">
             <div class="vDataTable-count">
-                <span>Showing</span>
+                <span>{{ $t('Showing') }}</span>
                 <span v-text="request.start + 1"></span>
-                <span>to</span>
+                <span>{{ $t('to') }}</span>
                 <span v-text="request.start + response.data.length"></span>
-                <span>of</span>
+                <span>{{ $t('of') }}</span>
                 <span v-text="response.recordsFiltered"></span>
-                <span>entries</span>
+                <span>{{ $t('entries') }}</span>
                 <template v-if="response.recordsFiltered !== response.recordsTotal">
                     <span>
-                        (<span>Filtered from</span>
+                        (<span>{{ $t('Filtered from') }}</span>
                         <span v-text="response.recordsTotal"></span>
-                        <span>total entries</span>)
+                        <span>{{ $t('total entries') }}</span>)
                     </span>
                 </template>
             </div>
