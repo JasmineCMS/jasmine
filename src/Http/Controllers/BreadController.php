@@ -24,6 +24,14 @@ class BreadController extends Controller
     {
         $breadableName = \request()->route()->parameter('breadableName');
 
+        if (
+            in_array(Translatable::class, class_uses($breadableName))
+            && \request()->get('_locale') == null
+        ) {
+            $locale = in_array(app()->getLocale(), \Jasmine::getLocales()) ? app()->getLocale() : \Jasmine::getLocales()[0];
+            return redirect(route('jasmine.bread.index', ['breadableName' => $breadableName, '_locale' => $locale]));
+        }
+
         /** @var Builder $query */
         if (method_exists($breadableName, 'jasmineQuery')) {
             $query = call_user_func("$breadableName::jasmineQuery");
@@ -112,7 +120,18 @@ class BreadController extends Controller
                 ];
             }
 
-            return datatables($query)->make();
+            if (in_array(Translatable::class, class_uses($breadableName))) {
+                $localeNow = app()->getLocale();
+                app()->setLocale(\request()->get('_locale'));
+
+                $result = datatables($query)->make();
+                app()->setLocale($localeNow);
+
+            } else {
+                $result = datatables($query)->make();
+            }
+
+            return $result;
         }
 
         return view('jasmine::app.bread.index', compact(

@@ -1,10 +1,22 @@
+<?php
+
+use Jasmine\Jasmine\Bread\Translatable;
+
+?>
 @extends('jasmine::app.layout')
 
-@php
-
-    @endphp
-
 @section('title', call_user_func("$breadableName::getPluralName"))
+
+@push('top-bar-center')
+    @if(in_array(Translatable::class, class_uses($breadableName)))
+        @foreach(Jasmine::getLocales() as $local)
+            <a href="{{ \Jasmine\Jasmine\setUrlGetParam('_locale', $local) }}"
+               class="btn @if(request('_locale') === $local) active btn-success @else btn-secondary @endif">
+                {{ \Illuminate\Support\Str::title($local) }}
+            </a>
+        @endforeach
+    @endif
+@endpush
 
 @section('content')
     <div class="mt-2">
@@ -43,7 +55,7 @@
                                       key-column="{{ $breadableIdColumn }}"
                                       sort-url="{{ route('jasmine.bread.reorder', $breadableName) }}"
                                       sort-column="{{ $order_column }}"
-                                      data-url="{{ route('jasmine.bread.index', $breadableName) }}">
+                                      data-url="{{ route('jasmine.bread.index', ['breadableName' => $breadableName, '_locale' => request('_locale')]) }}">
                             <template v-slot:thead="{t}">
                                 <tr>
                                     @foreach($browseableColumns as $column)

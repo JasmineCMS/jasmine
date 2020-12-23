@@ -64,5 +64,13 @@ trait Translatable
 
     }
 
+    public static function bootTranslatable()
+    {
+        static::retrieved(function ($model) {
+            /** @var Translatable $model */
+            $model->setLocale(app()->getLocale());
+        });
+    }
+
 
 }
