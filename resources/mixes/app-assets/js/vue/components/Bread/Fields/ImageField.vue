@@ -17,15 +17,15 @@
 
         <div v-if="showFm" class="modal fade show d-block" tabindex="-1" role="dialog"
              aria-hidden="true">
-            <div class="modal-dialog modal-xl" role="document">
-                <div class="modal-content" style="min-height: 80vh">
+            <div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
+                <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">File Manager | Choose image for {{ label }}</h5>
                         <button type="button" class="close" aria-label="Close" @click="showFm = false">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body p-0">
                         <file-manager-wrapper ref="fmw"></file-manager-wrapper>
                     </div>
                 </div>
@@ -36,64 +36,68 @@
 </template>
 
 <script>
-    export default {
-        name: "ImageField",
-        extends: JasmineBaseField,
+export default {
+    name: "ImageField",
+    extends: JasmineBaseField,
 
-        data() {
-            return {
-                opts: Object.assign({
-                    options: [],
-                }, this.options),
+    data() {
+        return {
+            opts: Object.assign({
+                options: [],
+            }, this.options),
 
-                showFm: false,
-            };
-        },
+            showFm: false,
+        };
+    },
 
-        methods: {
-            changeImage() {
-                this.showFm = true;
+    methods: {
+        changeImage() {
+            this.showFm = true;
 
-                Vue.nextTick(() => {
-                    let vm = this;
-                    let fm = this.$refs.fmw.$refs.fm;
-                    fm.$store.commit('fm/setFileCallBack', function (fileUrl) {
-                        // todo: if note image
-                        console.log(fileUrl);
-                        window.fm = fm;
+            Vue.nextTick(() => {
+                let vm = this;
+                let fm = this.$refs.fmw.$refs.fm;
+                fm.$store.commit('fm/setFileCallBack', function (fileUrl) {
+                    // todo: if note image
+                    console.log(fileUrl);
+                    window.fm = fm;
 
-                        if (fileUrl.startsWith(document.location.origin)) {
-                            fileUrl = fileUrl.replace(document.location.origin, '');
-                        }
+                    if (fileUrl.startsWith(document.location.origin)) {
+                        fileUrl = fileUrl.replace(document.location.origin, '');
+                    }
 
-                        vm.field_value.src = fileUrl;
+                    vm.field_value.src = fileUrl;
 
-                        vm.showFm = false;
+                    vm.showFm = false;
 
-                        Vue.nextTick(() => {
-                            setTimeout(() => {
-                                vm.field_value.w = vm.$refs.preview.naturalWidth;
-                                vm.field_value.h = vm.$refs.preview.naturalHeight;
-                                //this.field_value.path = null;
-                            }, 250);
-                        });
+                    Vue.nextTick(() => {
+                        setTimeout(() => {
+                            vm.field_value.w = vm.$refs.preview.naturalWidth;
+                            vm.field_value.h = vm.$refs.preview.naturalHeight;
+                            //this.field_value.path = null;
+                        }, 250);
                     });
                 });
-            },
+            });
         },
+    },
 
-        watch: {},
+    watch: {},
 
-        beforeMount() {
-            this.field_value.src = this.field_value.src || `https://placehold.it/150x150`;
-        }
+    beforeMount() {
+        this.field_value.src = this.field_value.src || `https://placehold.it/150x150`;
     }
+}
 </script>
 
 <style scoped>
-    .preview {
-        cursor: pointer;
-        max-width: 100%;
-        max-height: 200px;
-    }
+.fm {
+    height: calc(100% - 76px);
+}
+
+.preview {
+    cursor: pointer;
+    max-width: 100%;
+    max-height: 200px;
+}
 </style>
