@@ -24,6 +24,14 @@
                                     ghost-class="ghost"
                                     handle=".dnd-handler"
                                 >
+                                    <div class="mb-2">
+                                        <button class="btn btn-primary" @click="repeatField(field)"
+                                                :disabled="values[field.name].length >= field.repeats"
+                                                type="button" :title="$t('Add') +' '+ field.label">
+                                            <i class="fas fa-plus"></i>
+                                            <span v-text="$t('Add') +' '+ field.label"></span>
+                                        </button>
+                                    </div>
                                     <div class="d-flex" v-for="(value, vi) in values[field.name]" :key="field.id+vi">
                                         <div class="form-group flex-fill">
                                             <label :for="field.id+vi">
@@ -57,6 +65,7 @@
                                                 :disabled="values[field.name].length >= field.repeats"
                                                 type="button" :title="$t('Add') +' '+ field.label">
                                             <i class="fas fa-plus"></i>
+                                            <span v-text="$t('Add') +' '+ field.label"></span>
                                         </button>
                                     </div>
                                 </draggable>
