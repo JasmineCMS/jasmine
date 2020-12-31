@@ -99,5 +99,25 @@ export default {
     cursor: pointer;
     max-width: 100%;
     max-height: 200px;
+    /*noinspection CssReplaceWithShorthandSafely*/
+    background: linear-gradient(45deg,
+    rgba(0, 0, 0, 0.0980392) 25%,
+    transparent 25%, transparent 75%,
+    rgba(0, 0, 0, 0.0980392) 75%,
+    rgba(0, 0, 0, 0.0980392) 0),
+    linear-gradient(45deg,
+        rgba(0, 0, 0, 0.0980392) 25%,
+        transparent 25%, transparent 75%,
+        rgba(0, 0, 0, 0.0980392) 75%,
+        rgba(0, 0, 0, 0.0980392) 0
+    ), white;
+    /*noinspection CssReplaceWithShorthandSafely*/
+    background-repeat: repeat, repeat;
+    /*noinspection CssReplaceWithShorthandSafely*/
+    background-position: 0 0, 5px 5px;
+    transform-origin: 0 0 0;
+    background-origin: padding-box, padding-box;
+    background-clip: border-box, border-box;
+    background-size: 10px 10px, 10px 10px;
 }
 </style>
