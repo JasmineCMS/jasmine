@@ -7,7 +7,7 @@ $manifest = call_user_func(get_class($page) . "::fieldsManifest");
 /** @var \Illuminate\Support\ViewErrorBag $errors */
 ?>
 
-@extends('jasmine::app.layout')
+@extends('jasmine::app.app')
 
 @section('title')
     @lang('Edit')

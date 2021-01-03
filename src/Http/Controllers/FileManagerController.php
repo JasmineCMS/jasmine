@@ -11,4 +11,9 @@ class FileManagerController extends Controller
     {
         return view('jasmine::app.file-manager');
     }
+
+    public function tinymce5()
+    {
+        return view('jasmine::app.fm-tinymce5');
+    }
 }

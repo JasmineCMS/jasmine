@@ -1,4 +1,4 @@
-@extends('jasmine::app.layout')
+@extends('jasmine::app.app')
 
 @section('title')
     @lang('Dashboard')

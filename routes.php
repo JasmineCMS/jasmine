@@ -49,6 +49,9 @@ Route::group(
                 Route::get('/', [DashboardController::class, 'show'])->name('dashboard');
 
                 Route::get('/file-manager', [FileManagerController::class, 'show'])->name('fm.show');
+                Route::get('/file-manager-tinymce5', [FileManagerController::class, 'tinymce5'])
+                     ->name('fm.show.tinymce5')
+                ;
 
                 // Bread routes
                 Route::group(

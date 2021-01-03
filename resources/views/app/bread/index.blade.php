@@ -3,7 +3,7 @@
 use Jasmine\Jasmine\Bread\Translatable;
 
 ?>
-@extends('jasmine::app.layout')
+@extends('jasmine::app.app')
 
 @section('title', call_user_func("$breadableName::getPluralName"))
 

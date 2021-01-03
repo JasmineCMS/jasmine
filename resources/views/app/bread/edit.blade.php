@@ -23,7 +23,7 @@ $manifest = call_user_func("$breadableName::fieldsManifest");
 /** @var \Illuminate\Support\ViewErrorBag $errors */
 ?>
 
-@extends('jasmine::app.layout')
+@extends('jasmine::app.app')
 
 @section('title')
     @if(isset($breadable))
