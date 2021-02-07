@@ -1,3 +1,12 @@
+<i18n>
+{
+    "he": {
+        "Add": "הוספת",
+        "Reorder": "סידור"
+    }
+}
+</i18n>
+
 <template>
     <div class="bread-edit row" :class="{'writing-rtl': isLocaleRtl}">
 
