@@ -43,7 +43,27 @@ class BreadController extends Controller
 
         $breadableIdColumn = $query->getModel()->getKeyName();
 
-        $browseableColumns = call_user_func("$breadableName::browseableColumns");
+        $browseableColumnsConfig = call_user_func("$breadableName::browseableColumns");
+
+        // Timestamps
+        if ($query->getModel()->usesTimestamps()) {
+            if (!in_array('created_at', $browseableColumnsConfig)) {
+                $browseableColumnsConfig['created_at'] = function ($val){
+                    return $val->format('d.m.Y H:i:s');
+                };
+            }
+
+            if (!in_array('updated_at', $browseableColumnsConfig)) {
+                $browseableColumnsConfig['updated_at'] = function ($val){
+                    return $val->format('d.m.Y H:i:s');
+                };
+            }
+        }
+
+        $browseableColumns = [];
+        foreach ($browseableColumnsConfig as $bck => $bcv) {
+            $browseableColumns[] = is_callable($bcv) ? $bck : $bcv;
+        }
 
         $order_column = null;
 
@@ -60,17 +80,6 @@ class BreadController extends Controller
 
             if (!in_array($order_column, $browseableColumns)) {
                 array_unshift($browseableColumns, $order_column);
-            }
-        }
-
-        // Timestamps
-        if ($query->getModel()->usesTimestamps()) {
-            if (!in_array('created_at', $browseableColumns)) {
-                array_push($browseableColumns, 'created_at');
-            }
-
-            if (!in_array('updated_at', $browseableColumns)) {
-                array_push($browseableColumns, 'updated_at');
             }
         }
 
@@ -120,16 +129,29 @@ class BreadController extends Controller
                 ];
             }
 
+            $result = datatables($query);
+
+            foreach ($browseableColumnsConfig as $bck => $bcv) {
+                if (!is_callable($bcv)) {
+                    continue;
+                }
+
+                $result = $result->editColumn($bck, function (Model $model) use ($bck, $bcv) {
+                    return $bcv($model->{$bck}, $model);
+                });
+            }
+
             if (in_array(Translatable::class, class_uses($breadableName))) {
                 $localeNow = app()->getLocale();
                 app()->setLocale(\request()->get('_locale'));
 
-                $result = datatables($query)->make();
+                $result = $result->make();
                 app()->setLocale($localeNow);
 
             } else {
-                $result = datatables($query)->make();
+                $result = $result->make();
             }
+
 
             return $result;
         }
@@ -165,8 +187,7 @@ class BreadController extends Controller
 
                 return $tmp;
             })
-            ->toArray()
-        ;
+            ->toArray();
 
         return response("\xEF\xBB\xBF" . array2csv($array), 200, [
             'Content-Type'              => 'text/csv',
@@ -195,8 +216,7 @@ class BreadController extends Controller
             foreach ($data['order'] as $row) {
                 \DB::table($model->getTable())
                    ->where($model->getKeyName(), $row['id'])
-                   ->update([$order_column => $row['order']])
-                ;
+                   ->update([$order_column => $row['order']]);
             }
         });
     }
