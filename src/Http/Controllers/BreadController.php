@@ -48,13 +48,13 @@ class BreadController extends Controller
         // Timestamps
         if ($query->getModel()->usesTimestamps()) {
             if (!in_array('created_at', $browseableColumnsConfig)) {
-                $browseableColumnsConfig['created_at'] = function ($val){
+                $browseableColumnsConfig['created_at'] = function ($val) {
                     return $val->format('d.m.Y H:i:s');
                 };
             }
 
             if (!in_array('updated_at', $browseableColumnsConfig)) {
-                $browseableColumnsConfig['updated_at'] = function ($val){
+                $browseableColumnsConfig['updated_at'] = function ($val) {
                     return $val->format('d.m.Y H:i:s');
                 };
             }
@@ -62,7 +62,7 @@ class BreadController extends Controller
 
         $browseableColumns = [];
         foreach ($browseableColumnsConfig as $bck => $bcv) {
-            $browseableColumns[] = is_callable($bcv) ? $bck : $bcv;
+            $browseableColumns[] = ($bcv instanceof \Closure) ? $bck : $bcv;
         }
 
         $order_column = null;
