@@ -132,7 +132,7 @@ class BreadController extends Controller
             $result = datatables($query);
 
             foreach ($browseableColumnsConfig as $bck => $bcv) {
-                if (!is_callable($bcv)) {
+                if (!($bcv instanceof \Closure)) {
                     continue;
                 }
 
