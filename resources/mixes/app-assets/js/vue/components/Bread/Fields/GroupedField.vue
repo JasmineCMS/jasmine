@@ -1,3 +1,11 @@
+<i18n>
+{
+    "he": {
+        "Add": "הוספת",
+        "Reorder": "סידור"
+    }
+}
+</i18n>
 <template>
     <div class="form-row grouped">
         <!-- Loop fields -->
