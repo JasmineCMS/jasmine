@@ -29,7 +29,7 @@
 
             <div class="vDataTable-pageLength" v-if="lengths.length > 0">
                 <label>
-                    {{ $t('Show')}}
+                    {{ $t('Show') }}
                     <select v-model="request.length">
                         <option v-for="(length,li) in lengths" :key="li" :value="length">
                             {{ length }}
@@ -53,7 +53,7 @@
                 <tr v-for="(row, ri) in response.data">
                     <td v-for="(column, ci) in columns">
                         <slot :name="'td_'+ci" :data="$get(row, column.name)" :row="row" :column="column">
-                            <span v-html="$get(row, column.name)"></span>
+                            <span v-html="decodeHtml($get(row, column.name))"></span>
                         </slot>
                     </td>
                 </tr>
@@ -306,6 +306,12 @@ let VDataTable = {
 
             return path.split('.').reduce(index, obj);
         },
+
+        decodeHtml(html) {
+            let txt = document.createElement("textarea");
+            txt.innerHTML = html;
+            return txt.value;
+        }
     },
 
     computed: {
