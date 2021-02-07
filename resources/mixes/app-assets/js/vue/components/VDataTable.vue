@@ -53,7 +53,7 @@
                 <tr v-for="(row, ri) in response.data">
                     <td v-for="(column, ci) in columns">
                         <slot :name="'td_'+ci" :data="$get(row, column.name)" :row="row" :column="column">
-                            {{ $get(row, column.name) }}
+                            <span v-html="$get(row, column.name)"></span>
                         </slot>
                     </td>
                 </tr>
