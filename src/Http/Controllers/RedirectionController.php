@@ -118,6 +118,13 @@ class RedirectionController extends Controller
             return redirect($r->to, $r->permanent ? 301 : 302);
         }
 
+        // Test none regex add slah
+        /** @var JasmineRedirection|null $r */
+        $r = $redirections->where('from', $from . '/')->first();
+        if ($r) {
+            return redirect($r->to, $r->permanent ? 301 : 302);
+        }
+
         // Test regex
         foreach ($redirections->where('regex', true) as $r) {
             if (preg_match('#' . $r->from . '#', $from, $m)) {
