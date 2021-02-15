@@ -4,16 +4,18 @@ namespace Jasmine\Jasmine\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Traits\Macroable;
 use Jasmine\Jasmine\Models\JasmineRedirection;
 use function Jasmine\Jasmine\array2csv;
 use function Jasmine\Jasmine\csv2array;
 
 class RedirectionController extends Controller
 {
+    use Macroable;
 
-    public function redirectionsQuery()
+    private function getQuery()
     {
-        return JasmineRedirection::query();
+        return static::hasMacro('query') ? static::query() : JasmineRedirection::query();
     }
 
     public function manage()
@@ -27,7 +29,7 @@ class RedirectionController extends Controller
 
     public function index()
     {
-        return $this->redirectionsQuery()->get();
+        return $this->getQuery()->get();
     }
 
     public function save(Request $request)
@@ -43,9 +45,12 @@ class RedirectionController extends Controller
 
 
         if (isset($data['id'])) {
-            $redirect = $this->redirectionsQuery()->find($data['id'])->update($data);
+            $redirect = $this->getQuery()->find($data['id'])->update($data);
         } else {
             $redirect = JasmineRedirection::create($data);
+            if (static::hasMacro('afterCreate')) {
+                static::afterCreate($redirect);
+            }
         }
 
         return $redirect;
@@ -57,14 +62,14 @@ class RedirectionController extends Controller
             'id' => ['required', 'integer'],
         ]);
 
-        $redirect = $this->redirectionsQuery()->findOrFail($data['id']);
+        $redirect = $this->getQuery()->findOrFail($data['id']);
 
         return ['success' => $redirect->delete()];
     }
 
     public function export(Request $request)
     {
-        $redirections = $this->redirectionsQuery()->get()->toArray();
+        $redirections = $this->getQuery()->get()->toArray();
 
         header('Content-Type: application/csv');
         header('Content-Disposition: attachment; filename=' . config('app.name') . '-redirections-' . now()->format('Y-m-d_H-i-s') . '.csv');
@@ -104,7 +109,12 @@ class RedirectionController extends Controller
                 ];
             })->toArray();
 
-        JasmineRedirection::insert($redirects);
+        foreach ($redirects as $redirect) {
+            $redirect = JasmineRedirection::create($redirect);
+            if (static::hasMacro('afterCreate')) {
+                static::afterCreate($redirect);
+            }
+        }
 
         return redirect(route('jasmine.redirection.index'));
     }
@@ -114,7 +124,7 @@ class RedirectionController extends Controller
         $from = $request->fullUrl();
 
         // load redirections
-        $redirections = $this->redirectionsQuery()->where('enabled', true)->get();
+        $redirections = $this->getQuery()->where('enabled', true)->get();
 
         // Test none regex
         /** @var JasmineRedirection|null $r */
