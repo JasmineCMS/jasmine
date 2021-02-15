@@ -10,6 +10,12 @@ use function Jasmine\Jasmine\csv2array;
 
 class RedirectionController extends Controller
 {
+
+    public function redirectionsQuery()
+    {
+        return JasmineRedirection::query();
+    }
+
     public function manage()
     {
         if (\request()->ajax() && \request()->has('json')) {
@@ -21,7 +27,7 @@ class RedirectionController extends Controller
 
     public function index()
     {
-        return JasmineRedirection::all();
+        return $this->redirectionsQuery()->get();
     }
 
     public function save(Request $request)
@@ -37,7 +43,7 @@ class RedirectionController extends Controller
 
 
         if (isset($data['id'])) {
-            $redirect = JasmineRedirection::find($data['id'])->update($data);
+            $redirect = $this->redirectionsQuery()->find($data['id'])->update($data);
         } else {
             $redirect = JasmineRedirection::create($data);
         }
@@ -51,14 +57,14 @@ class RedirectionController extends Controller
             'id' => ['required', 'integer'],
         ]);
 
-        $redirect = JasmineRedirection::findOrFail($data['id']);
+        $redirect = $this->redirectionsQuery()->findOrFail($data['id']);
 
         return ['success' => $redirect->delete()];
     }
 
     public function export(Request $request)
     {
-        $redirections = JasmineRedirection::all()->toArray();
+        $redirections = $this->redirectionsQuery()->get()->toArray();
 
         header('Content-Type: application/csv');
         header('Content-Disposition: attachment; filename=' . config('app.name') . '-redirections-' . now()->format('Y-m-d_H-i-s') . '.csv');
@@ -96,8 +102,7 @@ class RedirectionController extends Controller
                     'updated_at' => Carbon::parse($r['updated_at'] ?? null),
                     'created_at' => Carbon::parse($r['created_at'] ?? null),
                 ];
-            })->toArray()
-        ;
+            })->toArray();
 
         JasmineRedirection::insert($redirects);
 
@@ -109,7 +114,7 @@ class RedirectionController extends Controller
         $from = $request->fullUrl();
 
         // load redirections
-        $redirections = JasmineRedirection::where('enabled', true)->get();
+        $redirections = $this->redirectionsQuery()->where('enabled', true)->get();
 
         // Test none regex
         /** @var JasmineRedirection|null $r */
@@ -134,6 +139,7 @@ class RedirectionController extends Controller
         }
 
         abort(404);
+        return null;
     }
 
 }
