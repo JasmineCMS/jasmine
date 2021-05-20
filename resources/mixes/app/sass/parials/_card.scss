@@ -1,0 +1,17 @@
+.card {
+
+    .card-header {
+        padding: 0.75rem;
+        border-bottom: 0;
+        background: transparent;
+        color: darken($blue, 0);
+
+        h4 {
+            font-size: 1.25rem;
+        }
+    }
+
+    .card-body {
+        padding: 0.75rem;
+    }
+}
