@@ -1,13 +1,11 @@
-/* @cc_on!@ */
-
 /*!
- * Cropper.js v1.5.9
+ * Cropper.js v1.5.11
  * https://fengyuanchen.github.io/cropperjs
  *
  * Copyright 2015-present Chen Fengyuan
  * Released under the MIT license
  *
- * Date: 2020-09-10T13:16:26.743Z
+ * Date: 2021-02-17T11:53:27.572Z
  */
 
 /*!
@@ -24,14 +22,14 @@
  */
 
 /*!
- * vue-i18n v8.22.2 
- * (c) 2020 kazuya kawaguchi
+ * vue-i18n v8.24.4 
+ * (c) 2021 kazuya kawaguchi
  * Released under the MIT License.
  */
 
 /*!
- * vuex v3.6.0
- * (c) 2020 Evan You
+ * vuex v3.6.2
+ * (c) 2021 Evan You
  * @license MIT
  */
 

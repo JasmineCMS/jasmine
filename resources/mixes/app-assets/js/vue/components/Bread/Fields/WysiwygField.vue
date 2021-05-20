@@ -12,6 +12,7 @@ export default {
     data() {
         return {
             opts: Object.assign({
+                height: 500,
                 options: [],
             }, this.options),
 
@@ -21,7 +22,7 @@ export default {
     computed: {
         config() {
             return {
-                height: 500,
+                height: this.opts.height,
                 menubar: false,
                 //language: 'he_IL',
                 directionality: this.isLocaleRtl ? 'rtl' : 'ltr',
