@@ -85,7 +85,7 @@ export default {
     watch: {},
 
     beforeMount() {
-        this.field_value.src = this.field_value.src || `https://placehold.it/150x150`;
+        this.field_value.src = this.field_value.src || `https://via.placeholder.com/150x150`;
     }
 }
 </script>
