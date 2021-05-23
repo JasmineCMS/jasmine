@@ -86,7 +86,7 @@ class Jasmine
         foreach ($this->pages as $name => $page) {
             $pages[$name] = [
                 'href'  => route('jasmine.page.edit', Str::slug($name)),
-                'title' => __($name),
+                'title' => __(call_user_func([$page, 'getPageName'])),
             ];
         }
 
