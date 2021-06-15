@@ -1,5 +1,9 @@
 <template>
-    <sketch-picker v-model="colors"/>
+    <div :class="{'is-invalid': invalid}">
+        <input type="hidden" :name="name" :readonly="opts.readonly"
+               :required="validation.indexOf('required') > -1" v-model="field_value">
+        <sketch-picker v-model="colors" v-bind="opts"/>
+    </div>
 </template>
 
 <script>
@@ -8,13 +12,11 @@ import Sketch from 'vue-color/src/components/Sketch';
 export default {
     name: "ColorField",
     extends: JasmineBaseField,
-    comments: {'sketch-picker': Sketch},
+    components: {'sketch-picker': Sketch},
     data() {
         return {
-            colors: {hex8: this.field_value},
-            opts: Object.assign({
-                type: 'text',
-            }, this.options),
+            colors: {},
+            opts: Object.assign({}, this.options),
         };
     },
 
@@ -26,6 +28,10 @@ export default {
             },
         }
     },
+
+    mounted() {
+        this.colors = this.field_value;
+    }
 }
 </script>
 
