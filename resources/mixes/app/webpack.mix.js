@@ -40,6 +40,7 @@ mix
         'vuejs-datepicker',
         'vuedraggable',
         'vuex',
+        'vue-color',
     ])
     .js(`resources/mixes/${sec}/js/app.js`, `public/${sec + '-assets' + global.prefix}/js`)
     .sass(`resources/mixes/${sec}/sass/vendor.scss`, `public/${sec + '-assets' + global.prefix}/css`)
