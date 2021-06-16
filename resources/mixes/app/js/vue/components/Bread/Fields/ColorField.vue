@@ -1,8 +1,13 @@
 <template>
-    <div :class="{'is-invalid': invalid}">
+    <div :class="{'is-invalid': invalid}" style="position: relative;" @click="togglePicker($event)">
         <input type="hidden" :name="name" :readonly="opts.readonly"
                :required="validation.indexOf('required') > -1" v-model="field_value">
-        <sketch-picker v-model="colors" v-bind="opts"/>
+        <div class="form-control" style="font-size: 1.35rem; cursor: pointer;">
+            <div class="h-100" :style="{background:field_value}">&nbsp;</div>
+        </div>
+        <div v-show="show" class="holder">
+            <sketch-picker v-model="colors" v-bind="opts"/>
+        </div>
     </div>
 </template>
 
@@ -15,6 +20,7 @@ export default {
     components: {'sketch-picker': Sketch},
     data() {
         return {
+            show: false,
             colors: {},
             opts: Object.assign({}, this.options),
         };
@@ -29,12 +35,31 @@ export default {
         }
     },
 
+    methods: {
+        showPicker() {
+            document.addEventListener('click', this.documentClick);
+            this.show = true;
+        },
+        hidePicker() {
+            document.removeEventListener('click', this.documentClick);
+            this.show = false;
+        },
+        togglePicker() {
+            this.show ? this.hidePicker() : this.showPicker();
+        },
+
+    },
+
     mounted() {
         this.colors = this.field_value;
     }
 }
 </script>
 
-<style scoped>
-
+<style lang="scss" scoped>
+.holder {
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+}
 </style>
