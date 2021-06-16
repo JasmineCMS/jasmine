@@ -76,10 +76,8 @@ export default {
         };
     },
 
-    methods: {},
-
-    watch: {
-        'field_value.url'(val) {
+    methods: {
+        parseVal(val) {
             let m;
             if (val.indexOf('youtu')) {
                 m = val.match(/(\/|%3D|v=)(?<id>[0-9A-z-_]{11})([%#?&]|$)/);
@@ -110,6 +108,16 @@ export default {
             this.field_value.type = '';
         },
     },
+
+    watch: {
+        'field_value.url'(val) {
+            this.parseVal(val);
+        },
+    },
+
+    beforeMount() {
+        this.parseVal(this.field_value.url);
+    }
 }
 </script>
 
