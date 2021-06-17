@@ -147,11 +147,11 @@ export default {
             let vm = this;
 
             vm.fields.forEach(field => {
-                if (field.repeats > 1) {
-                    Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || [field.getDefault()]);
-                } else {
-                    Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || field.getDefault());
-                }
+                let field_value = vm.old[field.name] || vm.breadable[field.name] || (
+                    field.repeats > 1 ? [field.getDefault()] : field.getDefault()
+                );
+
+                Vue.set(vm.values, field.name, field_value);
             });
         },
 

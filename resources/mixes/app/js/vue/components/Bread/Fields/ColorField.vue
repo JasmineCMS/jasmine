@@ -49,10 +49,6 @@ export default {
         },
 
     },
-
-    mounted() {
-        this.colors = this.field_value;
-    }
 }
 </script>
 

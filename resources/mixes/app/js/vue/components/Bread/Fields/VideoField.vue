@@ -116,6 +116,10 @@ export default {
     },
 
     beforeMount() {
+        if (typeof this.field_value !== 'object') {
+            Vue.set(this, 'field_value', {url: '', type: ''});
+        }
+
         this.parseVal(this.field_value.url);
     }
 }
