@@ -268,7 +268,7 @@ class BreadController extends Controller
             }
 
             if ($field['options']['many_to_many']) {
-                $many_to_many_fields[$field['name']] = ['field' => $field, 'value' => $data[$field['name']]];
+                $many_to_many_fields[$field['name']] = ['field' => $field, 'value' => $data[$field['name']] ?? []];
                 unset($data[$field['name']]);
             } else if ($field['options']['parent_key_name']) {
                 $data[$field['options']['parent_key_name']] = $data[$field['name']];
@@ -367,7 +367,7 @@ class BreadController extends Controller
             }
 
             if ($field['options']['many_to_many']) {
-                $many_to_many_fields[$field['name']] = ['field' => $field, 'value' => $data[$field['name']]];
+                $many_to_many_fields[$field['name']] = ['field' => $field, 'value' => $data[$field['name']] ?? []];
                 unset($data[$field['name']]);
             } else if ($field['options']['parent_key_name']) {
                 $data[$field['options']['parent_key_name']] = $data[$field['name']];
