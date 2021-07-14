@@ -126,6 +126,10 @@ export default {
             required: true,
             type: Object,
         },
+        breadableKeyName: {
+            required: true,
+            type: String,
+        },
         errors: {
             required: true,
             type: Object,

@@ -261,6 +261,22 @@ class BreadController extends Controller
 
         $data = $request->validate($rules);
 
+        $many_to_many_fields = [];
+        foreach ($fields as $field) {
+            if ($field['type'] !== 'RelationshipField') {
+                continue;
+            }
+
+            if ($field['options']['many_to_many']) {
+                $many_to_many_fields[$field['name']] = ['field' => $field, 'value' => $data[$field['name']]];
+                unset($data[$field['name']]);
+            } else if ($field['options']['parent_key_name']) {
+                $data[$field['options']['parent_key_name']] = $data[$field['name']];
+                unset($data[$field['name']]);
+            }
+
+        }
+
         $routeParams = [];
 
         /** @var BreadableInterface|Model|Translatable $breadable */
@@ -271,6 +287,10 @@ class BreadController extends Controller
         }
 
         $breadable->forceFill($data)->save();
+
+        foreach ($many_to_many_fields as $value) {
+            $breadable->{$value['field']['options']['name']}()->sync($value['value']);
+        }
 
         $routeParams['breadableName'] = $breadableName;
         $routeParams['breadableId'] = $breadable->{$breadable->getRouteKeyName()};
@@ -340,7 +360,27 @@ class BreadController extends Controller
             $routeParams['_locale'] = $breadable->getLocale();
         }
 
+        $many_to_many_fields = [];
+        foreach ($fields as $field) {
+            if ($field['type'] !== 'RelationshipField') {
+                continue;
+            }
+
+            if ($field['options']['many_to_many']) {
+                $many_to_many_fields[$field['name']] = ['field' => $field, 'value' => $data[$field['name']]];
+                unset($data[$field['name']]);
+            } else if ($field['options']['parent_key_name']) {
+                $data[$field['options']['parent_key_name']] = $data[$field['name']];
+                unset($data[$field['name']]);
+            }
+
+        }
+
         $breadable->forceFill($data)->save();
+
+        foreach ($many_to_many_fields as $value) {
+            $breadable->{$value['field']['options']['name']}()->sync($value['value']);
+        }
 
         $routeParams['breadableName'] = $breadableName;
         $routeParams['breadableId'] = $breadable->{$breadable->getRouteKeyName()};

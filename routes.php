@@ -7,6 +7,7 @@ use Jasmine\Jasmine\Http\Controllers\Auth\ForgotPasswordController;
 use Jasmine\Jasmine\Http\Controllers\Auth\LoginController;
 use Jasmine\Jasmine\Http\Controllers\Auth\ResetPasswordController;
 use Jasmine\Jasmine\Http\Controllers\BreadController;
+use Jasmine\Jasmine\Http\Controllers\BreadRelationshipsController;
 use Jasmine\Jasmine\Http\Controllers\DashboardController;
 use Jasmine\Jasmine\Http\Controllers\FileManagerController;
 use Jasmine\Jasmine\Http\Controllers\LocaleController;
@@ -34,8 +35,7 @@ Route::group(
         Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
         Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])
-             ->name('password.request')
-        ;
+             ->name('password.request');
         Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
         Route::get('password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
         Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
@@ -50,8 +50,7 @@ Route::group(
 
                 Route::get('/file-manager', [FileManagerController::class, 'show'])->name('fm.show');
                 Route::get('/file-manager-tinymce5', [FileManagerController::class, 'tinymce5'])
-                     ->name('fm.show.tinymce5')
-                ;
+                     ->name('fm.show.tinymce5');
 
                 // Bread routes
                 Route::group(
@@ -70,6 +69,10 @@ Route::group(
                         Route::patch('/{breadableId}', [BreadController::class, 'update'])->name('update');
                         Route::put('/{breadableId}', [BreadController::class, 'update'])->name('update');
                         Route::delete('/{breadableId}', [BreadController::class, 'destroy'])->name('destroy');
+
+                        Route::get('/relations', [BreadRelationshipsController::class, 'getExisting']);
+
+                        Route::get('{breadableId}/relations', [BreadRelationshipsController::class, 'getRelationData']);
                     }
                 );
 
@@ -109,8 +112,7 @@ Route::group(
                 Route::delete('/redirection', [RedirectionController::class, 'delete'])->name('redirection.delete');
                 Route::get('/redirection/export', [RedirectionController::class, 'export'])->name('redirection.export');
                 Route::post('/redirection/import', [RedirectionController::class, 'import'])
-                     ->name('redirection.import')
-                ;
+                     ->name('redirection.import');
 
                 if ($authedGroup) {
                     $authedGroup();

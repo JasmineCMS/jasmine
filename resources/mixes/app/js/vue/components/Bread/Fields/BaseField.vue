@@ -51,6 +51,21 @@ let JasmineBaseField = {
         };
     },
 
+    computed: {
+        bread() {
+            let $breadEdit = this.$parent;
+            while ($breadEdit.$options.name !== 'BreadEdit') {
+                $breadEdit = $breadEdit.$parent;
+            }
+
+            return $breadEdit;
+        },
+
+        breadableExists() {
+            return Object.keys(this.bread?.breadable).length !== 0;
+        },
+    },
+
     watch: {
         'value'(val) {
             this.field_value = val;
@@ -60,7 +75,7 @@ let JasmineBaseField = {
             this.$emit('input', this.field_value);
         },
     },
-    
+
     mounted() {
         this.$on('');
     },
