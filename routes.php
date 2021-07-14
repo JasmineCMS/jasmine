@@ -70,7 +70,7 @@ Route::group(
                         Route::put('/{breadableId}', [BreadController::class, 'update'])->name('update');
                         Route::delete('/{breadableId}', [BreadController::class, 'destroy'])->name('destroy');
 
-                        Route::get('/relations', [BreadRelationshipsController::class, 'getExisting']);
+                        Route::get('/relations', [BreadRelationshipsController::class, 'getRelationData']);
 
                         Route::get('{breadableId}/relations', [BreadRelationshipsController::class, 'getRelationData']);
                     }
