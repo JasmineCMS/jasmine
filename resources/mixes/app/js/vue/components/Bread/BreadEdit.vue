@@ -138,6 +138,10 @@ export default {
             required: true,
             type: Object,
         },
+        fmPath: {
+            type: String,
+            default: () => '',
+        },
     },
 
     data() {

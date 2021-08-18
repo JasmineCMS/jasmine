@@ -21,6 +21,9 @@ $action = isset($breadable)
 $manifest = call_user_func("$breadableName::fieldsManifest");
 
 /** @var \Illuminate\Support\ViewErrorBag $errors */
+
+/** @var \Illuminate\Database\Eloquent\Model|\Jasmine\Jasmine\Bread\BreadableInterface $breadableInstance */
+$breadableInstance = $breadable ?? new $breadableName;
 ?>
 
 @extends('jasmine::app.app')
@@ -66,8 +69,9 @@ $manifest = call_user_func("$breadableName::fieldsManifest");
             @endif
             <bread-edit :manifest="{{ $manifest->toJson() }}"
                         :breadable="{{ $breadable ?? '{}' }}"
-                        breadable-key-name="{{ (new $breadableName)->getKeyName() }}"
+                        breadable-key-name="{{ $breadableInstance->getKeyName() }}"
                         locale="{{ request('_locale') }}"
+                        fm-path="{{ $breadableInstance::getPluralName() }}/{{ $breadableInstance->getKey() }}"
                         :errors="{{ $errors->any() ? json_encode($errors->getMessages()) : '{}' }}"
                         :old="{{ count(old()) ? json_encode(old()) : '{}' }}"></bread-edit>
         </form>

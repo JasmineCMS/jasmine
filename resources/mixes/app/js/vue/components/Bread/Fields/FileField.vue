@@ -21,7 +21,7 @@
                         </button>
                     </div>
                     <div class="modal-body p-0">
-                        <file-manager-wrapper ref="fmw"></file-manager-wrapper>
+                        <file-manager-wrapper ref="fmw" :path="bread.fmPath"></file-manager-wrapper>
                     </div>
                 </div>
             </div>

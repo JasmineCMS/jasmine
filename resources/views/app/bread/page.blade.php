@@ -39,8 +39,10 @@ $manifest = call_user_func(get_class($page) . "::fieldsManifest");
             @csrf
             @method('put')
             <bread-edit :manifest="{{ $manifest->toJson() }}"
-                        locale="{{ request('_locale') }}"
                         :breadable="{{ count($page->content) ? json_encode($page->content) : '{}' }}"
+                        breadable-key-name="{{ $page->getKeyName() }}"
+                        locale="{{ request('_locale') }}"
+                        fm-path="Pages/{{ $page->url }}"
                         :errors="{{ $errors->any() ? json_encode($errors->getMessages()) : '{}' }}"
                         :old="{{ count(old()) ? json_encode(old()) : '{}' }}"></bread-edit>
         </form>

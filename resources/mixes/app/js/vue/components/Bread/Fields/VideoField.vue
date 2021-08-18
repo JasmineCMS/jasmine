@@ -78,6 +78,7 @@ export default {
 
     methods: {
         parseVal(val) {
+            val = typeof val === 'string' ? val : '';
             let m;
             if (val.indexOf('youtu')) {
                 m = val.match(/(\/|%3D|v=)(?<id>[0-9A-z-_]{11})([%#?&]|$)/);
