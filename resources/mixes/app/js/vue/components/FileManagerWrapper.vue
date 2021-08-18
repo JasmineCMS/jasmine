@@ -14,6 +14,7 @@ export default {
 
     data() {
         return {
+            observer: null,
             settings: {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -37,10 +38,19 @@ export default {
     },
 
     mounted() {
-        this.$refs.fm.$el.addEventListener('submit', function (evt) {
-            evt.stopPropagation();
-            evt.preventDefault();
+        const config = {attributes: true, childList: true, subtree: true};
+        this.observer = new MutationObserver((mutationsList, observer) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type !== 'childList') return;
+                this.$refs.fm.$el.querySelectorAll('button:not([type="button"])').forEach(function (btn) {
+                    if (btn.type !== 'submit') return;
+                    btn.type = 'button';
+                });
+            }
         });
+
+        this.observer.observe(this.$refs.fm.$el, config);
+
         this.fm.$store.commit(`fm/left/setView`, 'grid');
 
         setTimeout(() => {
@@ -63,6 +73,10 @@ export default {
                 });
             });
         }, 500);
+    },
+
+    beforeDestroy() {
+        this.observer.disconnect();
     }
 }
 </script>
