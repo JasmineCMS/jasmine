@@ -102,7 +102,7 @@ export default {
 .preview {
     cursor: pointer;
     max-width: 100%;
-    max-height: 200px;
+    /*max-height: 200px;*/
     /*noinspection CssReplaceWithShorthandSafely*/
     background: linear-gradient(45deg,
     rgba(0, 0, 0, 0.0980392) 25%,
