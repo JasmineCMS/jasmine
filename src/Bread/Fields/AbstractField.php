@@ -124,7 +124,7 @@ abstract class AbstractField implements Arrayable, Jsonable
             'default'     => $this->default,
             'description' => $this->description,
             'repeats'     => $this->repeats,
-            'validation'  => $this->validation,
+            'validation'  => count($this->validation) ? $this->validation : ['nullable'],
             'options'     => $this->options ? $this->options : new \stdClass(),
             'width'       => $this->width,
         ];
