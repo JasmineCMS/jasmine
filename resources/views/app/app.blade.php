@@ -25,12 +25,7 @@
             <footer class="d-flex mt-4 justify-content-center align-items-center" dir="ltr">
                 <div class="p-2">
                     <p class="m-0">
-                        <small>
-                            <a href="https://github.com/JasmineCMS/jasmine" target="_blank">
-                                JasmineCMS
-                            </a>
-                            v0.4.2
-                        </small>,
+                        <small><a href="https://github.com/JasmineCMS/jasmine" target="_blank">JasmineCMS</a></small>,
 
                         <small>
                             Sponsored by
