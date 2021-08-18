@@ -17,7 +17,7 @@
 
         <div v-if="showFm" class="modal fade show d-block" tabindex="-1" role="dialog"
              aria-hidden="true">
-            <div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
+            <div class="modal-dialog modal-dialog-scrollable modal-xl h-100" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">File Manager | Choose image for {{ label }}</h5>
@@ -43,7 +43,7 @@ export default {
     data() {
         return {
             opts: Object.assign({
-                options: [],
+                w: 150, h: 150, placeholder: null, bg: 'e6e6e6', fg: '495057', ext: 'png',
             }, this.options),
 
             showFm: false,
@@ -85,7 +85,11 @@ export default {
     watch: {},
 
     beforeMount() {
-        this.field_value.src = this.field_value.src || `https://via.placeholder.com/150x150`;
+        this.opts.placeholder = `${this.opts.w} x ${this.opts.h}`;
+
+        this.field_value.src = this.field_value.src ||
+            `https://via.placeholder.com/${this.opts.w}x${this.opts.h}/${this.opts.bg}/${this.opts.fg}.${this.opts.ext}?text=${this.opts.placeholder}`
+        ;
     }
 }
 </script>
