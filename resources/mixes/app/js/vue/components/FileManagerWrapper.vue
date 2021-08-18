@@ -38,6 +38,7 @@ export default {
 
     mounted() {
         this.$refs.fm.$el.addEventListener('submit', function (evt) {
+            evt.stopPropagation();
             evt.preventDefault();
         });
         this.fm.$store.commit(`fm/left/setView`, 'grid');
