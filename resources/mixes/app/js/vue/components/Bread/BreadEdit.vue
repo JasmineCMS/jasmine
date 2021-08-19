@@ -28,24 +28,42 @@
 
                             <!-- Repeatable field -->
                             <template v-if="field.repeats > 1">
+                                <div class="mb-2">
+                                    <button class="btn btn-primary" @click="repeatField(field)"
+                                            :disabled="values[field.name].length >= field.repeats"
+                                            type="button" :title="$t('Add') +' '+ field.label">
+                                        <i class="fas fa-plus"></i>
+                                        <span v-text="$t('Add') +' '+ field.label"></span>
+                                    </button>
+                                </div>
                                 <draggable
                                     :list="values[field.name]"
                                     ghost-class="ghost"
                                     handle=".dnd-handler"
+                                    class="form-row"
                                 >
-                                    <div class="mb-2">
-                                        <button class="btn btn-primary" @click="repeatField(field)"
-                                                :disabled="values[field.name].length >= field.repeats"
-                                                type="button" :title="$t('Add') +' '+ field.label">
-                                            <i class="fas fa-plus"></i>
-                                            <span v-text="$t('Add') +' '+ field.label"></span>
-                                        </button>
-                                    </div>
-                                    <div class="d-flex" v-for="(value, vi) in values[field.name]" :key="field.id+vi">
-                                        <div class="form-group flex-fill">
-                                            <label :for="field.id+vi">
-                                                {{ field.label }} ({{ vi + 1 }})
-                                            </label>
+                                    <div class="d-flex" :class="field.repeatsWidth"
+                                         v-for="(value, vi) in values[field.name]" :key="field.id+vi">
+                                        <div class="form-group flex-fill m-2">
+                                            <div class="d-flex justify-content-between">
+                                                <label :for="field.id+vi">
+                                                    {{ field.label }} ({{ vi + 1 }})
+                                                </label>
+                                                <div class="mb-1">
+                                                    <button class="btn btn-primary dnd-handler"
+                                                            type="button" :title="$t('Reorder') +' '+ field.label">
+                                                        <i class="fas fa-arrows-alt"></i>
+                                                    </button>
+
+                                                    <button class="btn btn-danger"
+                                                            @click="removeRepeatedField(field.name, vi)"
+                                                            :disabled="values[field.name].length === 1"
+                                                            type="button"
+                                                            :title="$t('Remove')+' '+ field.label + ' ('+(vi+1)+')'">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
                                             <component :is="field.component" :id="field.id+vi"
                                                        :name="field.name + '['+vi+']'"
                                                        :invalid="!!errors[field.name]" v-model="values[field.name][vi]"
@@ -54,30 +72,16 @@
                                                        :locale="locale" :is-locale-rtl="isLocaleRtl"
                                             ></component>
                                         </div>
-
-                                        <div style="padding-top: 1.5rem;padding-inline-start: 1.25rem">
-                                            <button class="btn btn-primary dnd-handler"
-                                                    type="button" :title="$t('Reorder') +' '+ field.label">
-                                                <i class="fas fa-arrows-alt"></i>
-                                            </button>
-
-                                            <button class="btn btn-danger" @click="removeRepeatedField(field.name, vi)"
-                                                    :disabled="values[field.name].length === 1"
-                                                    type="button"
-                                                    :title="$t('Remove')+' '+ field.label + ' ('+(vi+1)+')'">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="mb-5">
-                                        <button class="btn btn-primary" @click="repeatField(field)"
-                                                :disabled="values[field.name].length >= field.repeats"
-                                                type="button" :title="$t('Add') +' '+ field.label">
-                                            <i class="fas fa-plus"></i>
-                                            <span v-text="$t('Add') +' '+ field.label"></span>
-                                        </button>
                                     </div>
                                 </draggable>
+                                <div class="mb-5">
+                                    <button class="btn btn-primary" @click="repeatField(field)"
+                                            :disabled="values[field.name].length >= field.repeats"
+                                            type="button" :title="$t('Add') +' '+ field.label">
+                                        <i class="fas fa-plus"></i>
+                                        <span v-text="$t('Add') +' '+ field.label"></span>
+                                    </button>
+                                </div>
                             </template>
 
                             <!-- Single field -->

@@ -42,6 +42,9 @@ abstract class AbstractField implements Arrayable, Jsonable
     /** @var string */
     protected $width;
 
+    /** @var string */
+    protected $repeatsWidth;
+
     /**
      * AbstractField constructor.
      *
@@ -53,6 +56,7 @@ abstract class AbstractField implements Arrayable, Jsonable
         $this->id = uniqid('jf');
         $this->label = __(Str::title(preg_replace('/[\-_]/', ' ', $name)));
         $this->width = 'col-12';
+        $this->repeatsWidth = 'col-12';
         $this->default = '';
     }
 
@@ -80,9 +84,16 @@ abstract class AbstractField implements Arrayable, Jsonable
         return $this;
     }
 
-    public function setRepeats(int $repeats)
+    public function setRepeats(int $repeats, ?string $repeatsWidth = null)
     {
         $this->repeats = $repeats;
+        if ($repeatsWidth) $this->setRepeatsWidth($repeatsWidth);
+        return $this;
+    }
+
+    public function setRepeatsWidth(string $width)
+    {
+        $this->repeatsWidth = $width;
         return $this;
     }
 
@@ -110,29 +121,23 @@ abstract class AbstractField implements Arrayable, Jsonable
      */
     public function toArray()
     {
-        if ($this->repeats > 1) {
-            // TODO: log or error?
-            $this->width = 'col-12';
-        }
+        if ($this->repeats > 1) $this->width = 'col-12';
 
         return [
-            'type'        => (new \ReflectionClass($this))->getShortName(),
-            'component'   => $this->component,
-            'name'        => $this->name,
-            'id'          => $this->id,
-            'label'       => $this->label,
-            'default'     => $this->default,
-            'description' => $this->description,
-            'repeats'     => $this->repeats,
-            'validation'  => count($this->validation) ? $this->validation : ['nullable'],
-            'options'     => $this->options ? $this->options : new \stdClass(),
-            'width'       => $this->width,
+            'type'         => (new \ReflectionClass($this))->getShortName(),
+            'component'    => $this->component,
+            'name'         => $this->name,
+            'id'           => $this->id,
+            'label'        => $this->label,
+            'default'      => $this->default,
+            'description'  => $this->description,
+            'repeats'      => $this->repeats,
+            'repeatsWidth' => $this->repeatsWidth,
+            'validation'   => count($this->validation) ? $this->validation : ['nullable'],
+            'options'      => $this->options ?: new \stdClass(),
+            'width'        => $this->width,
         ];
     }
 
-    public function toJson($options = 0)
-    {
-        $array = $this->toArray();
-        return json_encode($array, $options);
-    }
+    public function toJson($options = 0) { return json_encode($this->toArray(), $options); }
 }

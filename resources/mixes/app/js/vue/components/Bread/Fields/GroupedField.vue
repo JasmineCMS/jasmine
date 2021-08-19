@@ -88,73 +88,74 @@
 </template>
 
 <script>
-    export default {
-        name: "GroupedField",
-        extends: JasmineBaseField,
-        data() {
-            return {
-                opts: Object.assign({
-                    fields: [],
-                }, this.options),
-            };
+export default {
+    name: "GroupedField",
+    extends: JasmineBaseField,
+    data() {
+        return {
+            opts: Object.assign({
+                fields: [],
+            }, this.options),
+        };
+    },
+
+    methods: {
+        loadValues() {
+            let vm = this;
+
+            vm.fields.forEach(field => {
+                if (field.repeats > 1) {
+                    //Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || [field.getDefault()]);
+                    Vue.set(vm.field_value, field.name,
+                        //vm.old[field.name] ||
+                        vm.field_value[field.name]
+                        || [field.getDefault()]
+                    );
+                } else {
+                    //Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || field.getDefault());
+                }
+            });
         },
 
-        methods: {
-            loadValues() {
-                let vm = this;
+        repeatField(field) {
+            this.field_value[field.name].push(field.getDefault());
+        },
 
-                vm.fields.forEach(field => {
-                    if (field.repeats > 1) {
-                        //Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || [field.getDefault()]);
-                        Vue.set(vm.field_value, field.name,
-                            //vm.old[field.name] ||
-                            vm.field_value[field.name]
-                            || [field.getDefault()]
-                        );
-                    } else {
-                        //Vue.set(vm.values, field.name, vm.old[field.name] || vm.breadable[field.name] || field.getDefault());
+        removeRepeatedField(fieldName, i) {
+            this.field_value[fieldName].splice(i, 1);
+        },
+    },
+
+    computed: {
+        fields() {
+            return this.opts.fields.map(f => {
+                f.getDefault = () => {
+                    if (typeof f.default === 'object') {
+                        return JSON.parse(JSON.stringify(f.default));
                     }
-                });
-            },
-
-            repeatField(field) {
-                this.field_value[field.name].push(field.getDefault());
-            },
-
-            removeRepeatedField(fieldName, i) {
-                this.field_value[fieldName].splice(i, 1);
-            },
+                    return f.default;
+                };
+                return f;
+            });
         },
 
-        computed: {
-            fields() {
-                return this.opts.fields.map(f => {
-                    f.getDefault = () => {
-                        if (typeof f.default === 'object') {
-                            return JSON.parse(JSON.stringify(f.default));
-                        }
-                        return f.default;
-                    };
-                    return f;
-                });
-            },
-
-            errors() {
-                return {};
-            },
+        errors() {
+            return {};
         },
+    },
 
-        beforeMount() {
-            this.loadValues();
-        },
+    beforeMount() {
+        this.loadValues();
+    },
 
-        mounted() {
-        }
+    mounted() {
     }
+}
 </script>
 
 <style scoped>
-    .form-row.grouped {
-        background-color: #e1f4ff;
-    }
+.form-row.grouped {
+    background-color: #e1f4ff;
+    margin: 0;
+}
 </style>
