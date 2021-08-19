@@ -13,7 +13,9 @@ export default {
         return {
             opts: Object.assign({
                 height: 500,
-                options: [],
+                content_css: [],
+                content_style: '',
+                config: {},
             }, this.options),
 
         };
@@ -22,6 +24,8 @@ export default {
     computed: {
         config() {
             return {
+                content_css: this.opts.content_css,
+                content_style: this.opts.content_style,
                 height: this.opts.height,
                 menubar: false,
                 //language: 'he_IL',
@@ -66,6 +70,7 @@ export default {
                     'image media',
                     'code',
                 ].join(' | '),
+                ...this.opts.config,
             };
         },
     },
