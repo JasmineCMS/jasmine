@@ -20,7 +20,9 @@ class Robots
         /** @var Response $response */
         $response = $next($request);
 
-        $response->header('X-Robots-Tag', 'noindex, nofollow');
+        if(method_exists($response, 'header')){
+            $response->header('X-Robots-Tag', 'noindex, nofollow');
+        }
 
         return $response;
     }
