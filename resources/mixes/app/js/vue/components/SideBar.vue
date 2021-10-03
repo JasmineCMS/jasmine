@@ -11,6 +11,7 @@
             <ul class="nav flex-column">
                 <li v-for="(item, i) in items" :key="i" class="nav-item"
                     :class="{
+                    'active' : item.active,
                     'dropdown': item.children && agnosticLength(item.children),
                     }">
 
@@ -29,7 +30,8 @@
 
                     <div v-if="item.children && agnosticLength(item.children)" class="child-menu">
                         <a v-for="(child, ci) in item.children" :key="ci"
-                           class="nav-link" :href="child.href || '#'" :target="item.target || '_self'"
+                           class="nav-link" :class="{'active':child.active}" :href="child.href || '#'"
+                           :target="item.target || '_self'"
                            :title="child.title">
                             {{ child.title }}
                         </a>
@@ -129,6 +131,11 @@ export default {
                         > * {
                             padding-inline-start: 3rem;
                             font-size: 1.1em;
+
+                            &.active {
+                                color: #262626;
+                                background: #f2f2f2;
+                            }
 
                             &:hover {
                                 color: $blue;

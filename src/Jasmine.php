@@ -3,215 +3,24 @@
 namespace Jasmine\Jasmine;
 
 use Illuminate\Support\Str;
-use Jasmine\Jasmine\Bread\BreadableInterface;
-use Jasmine\Jasmine\Bread\PageInterface;
 use Jasmine\Jasmine\Exceptions\MustExtendJasminePage;
-use Jasmine\Jasmine\Exceptions\MustImplementBreadableInterface;
 use Jasmine\Jasmine\Models\JasminePage;
+use Jasmine\Jasmine\Registers\RegistersBreadables;
+use Jasmine\Jasmine\Registers\RegistersCustomAssets;
+use Jasmine\Jasmine\Registers\RegistersLocales;
+use Jasmine\Jasmine\Registers\RegistersPages;
+use Jasmine\Jasmine\Registers\RegistersSideBarMenuItems;
 
 class Jasmine
 {
-    protected $minifiedAssets = true;
+    use RegistersLocales,
+        RegistersBreadables,
+        RegistersPages,
+        RegistersSideBarMenuItems,
+        RegistersCustomAssets;
 
-    protected $breadables = [];
+    public function routes(callable $group = null, callable $authedGroup = null) { require __DIR__ . '/../routes.php'; }
 
-    protected $pages = [];
-
-    protected $locales = [];
-
-    protected $appJs = [];
-
-    protected $appStyles = [];
-
-    protected $sideBarMenuFilters = [];
-
-    public function routes(callable $group = null, callable $authedGroup = null)
-    {
-        require __DIR__ . '/../routes.php';
-    }
-
-    /**
-     * Register a breadable model
-     *
-     * @param string $breadable
-     *
-     * @throws MustImplementBreadableInterface
-     */
-    public function registerBreadable(string $breadable)
-    {
-        if (!in_array(BreadableInterface::class, class_implements($breadable))) {
-            throw new MustImplementBreadableInterface("\"$breadable\" must implement \"" . BreadableInterface::class . '"');
-        }
-
-        $this->breadables[] = $breadable;
-    }
-
-    /**
-     * Register a page
-     *
-     * @param string $page
-     *
-     * @throws MustExtendJasminePage
-     */
-    public function registerPage(string $page)
-    {
-        if (!is_subclass_of($page, JasminePage::class)) {
-            throw new MustExtendJasminePage("\"$page\" must extend \"" . JasminePage::class . '"');
-        }
-
-        $name = Str::slug(call_user_func("$page::getPageName"));
-
-        $this->pages[$name] = $page;
-
-    }
-
-    /**
-     * Set available locales, overwrites existing
-     *
-     * @param array $locales
-     */
-    public function registerLocales(array $locales)
-    {
-        $this->locales = $locales;
-    }
-
-    public function getBreadables(): array
-    {
-        return $this->breadables;
-    }
-
-    public function getPages(): array
-    {
-        $pages = [];
-        foreach ($this->pages as $name => $page) {
-            $pages[$name] = [
-                'href'  => route('jasmine.page.edit', Str::slug($name)),
-                'title' => __(call_user_func([$page, 'getPageName'])),
-            ];
-        }
-
-        return $pages;
-    }
-
-    public function getPage(string $pageSlug)
-    {
-        return $this->pages[$pageSlug] ?? null;
-    }
-
-    public function getLocales()
-    {
-        return $this->locales;
-    }
-
-    public function getSideBarMenuItems()
-    {
-        $items = collect([]);
-
-        $items['dashboard'] = [
-            'href'  => route('jasmine.dashboard'),
-            'title' => __('Dashboard'),
-            'icon'  => 'fa-tachometer-alt',
-        ];
-
-        $items['file_manager'] = [
-            'href'  => route('jasmine.fm.show'),
-            'title' => __('File Manager'),
-            'icon'  => 'fa-folder',
-        ];
-
-        $items['pages'] = [
-            'title'    => __('Pages'),
-            'icon'     => 'fa-newspaper',
-            'children' => $this->getPages(),
-        ];
-
-        foreach ($this->breadables as $breadable) {
-            $item = [];
-            $item['href'] = route('jasmine.bread.index', $breadable);
-            $item['title'] = call_user_func("$breadable::getPluralName");
-
-            if ($icon = call_user_func("$breadable::getMenuIcon")) {
-                $item['icon'] = $icon;
-            }
-
-            $items[$breadable] = $item;
-        }
-
-        $items['settings'] = [
-            'href'  => '#',
-            'title' => __('Settings'),
-            'icon'  => 'fa-sliders-h',
-        ];
-
-        // tools
-        $items['tools'] = [
-            'title'    => __('Tools'),
-            'icon'     => 'fa-tools',
-            'children' => [
-                'redirections' => [
-                    'href'  => route('jasmine.redirection.index'),
-                    'title' => __('Redirections'),
-                ],
-            ],
-        ];
-
-        foreach ($this->sideBarMenuFilters as $filter) {
-            $items = $filter($items);
-        }
-
-        $items = $items->map(function ($item) {
-            if (isset($item['children']) && count($item['children']) > 0) {
-                $item['opened'] = $item['opened'] ?? false;
-            }
-
-            return $item;
-        });
-
-        return $items;
-    }
-
-    public function addSideBarMenuFilter(callable $cb)
-    {
-        $this->sideBarMenuFilters[] = $cb;
-    }
-
-    /**
-     * Register custom js file to run on backend
-     *
-     * @param string $path full url of the js file (prefer https)
-     */
-    public function registerCustomJs(string $path)
-    {
-        $this->appJs[] = $path;
-    }
-
-    public function getCustomJses()
-    {
-        return $this->appJs;
-    }
-
-    /**
-     * Register custom stylesheet file to run on backend
-     *
-     * @param string $path full url of the stylesheet file (prefer https)
-     */
-    public function registerCustomStyle(string $path)
-    {
-        $this->appStyles[] = $path;
-    }
-
-    public function getCustomStyles()
-    {
-        return $this->appStyles;
-    }
-
-    public function useUnMinifiedAssets()
-    {
-        $this->minifiedAssets = false;
-    }
-
-    public function appAssetsManifest()
-    {
-        return 'jasmine-public/app-assets' . ($this->minifiedAssets ? '/min' : '');
-    }
+    /** @deprecated */
+    public function useUnMinifiedAssets() { }
 }

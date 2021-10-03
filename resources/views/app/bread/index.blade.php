@@ -31,7 +31,7 @@ use Jasmine\Jasmine\Bread\Translatable;
 
                             <div>
                                 @if(property_exists($breadableName, 'exportable'))
-                                    <a href="{{ route('jasmine.bread.export', $breadableName) }}"
+                                    <a href="{{ route('jasmine.bread.export', $breadableKey) }}"
                                        target="_blank"
                                        class="btn btn-outline-info">
                                         <i class="fas fa-table"></i>
@@ -39,7 +39,7 @@ use Jasmine\Jasmine\Bread\Translatable;
                                     </a>
                                 @endif
 
-                                <a href="{{ route('jasmine.bread.create', $breadableName) }}"
+                                <a href="{{ route('jasmine.bread.create', $breadableKey) }}"
                                    class="btn btn-outline-primary">
                                     <i class="fas fa-plus"></i>
                                     {{ __('New') }}
@@ -53,9 +53,9 @@ use Jasmine\Jasmine\Bread\Translatable;
                         <v-data-table table-class="table table-striped table-responsive-md"
                                       ref="dt"
                                       key-column="{{ $breadableIdColumn }}"
-                                      sort-url="{{ route('jasmine.bread.reorder', $breadableName) }}"
+                                      sort-url="{{ route('jasmine.bread.reorder', $breadableKey) }}"
                                       sort-column="{{ $order_column }}"
-                                      data-url="{{ route('jasmine.bread.index', ['breadableName' => $breadableName, '_locale' => request('_locale')]) }}">
+                                      data-url="{{ route('jasmine.bread.index', ['breadableName' => $breadableKey, '_locale' => request('_locale')]) }}">
                             <template v-slot:thead="{t}">
                                 <tr>
                                     @foreach($browseableColumns as $column)
@@ -87,12 +87,12 @@ use Jasmine\Jasmine\Bread\Translatable;
 
                             <template v-slot:td_{{ count($browseableColumns) }}="{data,row,col}">
                                 <a class="btn btn-info"
-                                   :href="'{{ route('jasmine.bread.edit', [$breadableName, '-id-']) }}'.replace('-id-', data)">
+                                   :href="'{{ route('jasmine.bread.edit', [$breadableKey, '-id-']) }}'.replace('-id-', data)">
                                     <i class="fas fa-pen"></i>
                                 </a>
 
                                 <a role="button" class="btn btn-danger" :data-title="data" v-delete
-                                   :href="'{{ route('jasmine.bread.destroy', [$breadableName, '-id-']) }}'.replace('-id-', data)">
+                                   :href="'{{ route('jasmine.bread.destroy', [$breadableKey, '-id-']) }}'.replace('-id-', data)">
                                     <i class="fas fa-trash"></i>
                                 </a>
                             </template>

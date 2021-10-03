@@ -1,14 +1,15 @@
 const mix = require('laravel-mix');
 
-process.env.section = 'app';
+process.env.section = process.env.npm_config_mix || 'app';
 
-global.prefix = '';
+if (process.env.npm_config_sourcemaps) {
+    mix.sourceMaps();
+}
 
 if (!mix.inProduction()) {
     mix.sourceMaps();
     mix.webpackConfig({devtool: 'inline-source-map'});
 } else {
-    global.prefix = '/min';
     mix.version();
 }
 

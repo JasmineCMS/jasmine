@@ -1,4 +1,5 @@
 <?php
+/** @var string $breadableKey */
 /** @var string $breadableName */
 
 use Jasmine\Jasmine\Bread\Translatable;
@@ -7,7 +8,7 @@ use Jasmine\Jasmine\Bread\Translatable;
  * @var \Jasmine\Jasmine\Bread\BreadableInterface|\Illuminate\Database\Eloquent\Model|Translatable $breadable
  */
 
-$actionParams = ['breadableName' => $breadableName];
+$actionParams = ['breadableName' => $breadableKey];
 
 if (in_array(Translatable::class, class_uses($breadableName))) {
     $actionParams['_locale'] = \request()->get('_locale', 'en');

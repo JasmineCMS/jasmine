@@ -33,7 +33,7 @@ class Migrate extends Command
     /**
      * Execute the console command.
      *
-     * @return void
+     * @return int
      */
     public function handle()
     {
@@ -43,5 +43,7 @@ class Migrate extends Command
         ]);
 
         echo \Artisan::output();
+
+        return 0;
     }
 }

@@ -22,14 +22,15 @@ class BreadController extends Controller
      */
     public function index()
     {
-        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableKey = \request()->route('breadableName');
+        $breadableName = \Jasmine::getBreadables()[$breadableKey] ?? abort(404);
 
         if (
             in_array(Translatable::class, class_uses($breadableName))
             && \request()->get('_locale') == null
         ) {
             $locale = in_array(app()->getLocale(), \Jasmine::getLocales()) ? app()->getLocale() : \Jasmine::getLocales()[0];
-            return redirect(route('jasmine.bread.index', ['breadableName' => $breadableName, '_locale' => $locale]));
+            return redirect(route('jasmine.bread.index', ['breadableName' => $breadableKey, '_locale' => $locale]));
         }
 
         /** @var Builder $query */
@@ -157,13 +158,14 @@ class BreadController extends Controller
         }
 
         return view('jasmine::app.bread.index', compact(
-            'breadableName', 'browseableColumns', 'breadableIdColumn', 'order_column'
+            'breadableName', 'breadableKey', 'browseableColumns', 'breadableIdColumn', 'order_column'
         ));
     }
 
     public function export(Request $request)
     {
-        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableKey = \request()->route('breadableName');
+        $breadableName = \Jasmine::getBreadables()[$breadableKey] ?? abort(404);
 
         $result = $this->index();
 
@@ -201,7 +203,8 @@ class BreadController extends Controller
 
     public function reorder(Request $request)
     {
-        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableKey = \request()->route('breadableName');
+        $breadableName = \Jasmine::getBreadables()[$breadableKey] ?? abort(404);
 
         $data = $request->validate([
             'order'         => 'required|array',
@@ -215,25 +218,26 @@ class BreadController extends Controller
             $order_column = $model->sortable['order_column_name'] ?? 'order_column';
             foreach ($data['order'] as $row) {
                 \DB::table($model->getTable())
-                   ->where($model->getKeyName(), $row['id'])
-                   ->update([$order_column => $row['order']]);
+                    ->where($model->getKeyName(), $row['id'])
+                    ->update([$order_column => $row['order']]);
             }
         });
     }
 
     public function create()
     {
-        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableKey = \request()->route('breadableName');
+        $breadableName = \Jasmine::getBreadables()[$breadableKey] ?? abort(404);
 
         if (
             in_array(Translatable::class, class_uses($breadableName))
             && \request()->get('_locale') == null
         ) {
             $locale = in_array(app()->getLocale(), \Jasmine::getLocales()) ? app()->getLocale() : \Jasmine::getLocales()[0];
-            return redirect(route('jasmine.bread.create', ['breadableName' => $breadableName, '_locale' => $locale]));
+            return redirect(route('jasmine.bread.create', ['breadableName' => $breadableKey, '_locale' => $locale]));
         }
 
-        return view('jasmine::app.bread.edit', compact('breadableName'));
+        return view('jasmine::app.bread.edit', compact('breadableName', 'breadableKey'));
     }
 
     /**
@@ -245,7 +249,8 @@ class BreadController extends Controller
      */
     public function store(Request $request)
     {
-        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableKey = \request()->route('breadableName');
+        $breadableName = \Jasmine::getBreadables()[$breadableKey] ?? abort(404);
 
         /** @var AbstractField[]|Collection $fields */
         $fields = collect(call_user_func("$breadableName::fieldsManifest")->toArray())->flatten(2);
@@ -292,7 +297,7 @@ class BreadController extends Controller
             $breadable->{$value['field']['options']['name']}()->sync($value['value']);
         }
 
-        $routeParams['breadableName'] = $breadableName;
+        $routeParams['breadableName'] = $breadableKey;
         $routeParams['breadableId'] = $breadable->{$breadable->getRouteKeyName()};
 
         return redirect(route('jasmine.bread.edit', $routeParams));
@@ -300,15 +305,14 @@ class BreadController extends Controller
 
     public function edit()
     {
-        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableKey = \request()->route('breadableName');
+        $breadableName = \Jasmine::getBreadables()[$breadableKey] ?? abort(404);
         $breadableId = \request()->route()->parameter('breadableId');
 
         /** @var null|Model|BreadableInterface|Translatable $breadable */
         $breadable = call_user_func("$breadableName::find", $breadableId);
 
-        if (!$breadable) {
-            abort(404);
-        }
+        if (!$breadable) abort(404);
 
         if (
             in_array(Translatable::class, class_uses($breadableName))
@@ -316,7 +320,7 @@ class BreadController extends Controller
         ) {
             $locale = in_array(app()->getLocale(), \Jasmine::getLocales()) ? app()->getLocale() : \Jasmine::getLocales()[0];
             return redirect(route('jasmine.bread.edit', [
-                'breadableName' => $breadableName,
+                'breadableName' => $breadableKey,
                 'breadableId'   => $breadable->{$breadable->getRouteKeyName()},
                 '_locale'       => $locale,
             ]));
@@ -328,12 +332,13 @@ class BreadController extends Controller
 
         //dd($breadable->toArray());
 
-        return view('jasmine::app.bread.edit', compact('breadableName', 'breadable'));
+        return view('jasmine::app.bread.edit', compact('breadableName', 'breadableKey', 'breadable'));
     }
 
     public function update(Request $request)
     {
-        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableKey = \request()->route('breadableName');
+        $breadableName = \Jasmine::getBreadables()[$breadableKey] ?? abort(404);
         $breadableId = \request()->route()->parameter('breadableId');
 
         /** @var AbstractField[] $fields */
@@ -382,7 +387,7 @@ class BreadController extends Controller
             $breadable->{$value['field']['options']['name']}()->sync($value['value']);
         }
 
-        $routeParams['breadableName'] = $breadableName;
+        $routeParams['breadableName'] = $breadableKey;
         $routeParams['breadableId'] = $breadable->{$breadable->getRouteKeyName()};
 
         return redirect(route('jasmine.bread.edit', $routeParams));
@@ -395,15 +400,14 @@ class BreadController extends Controller
      */
     public function destroy()
     {
-        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableKey = \request()->route('breadableName');
+        $breadableName = \Jasmine::getBreadables()[$breadableKey] ?? abort(404);
         $breadableId = \request()->route()->parameter('breadableId');
 
         /** @var null|Model|BreadableInterface $breadable */
         $breadable = call_user_func("$breadableName::find", $breadableId);
 
-        if (!$breadable) {
-            abort(404);
-        }
+        if (!$breadable) abort(404);
 
         return ['success' => $breadable->delete()];
     }

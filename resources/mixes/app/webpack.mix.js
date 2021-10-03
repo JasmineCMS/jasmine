@@ -17,7 +17,7 @@ mix.extend('i18n', new class {
 
 mix
     .setResourceRoot(`../`)
-    .setPublicPath(`public/${sec + '-assets' + global.prefix}`)
+    .setPublicPath(`public/${sec}-assets`)
     .i18n()
     .vue()
     .extract([
@@ -42,9 +42,9 @@ mix
         'vuex',
         'vue-color',
     ])
-    .js(`resources/mixes/${sec}/js/app.js`, `public/${sec + '-assets' + global.prefix}/js`)
-    .sass(`resources/mixes/${sec}/sass/vendor.scss`, `public/${sec + '-assets' + global.prefix}/css`)
-    .sass(`resources/mixes/${sec}/sass/app.scss`, `public/${sec + '-assets' + global.prefix}/css`)
-    .copy('node_modules/tinymce/skins', `public/${sec + '-assets' + global.prefix}/js/skins`)
-    .copy('node_modules/tinymce/icons', `public/${sec + '-assets' + global.prefix}/js/icons`)
+    .js(`resources/mixes/${sec}/js/app.js`, `public/${sec}-assets/js`)
+    .sass(`resources/mixes/${sec}/sass/vendor.scss`, `public/${sec}-assets/css`)
+    .sass(`resources/mixes/${sec}/sass/app.scss`, `public/${sec}-assets/css`)
+    .copy('node_modules/tinymce/skins', `public/${sec + '-assets'}/js/skins`)
+    .copy('node_modules/tinymce/icons', `public/${sec + '-assets'}/js/icons`)
 ;

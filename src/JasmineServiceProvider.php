@@ -23,15 +23,11 @@ class JasmineServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        require_once __DIR__ . '/../helpers.php';
+        $this->app->singleton('jasmine', fn() => new Jasmine());
 
-        $this->app->singleton('jasmine', function () {
-            return new Jasmine();
-        });
+        if ($this->app->runningInConsole()) $this->registerConsoleCommands();
 
-        if ($this->app->runningInConsole()) {
-            $this->registerConsoleCommands();
-        }
+        $this->jasmine(app('jasmine'));
     }
 
     /**
@@ -58,7 +54,44 @@ class JasmineServiceProvider extends ServiceProvider
 
         $router->aliasMiddleware('jasmineAuth', Authenticate::class);
         $router->aliasMiddleware('jasmineMaintenanceMode', MaintenanceMode::class);
+    }
 
+    private function jasmine(Jasmine $jasmine)
+    {
+        $jasmine->registerSideBarMenuItem('dashboard', fn() => [
+            'title'    => __('Dashboard'),
+            'is-route' => 'jasmine.dashboard',
+            'href'     => route('jasmine.dashboard'),
+            'icon'     => 'fa-tachometer-alt',
+        ]);
+
+        $jasmine->registerSideBarMenuItem('file_manager', fn() => [
+            'href'     => route('jasmine.fm.show'),
+            'is-route' => 'jasmine.fm.show',
+            'title'    => __('File Manager'),
+            'icon'     => 'fa-folder',
+        ]);
+
+        $jasmine->registerSideBarMenuItem('pages', fn() => [
+            'title'    => __('Pages'),
+            'icon'     => 'fa-newspaper',
+            'children' => [],
+        ]);
+
+
+        $jasmine->registerSideBarMenuItem('tools', fn() => [
+            'title'    => __('Tools'),
+            'icon'     => 'fa-tools',
+            'children' => [],
+        ], 60);
+
+        $jasmine->registerSideBarSubMenuItem('tools', 'redirections', function () {
+            return [
+                'href'     => route('jasmine.redirection.index'),
+                'is-route' => 'jasmine.redirection.index',
+                'title'    => __('Redirections'),
+            ];
+        });
     }
 
     private function registerConsoleCommands()
@@ -69,6 +102,7 @@ class JasmineServiceProvider extends ServiceProvider
             Migrate::class,
         ]);
     }
+
 
     /**
      * Merge the given configuration with the existing configuration.
@@ -87,31 +121,20 @@ class JasmineServiceProvider extends ServiceProvider
         $repo->set($key, $this->mergeConfig(require $path, $config));
     }
 
-
     /**
      * Merges the configs together and takes multi-dimensional arrays into account.
-     *
-     * @param array $original
-     * @param array $merging
-     *
-     * @return array
      */
-    protected function mergeConfig(array $original, array $merging)
+    protected function mergeConfig(array $original, array $merging): array
     {
         $array = array_merge($original, $merging);
         foreach ($original as $key => $value) {
-            if (!is_array($value)) {
-                continue;
-            }
-            if (!Arr::exists($merging, $key)) {
-                continue;
-            }
-            if (is_numeric($key)) {
-                continue;
-            }
+            if (!is_array($value)) continue;
+            if (!Arr::exists($merging, $key)) continue;
+            if (is_numeric($key)) continue;
+
             $array[$key] = $this->mergeConfig($value, $merging[$key]);
         }
+
         return $array;
     }
-
 }

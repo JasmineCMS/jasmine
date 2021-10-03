@@ -14,7 +14,7 @@ class CreateJasmineRedirectionsTable extends Migration
     public function up()
     {
         Schema::create('jasmine_redirections', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->id();
             $table->mediumText('from');
             $table->mediumText('to');
             $table->boolean('regex');

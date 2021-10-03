@@ -23,37 +23,20 @@ class LoginController extends Controller
     use AuthenticatesUsers;
 
     /**
-     * Where to redirect users after login.
-     *
-     * @return string
-     */
-    public function redirectTo()
-    {
-        return route('jasmine.dashboard');
-    }
-
-    /**
      * Create a new controller instance.
      *
      * @return void
      */
     public function __construct()
     {
-        $this->middleware('guest')->except('logout');
+        $this->middleware('guest:' . config('jasmine.auth.guard'))->except('logout');
     }
 
-    protected function guard()
-    {
-        return Auth::guard(config('jasmine.auth.guard'));
-    }
+    protected function guard() { return Auth::guard(config('jasmine.auth.guard')); }
 
-    public function showLoginForm()
-    {
-        return view('jasmine::auth.login');
-    }
+    public function showLoginForm() { return view('jasmine::auth.login'); }
 
-    protected function loggedOut(Request $request)
-    {
-        return redirect(route('jasmine.login'));
-    }
+    public function redirectTo() { return route('jasmine.dashboard'); }
+
+    protected function loggedOut(Request $request) { return redirect(route('jasmine.login')); }
 }

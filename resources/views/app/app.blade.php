@@ -1,13 +1,11 @@
 @extends('jasmine::app.layout')
 @section('app')
-    <top-bar :user="{{ Auth::guard(config('jasmine.auth.guard'))->user() }}"
-             locale-url="{{ route('jasmine.change-locale', '-locale-') }}"
-    >
+    <top-bar :user="{{ Auth::guard(config('jasmine.auth.guard'))->user() }}">
         <template v-slot:center>@stack('top-bar-center')</template>
         <template v-slot:end>@stack('top-bar-end')</template>
     </top-bar>
     <div class="wrapper d-flex">
-        <side-bar :menu-items="{{ Jasmine::getSideBarMenuItems()->toJson() }}"></side-bar>
+        <side-bar :menu-items="{{ json_encode(Jasmine::getSideBarMenuItems()) }}"></side-bar>
         <div class="flex-fill has-main d-flex flex-column">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">

@@ -21,13 +21,7 @@ class ForgotPasswordController extends Controller
 
     use SendsPasswordResetEmails;
 
-    public function broker()
-    {
-        return Password::broker(config('jasmine.auth.broker'));
-    }
+    public function broker() { return Password::broker(config('jasmine.auth.broker')); }
 
-    public function showLinkRequestForm()
-    {
-        return view('jasmine::auth.passwords.email');
-    }
+    public function showLinkRequestForm() { return view('jasmine::auth.email'); }
 }

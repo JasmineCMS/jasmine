@@ -33,15 +33,14 @@ class LinkPublicAssets extends Command
     /**
      * Execute the console command.
      *
-     * @return void
+     * @return int
      */
     public function handle()
     {
         if (!file_exists(public_path('jasmine-public'))) {
-            app('files')->link(
-                __DIR__ . '/../../../public',
-                public_path('jasmine-public')
-            );
+            app('files')->link(__DIR__ . '/../../../public', public_path('jasmine-public'));
         }
+
+        return 0;
     }
 }

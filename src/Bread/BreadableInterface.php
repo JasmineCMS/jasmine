@@ -8,6 +8,8 @@ use Jasmine\Jasmine\Bread\Fields\FieldsManifest;
 
 interface BreadableInterface
 {
+    public static function getBreadableKey(): string;
+
     public static function getPluralName(): string;
 
     public static function getSingularName(): string;

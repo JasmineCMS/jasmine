@@ -14,7 +14,7 @@ class CreateJasminePagesTable extends Migration
     public function up()
     {
         Schema::create('jasmine_pages', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->id();
             $table->text('url');
             $table->text('name');
             $table->json('content');

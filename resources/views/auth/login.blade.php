@@ -2,59 +2,34 @@
 
 @section('title', __('Login'))
 
-@section('sub-title')
-    <p class="text-center">
-
-    </p>
-@endsection
-
 @section('content')
-    <form method="POST" action="{{ route('jasmine.login') }}">
+    <form action="{{ route('jasmine.login') }}" method="post">
         @csrf
-
-        <div class="form-group">
+        <div class="f-group">
             <label for="email">{{ __('E-Mail Address') }}</label>
-
-            <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email"
+            <input id="email" type="email" class="@error('email') is-invalid @enderror" name="email"
                    dir="ltr" value="{{ old('email') }}" required autocomplete="email" autofocus>
-
             @error('email')
-            <span class="invalid-feedback" role="alert">
-                    <strong>{{ $message }}</strong>
-                </span>
+            <div role="alert"><span>{{ $message }}</span></div>
             @enderror
         </div>
-
-        <div class="form-group">
+        <div class="f-group">
             <label for="password">{{ __('Password') }}</label>
-
-            <input id="password" type="password" class="form-control @error('password') is-invalid @enderror"
-                   dir="ltr" name="password" required autocomplete="current-password">
-
+            <input id="password" type="password" class="@error('password') is-invalid @enderror"
+                   name="password" required autocomplete="current-password">
             @error('password')
-            <span class="invalid-feedback" role="alert">
-                    <strong>{{ $message }}</strong>
-            </span>
+            <div role="alert"><span>{{ $message }}</span></div>
             @enderror
         </div>
-
-        <div class="form-group">
-            <div class="custom-control custom-checkbox">
-                <input type="checkbox" class="custom-control-input" id="remember" name="remember"
-                    {{ old('remember') ? 'checked' : '' }}>
-                <label class="custom-control-label" for="remember">{{ __('Remember Me') }}</label>
-            </div>
+        <div class="f-group">
+            <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+            <label for="remember">{{ __('Remember Me') }}</label>
         </div>
-
-        <div class="form-group mt-4">
-            <div class="d-flex justify-content-between flex-column flex-md-row">
-                <button type="submit" class="btn btn-primary mb-4">
-                    {{ __('Login') }}
-                </button>
-                <a class="btn btn-link" href="{{ route('jasmine.password.request') }}">
-                    {{ __('Forgot Your Password?') }}
-                </a>
-            </div>
+        <div style="text-align: center;margin-top: 1.5rem;">
+            <button type="submit">{{ __('Login') }}</button>
+        </div>
+        <div style="text-align: center;margin-top: 1.5rem;">
+            <a href="{{ route('jasmine.password.request') }}">{{ __('Forgot Your Password?') }}</a>
         </div>
     </form>
 @endsection

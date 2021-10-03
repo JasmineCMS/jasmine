@@ -20,11 +20,9 @@
                     {{ user.name }}
                 </template>
                 <template v-slot:dropdown>
-                    <a class="dropdown-item" href="#">Action 1</a>
-                    <div class="dropdown-divider"></div>
-                    <a v-if="$i18n.locale === 'en'" class="dropdown-item" :href="localeUrl.replace('-locale-', 'he')">עברית</a>
+                    <a v-if="$i18n.locale === 'en'" class="dropdown-item" :href="localeUrl( 'he')">עברית</a>
                     <a v-else-if="$i18n.locale === 'he'" class="dropdown-item"
-                       :href="localeUrl.replace('-locale-', 'en')">English</a>
+                       :href="localeUrl('en')">English</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="#" @click="$root.logout()">{{ $t('Logout') }}</a>
                 </template>
@@ -49,9 +47,15 @@ export default {
             required: true,
             type: Object,
         },
-        localeUrl: {
-            required: true,
-            type: String,
+    },
+
+    methods: {
+        localeUrl(locale) {
+            let url = new URL(document.location.href);
+            let params = url.searchParams;
+            params.set('locale', locale);
+            url.search = params.toString();
+            return url.toString();
         },
     },
 }

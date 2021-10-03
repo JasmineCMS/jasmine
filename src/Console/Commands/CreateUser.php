@@ -36,7 +36,7 @@ class CreateUser extends Command
     /**
      * Execute the console command.
      *
-     * @return void
+     * @return int
      */
     public function handle()
     {
@@ -74,18 +74,13 @@ class CreateUser extends Command
         } else {
             $this->error('User was not created');
         }
+
+        return 0;
     }
 
-    /**
-     * @param $value
-     *
-     * @return bool
-     */
-    public function validateEmail($value)
+    public function validateEmail($value): bool
     {
-        if (!is_string($value) && !(is_object($value) && method_exists($value, '__toString'))) {
-            return false;
-        }
+        if (!is_string($value) && !(is_object($value) && method_exists($value, '__toString'))) return false;
         return (new EmailValidator)->isValid($value, new RFCValidation);
     }
 }

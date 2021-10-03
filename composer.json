@@ -8,9 +8,10 @@
         }
     ],
     "require": {
+        "php": "^8.0",
         "alexusmai/laravel-file-manager": "^2.5",
-        "laravel/framework": "^6.2|^7.0|^8.0",
-        "laravel/ui": "^1.0|^2.0|^3.0",
+        "laravel/framework": "^8.0",
+        "laravel/ui": "^3.0",
         "spatie/laravel-translatable": "^4.3",
         "yajra/laravel-datatables-oracle": "^9.9",
         "ext-json": "*"
@@ -18,7 +19,10 @@
     "autoload": {
         "psr-4": {
             "Jasmine\\Jasmine\\": "src/"
-        }
+        },
+        "files": [
+            "helpers.php"
+        ]
     },
     "extra": {
         "laravel": {
