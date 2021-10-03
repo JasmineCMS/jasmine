@@ -20,9 +20,9 @@ $manifest = call_user_func(get_class($page) . "::fieldsManifest");
 
 @push('top-bar-center')
     @foreach(Jasmine::getLocales() as $local)
-        <a href="{{ \Jasmine\Jasmine\setUrlGetParam('_locale', $local) }}"
+        <a href="{{ request()->fullUrlWithQuery(['_locale' => $local]) }}"
            class="btn @if(request('_locale') === $local) active btn-success @else btn-secondary @endif">
-            {{ \Illuminate\Support\Str::title($local) }}
+            {{ \Str::title($local) }}
         </a>
     @endforeach
 @endpush

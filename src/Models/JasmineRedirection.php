@@ -2,30 +2,32 @@
 
 namespace Jasmine\Jasmine\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * Jasmine\Jasmine\Models\JasmineRedirection
  *
- * @property int                             $id
- * @property string                          $from
- * @property string                          $to
- * @property int                             $regex
- * @property int                             $permanent
- * @property int                             $enabled
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|JasmineRedirection newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|JasmineRedirection newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|JasmineRedirection query()
- * @method static \Illuminate\Database\Eloquent\Builder|JasmineRedirection whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JasmineRedirection whereEnabled($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JasmineRedirection whereFrom($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JasmineRedirection whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JasmineRedirection wherePermanent($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JasmineRedirection whereRegex($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JasmineRedirection whereTo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JasmineRedirection whereUpdatedAt($value)
+ * @property int         $id
+ * @property string      $from
+ * @property string      $to
+ * @property int         $regex
+ * @property int         $permanent
+ * @property int         $enabled
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @method static Builder|JasmineRedirection newModelQuery()
+ * @method static Builder|JasmineRedirection newQuery()
+ * @method static Builder|JasmineRedirection query()
+ * @method static Builder|JasmineRedirection whereCreatedAt($value)
+ * @method static Builder|JasmineRedirection whereEnabled($value)
+ * @method static Builder|JasmineRedirection whereFrom($value)
+ * @method static Builder|JasmineRedirection whereId($value)
+ * @method static Builder|JasmineRedirection wherePermanent($value)
+ * @method static Builder|JasmineRedirection whereRegex($value)
+ * @method static Builder|JasmineRedirection whereTo($value)
+ * @method static Builder|JasmineRedirection whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class JasmineRedirection extends Model

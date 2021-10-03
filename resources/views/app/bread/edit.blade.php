@@ -1,6 +1,7 @@
 <?php
 /** @var string $breadableKey */
-/** @var string $breadableName */
+
+/** @var string|\Jasmine\Jasmine\Bread\BreadableInterface $breadableName */
 
 use Jasmine\Jasmine\Bread\Translatable;
 
@@ -19,7 +20,7 @@ $action = isset($breadable)
     : route('jasmine.bread.store', $actionParams);
 
 /** @var \Jasmine\Jasmine\Bread\Fields\FieldsManifest $manifest */
-$manifest = call_user_func("$breadableName::fieldsManifest");
+$manifest = $breadableName::fieldsManifest();
 
 /** @var \Illuminate\Support\ViewErrorBag $errors */
 
@@ -32,20 +33,20 @@ $breadableInstance = $breadable ?? new $breadableName;
 @section('title')
     @if(isset($breadable))
         @lang('Edit')
-        {{ call_user_func("$breadableName::getSingularName") }}
+        {{ $breadableName::getSingularName() }}
         {{ $breadable->{$breadable->getRouteKeyName()} }}
     @else
         @lang('New')
-        {{ call_user_func("$breadableName::getSingularName") }}
+        {{ $breadableName::getSingularName() }}
     @endif
 @endsection
 
 @push('top-bar-center')
     @if(in_array(Translatable::class, class_uses($breadableName)))
         @foreach(Jasmine::getLocales() as $local)
-            <a href="{{ \Jasmine\Jasmine\setUrlGetParam('_locale', $local) }}"
+            <a href="{{ request()->fullUrlWithQuery(['_locale' => $local]) }}"
                class="btn @if(request('_locale') === $local) active btn-success @else btn-secondary @endif">
-                {{ \Illuminate\Support\Str::title($local) }}
+                {{ \Str::title($local) }}
             </a>
         @endforeach
     @endif
@@ -56,8 +57,8 @@ $breadableInstance = $breadable ?? new $breadableName;
 @endpush
 
 @push('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('jasmine.bread.index', $breadableName) }}">
-            {{ call_user_func("$breadableName::getPluralName") }}
+    <li class="breadcrumb-item"><a href="{{ route('jasmine.bread.index', $breadableKey) }}">
+            {{ $breadableName::getPluralName() }}
         </a></li>
 @endpush
 

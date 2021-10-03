@@ -2,9 +2,6 @@
 
 namespace Jasmine\Jasmine;
 
-use Illuminate\Support\Str;
-use Jasmine\Jasmine\Exceptions\MustExtendJasminePage;
-use Jasmine\Jasmine\Models\JasminePage;
 use Jasmine\Jasmine\Registers\RegistersBreadables;
 use Jasmine\Jasmine\Registers\RegistersCustomAssets;
 use Jasmine\Jasmine\Registers\RegistersLocales;

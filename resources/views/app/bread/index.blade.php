@@ -2,17 +2,18 @@
 
 use Jasmine\Jasmine\Bread\Translatable;
 
+/** @var string|\Jasmine\Jasmine\Bread\BreadableInterface $breadableName */
 ?>
 @extends('jasmine::app.app')
 
-@section('title', call_user_func("$breadableName::getPluralName"))
+@section('title', $breadableName::getPluralName())
 
 @push('top-bar-center')
     @if(in_array(Translatable::class, class_uses($breadableName)))
         @foreach(Jasmine::getLocales() as $local)
-            <a href="{{ \Jasmine\Jasmine\setUrlGetParam('_locale', $local) }}"
+            <a href="{{ request()->fullUrlWithQuery(['_locale' => $local]) }}"
                class="btn @if(request('_locale') === $local) active btn-success @else btn-secondary @endif">
-                {{ \Illuminate\Support\Str::title($local) }}
+                {{ \Str::title($local) }}
             </a>
         @endforeach
     @endif
@@ -43,7 +44,7 @@ use Jasmine\Jasmine\Bread\Translatable;
                                    class="btn btn-outline-primary">
                                     <i class="fas fa-plus"></i>
                                     {{ __('New') }}
-                                    {{ call_user_func("$breadableName::getSingularName") }}
+                                    {{ $breadableName::getSingularName() }}
                                 </a>
                             </div>
                         </div>
@@ -61,7 +62,7 @@ use Jasmine\Jasmine\Bread\Translatable;
                                     @foreach($browseableColumns as $column)
                                         @if(strpos($column, '_') === 0) @continue @endif
                                         <th v-dt-column="[t, {name: '{{ $column }}', data:'{{ $column }}'}]">
-                                            {{ __(\Illuminate\Support\Str::title(preg_replace('/[_\.]/', ' ', $column))) }}
+                                            {{ __(\Str::title(preg_replace('/[_\.]/', ' ', $column))) }}
                                         </th>
                                     @endforeach
 

@@ -1,7 +1,8 @@
 <?php
-/** @var callable|null $group */
-
-/** @var callable|null $authedGroup */
+/**
+ * @var callable|null $group
+ * @var callable|null $authedGroup
+ */
 
 use Jasmine\Jasmine\Http\Controllers\BreadController as Bread;
 use Jasmine\Jasmine\Http\Controllers\BreadRelationshipsController as BreadRelationships;

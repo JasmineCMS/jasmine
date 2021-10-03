@@ -4,6 +4,7 @@ namespace Jasmine\Jasmine\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Jasmine\Jasmine\Bread\Fields\FieldsManifest;
 use Jasmine\Jasmine\Bread\Translatable;
@@ -11,12 +12,12 @@ use Jasmine\Jasmine\Bread\Translatable;
 /**
  * Class JasminePage
  *
- * @property int                             $id
- * @property string                          $url
- * @property string                          $name
- * @property array                           $content
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int         $id
+ * @property string      $url
+ * @property string      $name
+ * @property array       $content
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @method static Builder|JasmineUser newModelQuery()
  * @method static Builder|JasmineUser newQuery()
  * @method static Builder|JasmineUser query()
