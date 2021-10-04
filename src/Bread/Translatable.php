@@ -71,6 +71,4 @@ trait Translatable
             $model->setLocale(app()->getLocale());
         });
     }
-
-
 }

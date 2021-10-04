@@ -2,7 +2,6 @@
 
 namespace Jasmine\Jasmine;
 
-
 if (!function_exists('array2csv')) {
     /**
      * @param        $data
