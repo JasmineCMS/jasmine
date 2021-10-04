@@ -218,8 +218,8 @@ class BreadController extends Controller
             $order_column = $model->sortable['order_column_name'] ?? 'order_column';
             foreach ($data['order'] as $row) {
                 \DB::table($model->getTable())
-                    ->where($model->getKeyName(), $row['id'])
-                    ->update([$order_column => $row['order']]);
+                   ->where($model->getKeyName(), $row['id'])
+                   ->update([$order_column => $row['order']]);
             }
         });
     }
@@ -338,6 +338,7 @@ class BreadController extends Controller
     public function update(Request $request)
     {
         $breadableKey = \request()->route('breadableName');
+        /** @var string|BreadableInterface|Model $breadableName */
         $breadableName = \Jasmine::getBreadables()[$breadableKey] ?? abort(404);
         $breadableId = \request()->route()->parameter('breadableId');
 
@@ -356,7 +357,7 @@ class BreadController extends Controller
         $data = $request->validate($rules);
 
         /** @var null|Model|BreadableInterface|Translatable $breadable */
-        $breadable = call_user_func("$breadableName::find", $breadableId);
+        $breadable = $breadableName::find($breadableId);
 
         $routeParams = [];
 
@@ -367,9 +368,7 @@ class BreadController extends Controller
 
         $many_to_many_fields = [];
         foreach ($fields as $field) {
-            if ($field['type'] !== 'RelationshipField') {
-                continue;
-            }
+            if ($field['type'] !== 'RelationshipField') continue;
 
             if ($field['options']['many_to_many']) {
                 $many_to_many_fields[$field['name']] = ['field' => $field, 'value' => $data[$field['name']] ?? []];
