@@ -12,7 +12,6 @@ use Jasmine\Jasmine\Console\Commands\CreateUser;
 use Jasmine\Jasmine\Console\Commands\LinkPublicAssets;
 use Jasmine\Jasmine\Console\Commands\Migrate;
 use Jasmine\Jasmine\Http\Middleware\Authenticate;
-use Jasmine\Jasmine\Http\Middleware\MaintenanceMode;
 
 class JasmineServiceProvider extends ServiceProvider
 {
@@ -53,7 +52,6 @@ class JasmineServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'jasmine');
 
         $router->aliasMiddleware('jasmineAuth', Authenticate::class);
-        $router->aliasMiddleware('jasmineMaintenanceMode', MaintenanceMode::class);
     }
 
     private function jasmine(Jasmine $jasmine)
