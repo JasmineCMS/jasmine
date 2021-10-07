@@ -8,6 +8,7 @@
            :max="opts.max"
            :min="opts.min"
            :readonly="opts.readonly"
+           :disabled="opts.disabled"
            :dir="opts.dir"
            :required="validation.indexOf('required') > -1"
            :id="id" :name="name" v-model="field_value">
