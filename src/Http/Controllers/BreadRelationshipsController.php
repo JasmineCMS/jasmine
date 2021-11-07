@@ -14,7 +14,8 @@ class BreadRelationshipsController extends Controller
 {
     public function getRelationData()
     {
-        $breadableName = \request()->route()->parameter('breadableName');
+        $breadableKey = \request()->route('breadableName');
+        $breadableName = \Jasmine::getBreadables()[$breadableKey] ?? abort(404);
 
         $breadableId = \request()->route()->parameter('breadableId');
 
