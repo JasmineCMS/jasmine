@@ -52,14 +52,17 @@ class PageController extends Controller
         }
 
         $data = $request->validate($rules);
-
+    
+        $params = ['jasminePage' => $page->name];
+        
         if (in_array(Translatable::class, class_uses($page))) {
             $page->setLocale(\request()->get('_locale', 'en'));
+            $params['_locale'] = $page->getLocale();
         }
 
         $page->content = $data;
         $page->save();
-
-        return redirect(route('jasmine.page.edit', ['jasminePage' => $page->name, '_locale' => $page->getLocale()]));
+        
+        return redirect(route('jasmine.page.edit', $params));
     }
 }
