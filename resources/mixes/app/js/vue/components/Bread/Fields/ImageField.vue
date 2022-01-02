@@ -4,8 +4,15 @@
         <input type="hidden" :name="name+'[h]'" v-model="field_value.h">
         <input type="hidden" :name="name+'[src]'" v-model="field_value.src">
 
-        <div class="form-control w-auto d-inline-block p-2">
+        <div class="form-control w-auto d-inline-block p-2 position-relative">
             <img :src="field_value.src" alt="preview" class="preview" @click="changeImage" ref="preview">
+            <div v-if="loading" class="bg-gray-200"
+                 style="position: absolute; top: 0; width: 100%;height: 100%; background: rgba(0,0,0,0.5);
+                 display: flex; align-items: center; justify-content: center">
+                <div class="spinner-border text-light" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
         </div>
 
         <div class="form-group mt-4">
@@ -47,6 +54,7 @@ export default {
             }, this.options),
 
             showFm: false,
+            loading: false,
         };
     },
 
@@ -58,25 +66,29 @@ export default {
                 let vm = this;
                 let fm = this.$refs.fmw.$refs.fm;
                 fm.$store.commit('fm/setFileCallBack', function (fileUrl) {
+                    vm.loading = true;
+
                     // todo: if note image
-                    console.log(fileUrl);
                     window.fm = fm;
 
                     if (fileUrl.startsWith(document.location.origin)) {
                         fileUrl = fileUrl.replace(document.location.origin, '');
                     }
 
+                    vm.$refs.preview.onload = (e) => {
+                        Vue.nextTick(() => {
+                            setTimeout(() => {
+                                vm.field_value.w = vm.$refs.preview.naturalWidth;
+                                vm.field_value.h = vm.$refs.preview.naturalHeight;
+                                //this.field_value.path = null;
+                                vm.loading = false;
+                            }, 250);
+                        });
+                    };
+
                     vm.field_value.src = fileUrl;
 
                     vm.showFm = false;
-
-                    Vue.nextTick(() => {
-                        setTimeout(() => {
-                            vm.field_value.w = vm.$refs.preview.naturalWidth;
-                            vm.field_value.h = vm.$refs.preview.naturalHeight;
-                            //this.field_value.path = null;
-                        }, 250);
-                    });
                 });
             });
         },

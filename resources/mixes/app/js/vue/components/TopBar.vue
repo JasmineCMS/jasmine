@@ -20,9 +20,10 @@
                     {{ user.name }}
                 </template>
                 <template v-slot:dropdown>
-                    <a v-if="$i18n.locale === 'en'" class="dropdown-item" :href="localeUrl( 'he')">עברית</a>
-                    <a v-else-if="$i18n.locale === 'he'" class="dropdown-item"
-                       :href="localeUrl('en')">English</a>
+                    <template v-for="(label,locale) in {en: 'English', he: 'עברית'}">
+                        <a v-if="$i18n.locale !== locale" class="dropdown-item"
+                           :href="localeUrl(locale)" v-text="label"></a>
+                    </template>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="#" @click="$root.logout()">{{ $t('Logout') }}</a>
                 </template>
