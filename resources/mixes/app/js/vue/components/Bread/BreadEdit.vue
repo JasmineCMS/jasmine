@@ -1,7 +1,7 @@
 <i18n>
 {
     "he": {
-        "Add": "הוספת",
+        "Add":     "הוספת",
         "Reorder": "סידור"
     }
 }
@@ -39,7 +39,7 @@
                                 <draggable
                                     :list="values[field.name]"
                                     ghost-class="ghost"
-                                    handle=".dnd-handler"
+                                    :handle="'.dnd-handler_' + field.id"
                                     class="form-row"
                                 >
                                     <div class="d-flex" :class="field.repeatsWidth"
@@ -50,7 +50,7 @@
                                                     {{ field.label }} ({{ vi + 1 }})
                                                 </label>
                                                 <div class="mb-1">
-                                                    <button class="btn btn-primary dnd-handler"
+                                                    <button :class="['btn btn-primary', 'dnd-handler_' + field.id]"
                                                             type="button" :title="$t('Reorder') +' '+ field.label">
                                                         <i class="fas fa-arrows-alt"></i>
                                                     </button>
