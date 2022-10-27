@@ -1,0 +1,21 @@
+<?php
+
+namespace {{ namespace }};
+
+use Jasmine\Jasmine\Models\JasminePage;
+use Jasmine\Jasmine\Bread\Fields\FieldsManifest;
+use Jasmine\Jasmine\Bread\Translatable;
+
+class {{ class }} extends JasminePage
+{
+    use Translatable;
+    
+    protected function asJson($value) { return json_encode($value, JSON_UNESCAPED_UNICODE); }
+    
+    public static function fieldsManifest(): FieldsManifest
+    {
+        return new FieldsManifest([
+            // TODO: define fields . . .
+        ]);
+    }
+}

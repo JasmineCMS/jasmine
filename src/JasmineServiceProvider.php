@@ -10,7 +10,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 use Jasmine\Jasmine\Console\Commands\CreateUser;
 use Jasmine\Jasmine\Console\Commands\LinkPublicAssets;
-use Jasmine\Jasmine\Console\Commands\Migrate;
+use Jasmine\Jasmine\Console\Commands\ModelMake;
+use Jasmine\Jasmine\Console\Commands\PageMake;
 use Jasmine\Jasmine\Http\Middleware\Authenticate;
 
 class JasmineServiceProvider extends ServiceProvider
@@ -23,12 +24,12 @@ class JasmineServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton('jasmine', fn() => new Jasmine());
-
+        
         if ($this->app->runningInConsole()) $this->registerConsoleCommands();
-
+        
         $this->jasmine(app('jasmine'));
     }
-
+    
     /**
      * Bootstrap services.
      *
@@ -38,22 +39,24 @@ class JasmineServiceProvider extends ServiceProvider
      */
     public function boot(Router $router)
     {
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        
         $this->publishes([
             __DIR__ . '/../config/jasmine.php' => config_path('jasmine.php'),
         ]);
-
+        
         $this->mergeConfigFrom(__DIR__ . '/../config/auth.php', 'auth');
-
+        
         $this->mergeConfigFrom(__DIR__ . '/../config/jasmine.php', 'jasmine');
-
+        
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'jasmine');
         $this->loadJsonTranslationsFrom(__DIR__ . '/../resources/lang');
-
+        
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'jasmine');
-
+        
         $router->aliasMiddleware('jasmineAuth', Authenticate::class);
     }
-
+    
     private function jasmine(Jasmine $jasmine)
     {
         $jasmine->registerSideBarMenuItem('dashboard', fn() => [
@@ -62,27 +65,27 @@ class JasmineServiceProvider extends ServiceProvider
             'href'     => route('jasmine.dashboard'),
             'icon'     => 'fa-tachometer-alt',
         ]);
-
+        
         $jasmine->registerSideBarMenuItem('file_manager', fn() => [
             'href'     => route('jasmine.fm.show'),
             'is-route' => 'jasmine.fm.show',
             'title'    => __('File Manager'),
             'icon'     => 'fa-folder',
         ]);
-
+        
         $jasmine->registerSideBarMenuItem('pages', fn() => [
             'title'    => __('Pages'),
             'icon'     => 'fa-newspaper',
             'children' => [],
         ]);
-
-
+        
+        
         $jasmine->registerSideBarMenuItem('tools', fn() => [
             'title'    => __('Tools'),
             'icon'     => 'fa-tools',
             'children' => [],
         ], 60);
-
+        
         $jasmine->registerSideBarSubMenuItem('tools', 'redirections', function () {
             return [
                 'href'     => route('jasmine.redirection.index'),
@@ -91,17 +94,18 @@ class JasmineServiceProvider extends ServiceProvider
             ];
         });
     }
-
+    
     private function registerConsoleCommands()
     {
         $this->commands([
             CreateUser::class,
             LinkPublicAssets::class,
-            Migrate::class,
+            PageMake::class,
+            ModelMake::class,
         ]);
     }
-
-
+    
+    
     /**
      * Merge the given configuration with the existing configuration.
      *
@@ -114,11 +118,11 @@ class JasmineServiceProvider extends ServiceProvider
     {
         /** @var Repository $repo */
         $repo = $this->app['config'];
-
+        
         $config = $repo->get($key, []);
         $repo->set($key, $this->mergeConfig(require $path, $config));
     }
-
+    
     /**
      * Merges the configs together and takes multi-dimensional arrays into account.
      */
@@ -129,10 +133,10 @@ class JasmineServiceProvider extends ServiceProvider
             if (!is_array($value)) continue;
             if (!Arr::exists($merging, $key)) continue;
             if (is_numeric($key)) continue;
-
+            
             $array[$key] = $this->mergeConfig($value, $merging[$key]);
         }
-
+        
         return $array;
     }
 }
