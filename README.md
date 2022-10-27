@@ -2,20 +2,18 @@
 A Laravel based CMS inspired by voyager
 
 ## Installation
-create a new laravel ^6.2 project  
+create a new laravel 8|9 project  
 `composer require jasminecms/jasmine`  
 then run  
-`php artisan jasmine:migrate`  
 `php artisan jasmine:link-public-assets`  
+`php artisan migrate`  
 
 To create an admin user run  
 `php artisan jasmine:create-user`
 
 In your `routes/web.php` add
 ```php
-Route::group(['prefix' => 'jasmine'], function () {
-    Jasmine::routes();
-});
+Route::prefix('jasmine')->group(fn() => Jasmine::routes());
 ``` 
 
 you may change the prefix to anything you like
@@ -38,8 +36,9 @@ Jasmine::registerPage(\App\Pages\Home::class);
 
 Register breadable models in AppServiceProvider
 ```php
-Jasmine::registerBreadable(\App\Article::class);
+Jasmine::registerBreadable(\App\Models\Article::class);
 ```
 
-### Progress
-This package is a work in progress, don't use in production.  
+### Generators
+Run `php artisan make:jasmine-page Home` to create a Jasmine Page 
+Run `php artisan make:jasmine-model Post` to create a Jasmine Model 
