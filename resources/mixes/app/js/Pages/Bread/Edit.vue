@@ -1,0 +1,181 @@
+<template>
+  <Head :title="entId ? $t('Edit') + ' ' + title : $t('New')"/>
+
+  <Layout>
+    <template #breadcrumbs>
+      <li class="breadcrumb-item">
+        <inertia-link :href="route('jasmine.bread.index', {breadableName:b.key})" v-text="$t(b.plural)"/>
+      </li>
+    </template>
+
+    <template #pageActions>
+      <div class="d-flex align-items-center p-2">
+        <div v-if="locale" class="btn-group btn-group-sm">
+          <inertia-link v-for="_l in $globals.locales" href="" :data="{_locale:_l}" v-text="_l"
+                        class="btn btn-outline-primary text-uppercase" :class="{active:_l === locale}"/>
+        </div>
+        <div class="mx-3"/>
+        <button @click="$refs.form.reportValidity() && form.post('')"
+                type="button" class="btn btn-sm px-5" :disabled="form.processing"
+                :class="{'btn-primary': form.isDirty, 'btn-secondary': !form.isDirty}">
+          <span v-if="form.processing" role="status" aria-hidden="true" class="spinner-border spinner-border-sm"/>
+          {{ $t('Save') }}
+        </button>
+      </div>
+    </template>
+
+    <form ref="form" @submit.prevent="form.post('')">
+      <div class="bread-edit row" :class="{'writing-rtl': isLocaleRtl}">
+
+        <!-- Loop columns -->
+        <div v-for="(column, classId) in b.manifest" :key="classId" :class="classId">
+
+          <!-- Loop groups -->
+          <div v-for="(fields, gTitle) in column" :key="gTitle" class="card mb-4">
+            <div class="card-body">
+              <h4 v-if="gTitle[0] !== '_'" class="mb-2 h5" v-text="gTitle"/>
+              <div class="row">
+                <!-- Loop fields -->
+                <div v-for="(field, fi) in fields" :key="fi" class="field p-1 pt-2 form-group" :class="field.width">
+
+                  <!-- Repeatable field -->
+                  <template v-if="field.repeats >  1">
+                    <draggable
+                        v-model="form[field.name]"
+                        ghost-class="ghost"
+                        :handle="'.dnd-handler_' + field.id"
+                        class="row"
+                        item-key="id"
+                    >
+                      <template #item="{element, index}">
+                        <div class="d-flex" :class="field.repeatsWidth">
+                          <div class="d-flex flex-column mt-1">
+                            <button type="button" class="btn btn-sm"
+                                    @click="removeRepeatedField(field.name, index)"
+                                    :title="$t('Remove')+' '+ field.label + ' ('+(index+1)+')'">
+                              <i class="bi bi-x-circle fs-6"/>
+                            </button>
+                            <button :class="['btn btn-sm', 'dnd-handler_' + field.id]"
+                                    type="button" :title="$t('Reorder') +' '+ field.label">
+                              <i class="bi bi-arrows-expand fs-6"/>
+                            </button>
+                          </div>
+                          <div class="form-group flex-fill my-2">
+                            <label :for="field.id+index" class="form-label">
+                              <span class="fw-semibold" v-text="field.label"/> {{ index + 1 }}
+                            </label>
+                            <component
+                                :is="field.component" :id="field.id+index"
+                                :name="field.name + '['+index+']'"
+                                :invalid="!!form.errors[field.name]" v-model="form[field.name][index]"
+                                :label="field.label" :options="field.options"
+                                :validation="field.validation"
+                                :locale="locale" :is-locale-rtl="isLocaleRtl"
+                            />
+                          </div>
+                        </div>
+                      </template>
+                    </draggable>
+                    <div class="mb-5">
+                      <button style="--bs-btn-disabled-border-color:transparent"
+                              class="btn text-primary fw-semibold d-flex align-items-center" @click="repeatField(field)"
+                              :disabled="form[field.name].length >= field.repeats"
+                              type="button" :title="$t('Add') +' '+ field.label">
+                        <i class="bi bi-plus-circle-fill fs-6"/>
+                        <span class="px-1"></span>
+                        <span v-text="$t('Add') +' '+ field.label"/>
+                      </button>
+                    </div>
+                  </template>
+
+                  <!-- Single field -->
+                  <template v-else>
+                    <label class="form-label fw-semibold" :for="field.id" v-text="field.label"/>
+                    <component
+                        :is="field.component" :id="field.id" :name="field.name"
+                        :invalid="!!form.errors[field.name]" v-model="form[field.name]"
+                        :label="field.label" :options="field.options" :validation="field.validation"
+                        :locale="locale" :is-locale-rtl="isLocaleRtl"
+                    />
+                    <small v-if="field.description" :id="field.id+ 'Help'"
+                           class="form-text text-muted"
+                           v-text="field.description"/>
+                    <div v-if="form.errors[field.name]" class="invalid-feedback" role="alert">
+                      <strong v-text="form.errors[field.name][0]"/>
+                    </div>
+                  </template>
+                </div>
+                <!-- /Loop fields -->
+              </div>
+            </div>
+          </div>
+          <!-- /Loop groups -->
+
+        </div>
+        <!-- /Loop columns -->
+
+      </div>
+    </form>
+  </Layout>
+</template>
+
+<script>
+import draggable from 'vuedraggable';
+import Layout from '../../Shared/Layout';
+
+export default {
+  name: 'BreadEdit',
+  components: {
+    Layout, draggable,
+  },
+  props: {
+    b: {type: Object, required: true},
+    entId: {type: [String, Number]},
+    ent: {type: Object, required: true},
+    title: {type: String},
+    locale: {type: String},
+    fm_path: {type: String, default: ''},
+  },
+
+  data() {
+    let data = {};
+
+    this.b.fields.forEach(f => {
+      data[f.name] = f.repeats > 1 ? [] : JSON.parse(JSON.stringify({v: f.default})).v;
+      if (this.entId && typeof this.ent[f.name] !== 'undefined') {
+        data[f.name] = JSON.parse(JSON.stringify({v: this.ent[f.name]})).v;
+      }
+    });
+
+    return {
+      form: this.$inertia.form(data),
+    };
+  },
+
+  methods: {
+    repeatField(f) {
+      this.form[f.name].push(JSON.parse(JSON.stringify({v: f.default})).v);
+    },
+
+    removeRepeatedField(fieldName, i) {
+      this.form[fieldName].splice(i, 1);
+    },
+  },
+
+  computed: {
+    isLocaleRtl() {
+      return ['ar', 'dv', 'fa', 'ha', 'he', 'ks', 'ku', 'ps', 'sd', 'ur', 'yi'].indexOf(this.locale) > -1;
+    },
+  },
+
+  provide() {
+    return {
+      fm_path: this.fm_path,
+    };
+  },
+};
+</script>
+
+<style scoped>
+
+</style>

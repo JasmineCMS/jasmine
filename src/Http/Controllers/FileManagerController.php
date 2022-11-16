@@ -2,18 +2,17 @@
 
 namespace Jasmine\Jasmine\Http\Controllers;
 
-use App\Project;
 use Illuminate\Http\Request;
 
 class FileManagerController extends Controller
 {
     public function show()
     {
-        return view('jasmine::app.file-manager');
+        return inertia('FileManagerPage');
     }
-
-    public function tinymce5()
+    
+    public function standalone()
     {
-        return view('jasmine::app.fm-tinymce5');
+        return view('jasmine::app.fm-standalone');
     }
 }

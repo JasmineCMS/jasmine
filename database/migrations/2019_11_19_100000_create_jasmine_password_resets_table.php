@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateJasminePasswordResetsTable extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      *
@@ -19,7 +18,7 @@ class CreateJasminePasswordResetsTable extends Migration
             $table->timestamp('created_at')->nullable();
         });
     }
-
+    
     /**
      * Reverse the migrations.
      *
@@ -29,4 +28,4 @@ class CreateJasminePasswordResetsTable extends Migration
     {
         Schema::dropIfExists('jasmine_password_resets');
     }
-}
+};

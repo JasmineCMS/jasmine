@@ -6,5 +6,5 @@ namespace Jasmine\Jasmine\Bread\Fields;
 
 class WysiwygField extends AbstractField
 {
-    protected $component = 'wysiwyg-field';
+    protected string $component = 'wysiwyg-field';
 }

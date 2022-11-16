@@ -1,0 +1,50 @@
+.sortable {
+    cursor: pointer;
+
+    &.sorting-asc {
+        &:after {
+            content: "\F15E";
+            font-family: 'Font Awesome 5 Free';
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-font-smoothing: antialiased;
+            font-weight: 900;
+            display: inline;
+            font-style: normal;
+            font-variant: normal;
+            text-rendering: auto;
+            line-height: 1;
+            margin-inline-start: 0.25em;
+            color: $primary;
+        }
+    }
+
+    &.sorting-desc {
+        &:after {
+            content: "\F881";
+            font-family: 'Font Awesome 5 Free';
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-font-smoothing: antialiased;
+            font-weight: 900;
+            display: inline;
+            font-style: normal;
+            font-variant: normal;
+            text-rendering: auto;
+            line-height: 1;
+            margin-inline-start: 0.25em;
+            color: $primary;
+        }
+    }
+}
+
+.has-pagination {
+    @media screen and (max-width: 992px) {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    ul.pagination {
+        margin-bottom: 0;
+    }
+}

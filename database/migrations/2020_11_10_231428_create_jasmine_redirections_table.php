@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateJasmineRedirectionsTable extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      *
@@ -23,7 +22,7 @@ class CreateJasmineRedirectionsTable extends Migration
             $table->timestamps();
         });
     }
-
+    
     /**
      * Reverse the migrations.
      *
@@ -33,4 +32,4 @@ class CreateJasmineRedirectionsTable extends Migration
     {
         Schema::dropIfExists('jasmine_redirections');
     }
-}
+};

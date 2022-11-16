@@ -3,66 +3,95 @@
 namespace Jasmine\Jasmine\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
 use Jasmine\Jasmine\Bread\Translatable;
+use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Models\JasminePage;
 
 class PageController extends Controller
 {
-    /**
-     *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector|\Illuminate\View\View
-     */
+    
     public function edit()
     {
-        $page = \request()->route()->parameter('jasminePage');
-
+        $slug = \request()->route('jasminePage');
+        if (!$page = Jasmine::getPage($slug)) abort(404);
+        
+        /** @var JasminePage $page */
+        $page = $page::firstOrCreate(['name' => $slug], ['url' => $slug, 'content' => []]);
+        
+        // Check permission
         if (
-            in_array(Translatable::class, class_uses($page))
-            && \request()->get('_locale') == null
-        ) {
-            $locale = in_array(app()->getLocale(), \Jasmine::getLocales()) ? app()->getLocale() : \Jasmine::getLocales()[0];
-            return redirect(route('jasmine.page.edit', ['jasminePage' => $page->name, '_locale' => $locale]));
-        }
-
+            !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('pages.' . $slug . '.read')
+        ) abort(401);
+        
+        $locale = null;
         if (in_array(Translatable::class, class_uses($page))) {
-            $page->setLocale(\request()->get('_locale', 'en'));
+            $locale = request('_locale', Jasmine::getLocales()[0]);
+            $page->setLocale($locale);
         }
-
-        return view('jasmine::app.bread.page', compact('page'));
+        
+        return inertia('Bread/Edit', [
+            'b'       => [
+                'key'      => 'pages',
+                'singular' => 'Page',
+                'plural'   => 'Pages',
+                'manifest' => $page::fieldsManifest(),
+                'fields'   => $page::fieldsManifest()->getFields(),
+            ],
+            'entId'   => $page->id,
+            'ent'     => $page->content,
+            'title'   => $page::getPageName(),
+            'locale'  => $locale,
+            'fm_path' => 'pages/' . $page::getPageName(),
+        ]);
     }
-
-    /**
-     * @param Request $request
-     */
-    public function update(Request $request)
+    
+    public function save()
     {
-        $page = \request()->route()->parameter('jasminePage');
-
-        /** @var AbstractField[] $fields */
-        $fields = collect(call_user_func(get_class($page) . "::fieldsManifest")->toArray())->flatten(2);
+        $slug = \request()->route('jasminePage');
+        if (!$page = Jasmine::getPage($slug)) abort(404);
+        
+        /** @var JasminePage $page */
+        $page = $page::whereName($slug)->first();
+        
+        // Check permission
+        if (
+            !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('pages.' . $slug . '.edit')
+        ) abort(401);
+        
         $rules = [];
-
-        foreach ($fields as $field) {
-            if ($field['repeats'] > 1) {
-                $rules[$field['name']] = $field['validation'];
+        foreach ($page::fieldsManifest()->getFields() as $f) {
+            /** @var AbstractField $f */
+            $f = $f->toArray();
+            if ($f['repeats'] > 1) {
+                $rules[$f['name']] = $f['validation'];
             } else {
-                $rules[$field['name']] = $field['validation'];
+                $rules[$f['name']] = $f['validation'];
             }
         }
-
-        $data = $request->validate($rules);
-    
-        $params = ['jasminePage' => $page->name];
         
+        $data = request()->validate($rules);
+        
+        $locale = null;
         if (in_array(Translatable::class, class_uses($page))) {
-            $page->setLocale(\request()->get('_locale', 'en'));
-            $params['_locale'] = $page->getLocale();
+            $locale = request('_locale', Jasmine::getLocales()[0]);
+            $page->setLocale($locale);
         }
-
+        
         $page->content = $data;
+        
         $page->save();
         
-        return redirect(route('jasmine.page.edit', $params));
+        return redirect()->route('jasmine.page.edit', [$slug, '_locale' => $locale])->withSwal([
+            'toast'             => true,
+            'position'          => 'top-right',
+            'timer'             => 2 * 1000,
+            'timerProgressBar'  => true,
+            'backdrop'          => null,
+            'icon'              => 'success',
+            'title'             => 'Saved!',
+            'showConfirmButton' => false,
+        ]);
     }
 }

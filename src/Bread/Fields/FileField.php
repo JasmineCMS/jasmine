@@ -6,5 +6,5 @@ namespace Jasmine\Jasmine\Bread\Fields;
 
 class FileField extends AbstractField
 {
-    protected $component = 'file-field';
+    protected string $component = 'file-field';
 }
