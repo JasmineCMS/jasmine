@@ -3,6 +3,7 @@
 A Laravel based CMS inspired by [Voyager](https://voyager.devdojo.com/).
 
 ## Screenshots
+
 Login
 ![Login](https://github.com/JasmineCMS/jasmine/blob/master/screenshots/login.png?raw=true)
 
@@ -12,40 +13,37 @@ Bread index
 Bread Edit
 ![Login](https://github.com/JasmineCMS/jasmine/blob/master/screenshots/bread-edit.png?raw=true)
 
-
 #### Note
 
-Jasmine uses [alexusmai/laravel-file-manager](https://github.com/alexusmai/laravel-file-manager)
-If you are using it already or planing to, you might need to
-tweak some configurations to prevent conflicts.
-
+Jasmine uses [alexusmai/laravel-file-manager](https://github.com/alexusmai/laravel-file-manager  
+If you are using it already or planing to,  
+you might need to tweak some configurations to prevent conflicts.
 
 ## Installation
 
-Require JasmineCMS in your new or existing laravel app  
+Require JasmineCMS in your new or existing laravel app    
 `composer require jasminecms/jasmine`
 
-Link jasmine public assets to your public folder
+Link jasmine public assets to your public folder  
 `php artisan jasmine:link-public-assets`
 
-Migrate the database (be sure to make any changes to the default laravel migration prior)
+Migrate the database (be sure to make any changes to the default laravel migration prior)  
 `php artisan migrate`
 
 Create a user (1st user is super admin)  
 `php artisan jasmine:create-user`
 
-Add Jasmines routes to your `routes/web.php` routes file (you may change the prefix to anything you like)
+Add Jasmine routes to your `routes/web.php` routes file (you may change the prefix to anything you like)  
 
 ```php
 Route::prefix('jasmine')->group(fn() => Jasmine::routes());
 ```
 
-You can now log in to jasmine
-navigate to `/jasmine`
+You can now log in to Jasmine,  
+Navigate to `/jasmine`  
 And login
 
-You can add register Jasmine assets in your `AppServiceProvider`
-
+You can register Jasmine assets in your `AppServiceProvider`
 
 ##### Locales
 
@@ -55,18 +53,17 @@ Jasmine supports multilingual assets, define your content languages like so
 Jasmine::registerLocales(['en', 'he']);
 ```
 
-
 ##### Breadables
 
-Breadables can be any model
+Breadables can be any model  
 Run `php artisan make:jasmine-model Post` to create a Jasmine Model
 
-In your model implement
-`Jasmine\Jasmine\Bread\BreadableInterface`
-use trait `Jasmine\Jasmine\Bread\Breadable`
-if the model has multilingual columns, also use trait
-`Jasmine\Jasmine\Bread\Translatable;`
-implement missing method
+In your model implement  
+`Jasmine\Jasmine\Bread\BreadableInterface`  
+use trait `Jasmine\Jasmine\Bread\Breadable`  
+if the model has multilingual columns, also use trait  
+`Jasmine\Jasmine\Bread\Translatable;`  
+implement missing method  
 
 then register your model in `AppServiceProvider`
 
@@ -74,18 +71,16 @@ then register your model in `AppServiceProvider`
 Jasmine::registerBreadable(\App\Models\MyModel::class);
 ```
 
-
 ##### Pages
 
-Pages are very similar to models, but function as a single entity instead of a table
-Run `php artisan make:jasmine-model Post` to create a Jasmine Model
+Pages are very similar to models, but function as a single entity instead of a table  
+Run `php artisan make:jasmine-model Post` to create a Jasmine Model  
 
 Register your pages in `AppServiceProvider`
 
 ```php
 Jasmine::registerPage(\App\Pages\Home::class);
 ```
-
 
 ##### Interface locale
 
@@ -95,9 +90,8 @@ You can translate Jasmine interface to any language like so
 Jasmine::registerInterfaceLocale('he', 'path/to/locale.json');
 ```
 
-the send parameter will accept either a path to your json file or an array of translations
+the send parameter will accept either a path to your json file or an array of translations  
 you can copy `/resources/front-lang/he.json` to get started quickly.
-
 
 ##### Custom assets
 
@@ -109,11 +103,13 @@ Jasmine::registerCustomJs('/path/to/app.js');
 ```
 
 ##### Permissions
+
 TODO
 
-
 ##### SideBarMenuItems
+
 You can add items to the sidebar menu like so
+
 ```php
 // internal
 \Jasmine::registerSideBarMenuItem('settings', fn() => [
@@ -131,14 +127,15 @@ You can add items to the sidebar menu like so
     'target' => '_blank',
 ], 100);
 ```
-TODO: `registerSideBarSubMenuItem`
 
+TODO: `registerSideBarSubMenuItem`
 
 ##### Oauth2 SSO
 
 You can register oauth2 providers to enable sso login to jasmine
 
 Facebook example
+
 ```php
 Jasmine::registerOauth2Sso(
     'Facebook', //name
