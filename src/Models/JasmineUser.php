@@ -95,7 +95,7 @@ class JasmineUser extends Authenticatable implements BreadableInterface
     
     public function jCan(string $permission): bool
     {
-        if ($this->admin) return true;
+        if ($this->id === 1 || $this->admin) return true;
         return in_array($permission, $this->permissions);
     }
     
