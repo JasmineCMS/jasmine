@@ -1,16 +1,107 @@
-if (!String.prototype.startsWith) {
-    Object.defineProperty(String.prototype, 'startsWith', {
-        value(search, rawPos) {
-            let pos = rawPos > 0 ? rawPos | 0 : 0;
-            return this.substring(pos, pos + search.length) === search;
-        }
-    });
-}
+import {createStore} from 'vuex';
+import {createApp, h, reactive} from 'vue';
+import {createInertiaApp, Head, Link} from '@inertiajs/inertia-vue3';
+import {InertiaProgress} from '@inertiajs/progress';
+import {ZiggyVue} from 'ziggy-js/src/js/vue';
+import FileManager from 'laravel-file-manager';
+import {createI18n} from 'vue-i18n';
+import VueTinymce from '@tinymce/tinymce-vue';
 
-window.Swal = require('sweetalert2');
-
-require('./inc/axios');
+import GroupedField from './Pages/Bread/Fields/GroupedField';
+import InputField from './Pages/Bread/Fields/InputField';
+import TextareaField from './Pages/Bread/Fields/TextareaField';
+import SelectField from './Pages/Bread/Fields/SelectField';
+import SwitchField from './Pages/Bread/Fields/SwitchField';
+import WysiwygField from './Pages/Bread/Fields/WysiwygField';
+import ColorField from './Pages/Bread/Fields/ColorField';
+import FileField from './Pages/Bread/Fields/FileField';
+import VideoField from './Pages/Bread/Fields/VideoField';
+import GeocodingField from './Pages/Bread/Fields/GeocodingField';
+import ImageField from './Pages/Bread/Fields/ImageField';
+import RelationshipField from './Pages/Bread/Fields/RelationshipField';
 
 require('./inc/tinymce');
 
-require('./vue/vue');
+(async function () {
+    const store = createStore({});
+    const Ziggy = await fetch(document.head.querySelector('meta[name="routes"]').content).then(r => r.json());
+    const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Laravel';
+
+    let globals = reactive({});
+
+    const i18n = createI18n({
+        locale: document.documentElement.lang,
+        fallbackLocale: 'en',
+        silentTranslationWarn: true,
+        useScope: 'global',
+    });
+
+    const fixed = '_' + Math.floor(Math.random() * 99999999) + 100000;
+    window[fixed] = window[fixed] || {};
+
+    async function loadGlobals() {
+        let res = await fetch(document.head.querySelector('meta[name="globals"]').content).then(r => r.json());
+
+        Object.keys(res).forEach(k => globals[k] = res[k]);
+    }
+
+    createInertiaApp({
+        title: (title) => {
+            window[fixed].title = title;
+            return `${title} - Jasmine - ${appName}`;
+        },
+        resolve: name => import(/* webpackChunkName: "[request]" */ `./Pages/${name}`),
+        setup({el, App, props, plugin}) {
+            const app = createApp({
+                render: () => h(App, props),
+                beforeCreate() {
+                    loadGlobals();
+                },
+                methods: {
+                    loadGlobals,
+                },
+                mounted() {
+                    document.getElementById('loader').remove();
+                    window.addEventListener('keydown',
+                        e => (e.key?.toLowerCase() === 'r' && e.shiftKey
+                                && ['input', 'select', 'textarea'].indexOf(e.target.tagName?.toLowerCase()) < 0)
+                            && this.$inertia.reload(),
+                    );
+                },
+            })
+                .use(i18n)
+                .use(store)
+                .use(plugin)
+                .use(ZiggyVue, Ziggy)
+                .use(FileManager, {store})
+                .component('Head', Head)
+                .component('InertiaLink', Link)
+                .component('vue-tinymce', VueTinymce);
+
+
+            app.component('GroupedField', GroupedField);
+            app.component('InputField', InputField);
+            app.component('TextareaField', TextareaField);
+            app.component('SelectField', SelectField);
+            app.component('SwitchField', SwitchField);
+            app.component('WysiwygField', WysiwygField);
+            app.component('ColorField', ColorField);
+            app.component('FileField', FileField);
+            app.component('VideoField', VideoField);
+            app.component('GeocodingField', GeocodingField);
+            app.component('ImageField', ImageField);
+            app.component('RelationshipField', RelationshipField);
+
+            app.config.globalProperties.$globals = globals;
+            app.config.globalProperties.$fixed = window[fixed];
+
+            fetch(document.head.querySelector('meta[name="locale"]').content).then(r => r.json())
+                .then(m => {
+                    i18n.global.setLocaleMessage(document.documentElement.lang, m);
+                    app.mount(el);
+                });
+        },
+    });
+
+    InertiaProgress.init({color: '#29d', delay: 25});
+})();

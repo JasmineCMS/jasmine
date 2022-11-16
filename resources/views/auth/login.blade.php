@@ -31,5 +31,17 @@
         <div style="text-align: center;margin-top: 1.5rem;">
             <a href="{{ route('jasmine.password.request') }}">{{ __('Forgot Your Password?') }}</a>
         </div>
+
+        @if($ssos = \Jasmine\Jasmine\Facades\Jasmine::getOauth2Ssos())
+            <div style="text-align: center; margin: 1rem 0;">Or login via</div>
+            <div class="ssos">
+                @foreach($ssos as $sso)
+                    <a href="{{ route('jasmine.sso.oauth2.attempt', ['provider' => $sso['name']]) }}"
+                       title="{{ $sso['name'] }}">
+                        <img src="{{ $sso['icon'] }}" alt="{{ $sso['name'] }}">
+                    </a>
+                @endforeach
+            </div>
+        @endif
     </form>
 @endsection

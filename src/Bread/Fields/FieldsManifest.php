@@ -6,6 +6,7 @@ namespace Jasmine\Jasmine\Bread\Fields;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 class FieldsManifest implements Arrayable, Jsonable
@@ -14,7 +15,7 @@ class FieldsManifest implements Arrayable, Jsonable
      * @var array|Collection
      */
     private $columns;
-
+    
     /**
      * FieldsManifest constructor.
      *
@@ -24,7 +25,10 @@ class FieldsManifest implements Arrayable, Jsonable
     {
         $this->columns = collect($columns);
     }
-
+    
+    /*** @return AbstractField[] */
+    public function getFields(): array { return Arr::flatten($this->columns); }
+    
     /**
      * @inheritDoc
      */
@@ -38,7 +42,7 @@ class FieldsManifest implements Arrayable, Jsonable
             }, $col);
         });
     }
-
+    
     /**
      * @inheritDoc
      */

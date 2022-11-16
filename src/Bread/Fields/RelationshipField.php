@@ -11,19 +11,19 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 class RelationshipField extends AbstractField
 {
-    protected $component = 'relationship-field';
-
+    protected string $component = 'relationship-field';
+    
     protected $relationship = null;
-
+    
     public function __construct(string $name)
     {
         parent::__construct($name);
-
+        
         $this->default = [];
     }
-
+    
     public function getRelationship() { return $this->relationship; }
-
+    
     public function setRelationship(Relation $relationship, string $related_title_field = null)
     {
         $this->relationship = [
@@ -36,21 +36,21 @@ class RelationshipField extends AbstractField
             'related_title_field' => $related_title_field ?? $relationship->getRelatedKeyName(),
             'multiple'            => $relationship instanceof BelongsToMany || $relationship instanceof HasMany,
         ];
-
+        
         return $this;
     }
-
-    public function toArray()
+    
+    public function toArray(): array
     {
         $array = parent::toArray();
-
+        
         if (count($this->options)) {
             $array['options'] += $this->getRelationship();
         } else {
             $array['options'] = $this->getRelationship();
         }
-
-
+        
+        
         return $array;
     }
 }

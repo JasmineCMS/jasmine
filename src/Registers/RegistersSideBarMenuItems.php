@@ -2,42 +2,42 @@
 
 namespace Jasmine\Jasmine\Registers;
 
-use Jasmine\Jasmine\Bread\BreadableInterface;
-use Jasmine\Jasmine\Exceptions\MustExtendJasminePage;
-use Jasmine\Jasmine\Exceptions\MustImplementBreadableInterface;
-use Jasmine\Jasmine\Models\JasminePage;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Route;
 
 trait RegistersSideBarMenuItems
 {
-    private array $sideBarMenuItems = [];
-
+    
+    
     protected array $sideBarMenuFilters = [];
-
-    public function registerSideBarMenuItem(string $id, \Closure $item, ?int $priority = 50)
+    
+    public function registerSideBarMenuItem(string $id, \Closure $item, ?int $priority = null): void
     {
+        $priority ??= 50;
+        
         $this->sideBarMenuItems[$id] = [$priority, $item];
     }
-
-
-    public function registerSideBarSubMenuItem(string $parent, string $id, \Closure $item, ?int $priority = 50)
+    
+    
+    public function registerSideBarSubMenuItem(string $parent, string $id, \Closure $item, ?int $priority = 50): void
     {
         if (!isset($this->sideBarMenuItems[$parent])) {
             dd('parent not exists!!');
         }
-
+        
         $this->sideBarMenuItems[$parent]['children'][$id] = [$priority, $item];
     }
-
-
+    
+    
     public function getSideBarMenuItems(): array
     {
         $list = $this->sideBarMenuItems;
-        $list = \Arr::sort($list, fn($i) => $i[0]);
-
+        $list = Arr::sort($list, fn($i) => $i[0]);
+        
         $items = [];
         foreach ($list as $id => $item) {
             if (isset($item['children'])) {
-                $childrenList = \Arr::sort($item['children'], fn($c) => $c[0]);
+                $childrenList = Arr::sort($item['children'], fn($c) => $c[0]);
                 $items[$id] = $item[1]() + [
                         'title'  => $id,
                         'icon'   => '',
@@ -50,19 +50,13 @@ trait RegistersSideBarMenuItems
                             'title'  => $cid,
                             'class'  => '',
                             'active' => false,
+                            'icon'   => '',
                         ];
-
-                    if (!isset($items[$id]['opened']) || !$items[$id]['opened']) {
-                        if (isset($childrenItems[$cid]['is-route'])) {
-                            $isRoute = $childrenItems[$cid]['is-route'];
-                            $items[$id]['opened'] = $isRoute instanceof \Closure ? $isRoute() : \Route::is($isRoute);
-                            $childrenItems[$cid]['active'] = $items[$id]['opened'];
-
-                            //$items[$id]['opened'] = $items[$id]['active'];
-                        }
-                    }
+                    
+                    $childrenItems[$cid]['is-route'] ??= null;
+                    if ($childrenItems[$cid]['is-route'] instanceof \Closure) $childrenItems[$cid]['is-route'] = null;
                 }
-
+                
                 $items[$id]['children'] = $childrenItems;
             } else {
                 $items[$id] = $item[1]() + [
@@ -72,19 +66,12 @@ trait RegistersSideBarMenuItems
                         'icon'   => '',
                         'class'  => '',
                     ];
-
-                $items[$id]['active'] = false;
-                if (isset($items[$id]['is-route'])) {
-                    $isRoute = $items[$id]['is-route'];
-                    $items[$id]['active'] = $isRoute instanceof \Closure ? $isRoute() : \Route::is($isRoute);
-                }
+                
+                $items[$id]['is-route'] ??= null;
+                if ($items[$id]['is-route'] instanceof \Closure) $items[$id]['is-route'] = null;
             }
         }
-
+        
         return $items;
     }
-
-
-    /** @deprecated use registerSideBarMenuItem */
-    public function addSideBarMenuFilter(callable $cb) { }
 }

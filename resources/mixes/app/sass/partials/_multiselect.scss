@@ -1,0 +1,8 @@
+.multiselect {
+    --ms-radius: 0;
+    --ms-max-height: 60vh;
+
+    .multiselect-dropdown {
+        max-height: var(--ms-max-height);
+    }
+}

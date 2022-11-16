@@ -1,0 +1,37 @@
+//
+// Fixed dashboard layout
+//
+
+.sb-nav-fixed {
+    .sb-topnav {
+        @extend .fixed-top;
+        z-index: $zindex-topnav;
+    }
+
+    #wrapper {
+        #sidebar {
+            @extend .fixed-top;
+            width: $sidenav-base-width;
+            height: 100vh;
+            z-index: $zindex-sidenav;
+
+            .sb-sidenav {
+                padding-top: $topnav-base-height;
+
+                .sb-sidenav-menu {
+                    overflow-y: auto;
+                }
+            }
+        }
+
+        #content {
+            padding-left: $sidenav-base-width;
+            top: $topnav-base-height;
+
+            [dir=rtl] & {
+                padding-left: 0;
+                padding-right: $sidenav-base-width;
+            }
+        }
+    }
+}

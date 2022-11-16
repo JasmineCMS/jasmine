@@ -2,14 +2,11 @@ const mix = require('laravel-mix');
 
 process.env.section = process.env.npm_config_mix || 'app';
 
-if (process.env.npm_config_sourcemaps) {
-    mix.sourceMaps();
-}
+mix.sourceMaps(process.env.npm_config_sourcemaps || false);
 
-if (!mix.inProduction()) {
-    mix.sourceMaps();
-    mix.webpackConfig({devtool: 'inline-source-map'});
-} else {
+mix.disableNotifications();
+
+if (mix.inProduction()) {
     mix.version();
 }
 

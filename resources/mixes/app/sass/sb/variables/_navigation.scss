@@ -1,0 +1,32 @@
+//
+// Navigation
+//
+
+// Z index variables
+$zindex-content: 1027 !default;
+$zindex-sidenav: 1028 !default;
+$zindex-topnav: 1029 !default;
+
+// Color variables for the sidenav
+
+// -- Sidenav Dark
+$sidenav-dark-bg: $gray-900;
+$sidenav-dark-color: fade-out($white, 0.5);
+$sidenav-dark-heading-color: fade-out($white, 0.5);
+$sidenav-dark-link-color: $white;
+$sidenav-dark-link-active-color: $white;
+$sidenav-dark-icon-color: $white;
+$sidenav-dark-footer-bg: $gray-800;
+
+// -- Sidenav Light
+$sidenav-light-bg: $gray-100;
+$sidenav-light-color: $gray-900;
+$sidenav-light-heading-color: $gray-500;
+$sidenav-light-link-color: $sidenav-light-color;
+$sidenav-light-link-active-color: $primary;
+$sidenav-light-icon-color: $gray-500;
+$sidenav-light-footer-bg: $gray-200;
+
+// Color variables for the topnav
+$topnav-dark-toggler-color: fade-out($white, 0.5);
+$topnav-light-toggler-color: $gray-900;

@@ -13,6 +13,7 @@ use Jasmine\Jasmine\Console\Commands\LinkPublicAssets;
 use Jasmine\Jasmine\Console\Commands\ModelMake;
 use Jasmine\Jasmine\Console\Commands\PageMake;
 use Jasmine\Jasmine\Http\Middleware\Authenticate;
+use Jasmine\Jasmine\Models\JasmineUser;
 
 class JasmineServiceProvider extends ServiceProvider
 {
@@ -59,40 +60,50 @@ class JasmineServiceProvider extends ServiceProvider
     
     private function jasmine(Jasmine $jasmine)
     {
+        $jasmine->registerInterfaceLocale('he', __DIR__ . '/../resources/lang/he.json');
+        
+        $jasmine->registerBreadable(JasmineUser::class, false);
+        
         $jasmine->registerSideBarMenuItem('dashboard', fn() => [
-            'title'    => __('Dashboard'),
+            'title'    => 'Dashboard',
             'is-route' => 'jasmine.dashboard',
             'href'     => route('jasmine.dashboard'),
-            'icon'     => 'fa-tachometer-alt',
+            'icon'     => 'bi-speedometer2',
         ]);
         
         $jasmine->registerSideBarMenuItem('file_manager', fn() => [
             'href'     => route('jasmine.fm.show'),
             'is-route' => 'jasmine.fm.show',
-            'title'    => __('File Manager'),
-            'icon'     => 'fa-folder',
+            'title'    => 'File Manager',
+            'icon'     => 'bi-folder2-open',
         ]);
         
         $jasmine->registerSideBarMenuItem('pages', fn() => [
-            'title'    => __('Pages'),
-            'icon'     => 'fa-newspaper',
+            'title'    => 'Pages',
+            'icon'     => 'bi-file-text',
             'children' => [],
         ]);
         
-        
-        $jasmine->registerSideBarMenuItem('tools', fn() => [
-            'title'    => __('Tools'),
-            'icon'     => 'fa-tools',
+        $jasmine->registerSideBarMenuItem('jasmine', fn() => [
+            'title'    => 'Jasmine',
+            'icon'     => 'bi-file-text',
             'children' => [],
-        ], 60);
+        ], 55);
         
-        $jasmine->registerSideBarSubMenuItem('tools', 'redirections', function () {
+        $jasmine->registerSideBarSubMenuItem('jasmine', 'users', function () {
             return [
-                'href'     => route('jasmine.redirection.index'),
-                'is-route' => 'jasmine.redirection.index',
-                'title'    => __('Redirections'),
+                'title'    => 'Users',
+                'href'     => route('jasmine.bread.index', JasmineUser::getBreadableKey()),
+                'is-route' => ['r' => 'jasmine.bread.*', 'p' => ['breadableName' => JasmineUser::getBreadableKey()]],
+                'icon'     => JasmineUser::getMenuIcon(),
             ];
         });
+        
+        $jasmine->registerSideBarMenuItem('tools', fn() => [
+            'title'    => 'Tools',
+            'icon'     => 'bi-tools',
+            'children' => [],
+        ], 60);
     }
     
     private function registerConsoleCommands()

@@ -1,10 +1,12 @@
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-      dir="{{ __('jasmine::vars.dir') === 'rtl' ? 'rtl' : 'ltr' }}">
+      dir="{{ in_array(app()->getLocale(), ['ar','dv','fa','ha','he','ks','ku','ps','sd','ur','yi']) ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@hasSection('title') @yield('title') | @endif{{ config('app.name', 'Laravel') }}</title>
+    <title>@hasSection('title')
+            @yield('title') |
+        @endif{{ config('app.name', 'Laravel') }}</title>
     <style>
         :root {
             --blue: #4e90fe;
@@ -150,6 +152,20 @@
             color: #000;
             background: #fff;
         }
+
+        .ssos {
+            display: flex;
+            justify-content: center;
+        }
+
+        .ssos a {
+            padding: 1rem;
+        }
+
+        .ssos a img {
+            width: 60px;
+        }
+
     </style>
     @stack('head')
 </head>
