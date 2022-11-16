@@ -2,6 +2,16 @@
   <Head :title="$t(b.plural)"/>
 
   <Layout>
+
+    <template #pageActions>
+      <div class="d-flex align-items-center p-2">
+        <div v-if="locale" class="btn-group btn-group-sm">
+          <inertia-link v-for="_l in $globals.locales" href="" :data="{_locale:_l}" v-text="_l"
+                        class="btn btn-outline-primary text-uppercase" :class="{active:_l === locale}"/>
+        </div>
+      </div>
+    </template>
+
     <div class="px-1 px-lg-4">
       <DataTable :paginator="paginator" :columns="columns">
         <template #tableActions>
@@ -44,6 +54,7 @@ export default {
     b: {type: Object, required: true},
     paginator: {type: Object, required: true},
     columns: {type: Array, required: true},
+    locale: {type: String},
   },
   methods: {
     async del(v, r) {

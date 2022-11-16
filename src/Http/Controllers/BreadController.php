@@ -88,12 +88,19 @@ class BreadController extends Controller
             $q->with([$relation => fn($rq) => $rq->select($cols)]);
         }
         
+        $locale = null;
+        
+        if (in_array(Translatable::class, class_uses($breadableClass))) {
+            $locale = request('_locale', Jasmine::getLocales()[0]);
+        }
+        
         return inertia('Bread/Index', [
             'b'         => [
                 'key'      => $bKey,
                 'singular' => $breadableClass::getSingularName(),
                 'plural'   => $breadableClass::getPluralName(),
             ],
+            'locale'    => $locale,
             'columns'   => array_map(fn($c) => Arr::except($c, ['render']), array_values($columns)),
             'paginator' => $q
                 ->when(\request('q'), function (Builder $q, $v) use ($columns, $relations) {
@@ -145,7 +152,12 @@ class BreadController extends Controller
                     }
                 })
                 ->paginate(\request('perPage', 10))->withQueryString()
-                ->through(function (Model|BreadableInterface $m) use ($columns) {
+                ->through(function (Model|BreadableInterface $m) use ($columns, $locale) {
+                    
+                    if (in_array(Translatable::class, class_uses($m))) {
+                        $locale = request('_locale', Jasmine::getLocales()[0]);
+                        $m->setLocale($locale);
+                    }
                     
                     if (method_exists($m, 'jasmineOnRetrievedForIndex')) {
                         $d = $m::jasmineOnRetrievedForIndex($m);
