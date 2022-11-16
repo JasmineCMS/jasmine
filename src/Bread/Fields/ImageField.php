@@ -20,5 +20,16 @@ class ImageField extends AbstractField
         ];
     }
     
+    public function toArray(): array
+    {
+        $array = parent::toArray();
+        
+        if (!$array['description'] && (isset($array['options']['w']) && isset($array['options']['h']))) {
+            $array['description'] = $array['options']['w'] . 'x' . $array['options']['h'];
+        }
+        
+        return $array;
+    }
+    
     
 }
