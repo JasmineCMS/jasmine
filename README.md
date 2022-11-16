@@ -15,7 +15,7 @@ Bread Edit
 
 #### Note
 
-Jasmine uses [alexusmai/laravel-file-manager](https://github.com/alexusmai/laravel-file-manager  
+Jasmine uses [alexusmai/laravel-file-manager](https://github.com/alexusmai/laravel-file-manager)  
 If you are using it already or planing to,  
 you might need to tweak some configurations to prevent conflicts.
 
