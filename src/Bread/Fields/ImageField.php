@@ -24,6 +24,7 @@ class ImageField extends AbstractField
     {
         $array = parent::toArray();
         
+        if ($array['options'] instanceof \stdClass) $array['options'] = (array)$array['options'];
         if (!$array['description'] && (isset($array['options']['w']) && isset($array['options']['h']))) {
             $array['description'] = $array['options']['w'] . 'x' . $array['options']['h'];
         }
