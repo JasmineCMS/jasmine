@@ -9,7 +9,6 @@ use Jasmine\Jasmine\Http\Controllers\BreadController as Bread;
 use Jasmine\Jasmine\Http\Controllers\BreadRelationshipsController as BreadRelationships;
 use Jasmine\Jasmine\Http\Controllers\FileManagerController as FileManager;
 use Jasmine\Jasmine\Http\Controllers\PageController as Page;
-use Jasmine\Jasmine\Http\Controllers\RedirectionController as Redirection;
 use Jasmine\Jasmine\Http\Middleware\HandleInertiaRequests;
 use Jasmine\Jasmine\Http\Middleware\HandleOtp;
 use Jasmine\Jasmine\Http\Middleware\Jasmine as JasmineMiddleware;
