@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
@@ -255,7 +256,7 @@ class BreadController extends Controller
             }
         }
         
-        $data = request()->validate($rules);
+        $data = Validator::validate(request('v', []), $rules);
         
         $locale = null;
         if (in_array(Translatable::class, class_uses($breadableClass))) {

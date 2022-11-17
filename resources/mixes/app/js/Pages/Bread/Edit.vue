@@ -41,7 +41,7 @@
                   <!-- Repeatable field -->
                   <template v-if="field.repeats >  1">
                     <draggable
-                        v-model="form[field.name]"
+                        v-model="form.v[field.name]"
                         ghost-class="ghost"
                         :handle="'.dnd-handler_' + field.id"
                         class="row"
@@ -67,7 +67,7 @@
                             <component
                                 :is="field.component" :id="field.id+index"
                                 :name="field.name + '['+index+']'"
-                                :invalid="!!form.errors[field.name]" v-model="form[field.name][index]"
+                                :invalid="!!form.errors[field.name]" v-model="form.v[field.name][index]"
                                 :label="field.label" :options="field.options"
                                 :validation="field.validation"
                                 :locale="locale" :is-locale-rtl="isLocaleRtl"
@@ -79,7 +79,7 @@
                     <div class="mb-5">
                       <button style="--bs-btn-disabled-border-color:transparent"
                               class="btn text-primary fw-semibold d-flex align-items-center" @click="repeatField(field)"
-                              :disabled="form[field.name].length >= field.repeats"
+                              :disabled="form.v[field.name].length >= field.repeats"
                               type="button" :title="$t('Add') +' '+ field.label">
                         <i class="bi bi-plus-circle-fill fs-6"/>
                         <span class="px-1"></span>
@@ -93,7 +93,7 @@
                     <label class="form-label fw-semibold" :for="field.id" v-text="field.label"/>
                     <component
                         :is="field.component" :id="field.id" :name="field.name"
-                        :invalid="!!form.errors[field.name]" v-model="form[field.name]"
+                        :invalid="!!form.errors[field.name]" v-model="form.v[field.name]"
                         :label="field.label" :options="field.options" :validation="field.validation"
                         :locale="locale" :is-locale-rtl="isLocaleRtl"
                     />
@@ -101,7 +101,8 @@
                            class="form-text text-muted"
                            v-text="field.description"/>
                     <div v-if="form.errors[field.name]" class="invalid-feedback" role="alert">
-                      <strong v-text="form.errors[field.name][0]"/>
+                      <strong
+                          v-text="Array.isArray(form.errors[field.name]) ? form.errors[field.name][0] : form.errors[field.name]"/>
                     </div>
                   </template>
                 </div>
@@ -148,17 +149,17 @@ export default {
     });
 
     return {
-      form: this.$inertia.form(data),
+      form: this.$inertia.form({v: data}),
     };
   },
 
   methods: {
     repeatField(f) {
-      this.form[f.name].push(JSON.parse(JSON.stringify({v: f.default})).v);
+      this.form.v[f.name].push(JSON.parse(JSON.stringify({v: f.default})).v);
     },
 
     removeRepeatedField(fieldName, i) {
-      this.form[fieldName].splice(i, 1);
+      this.form.v[fieldName].splice(i, 1);
     },
   },
 
