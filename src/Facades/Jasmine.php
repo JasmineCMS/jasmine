@@ -11,15 +11,15 @@ use Illuminate\Support\Facades\Facade;
  * @method static void registerLocales(array $locales)
  *
  * @method static array getInterfaceLocales()
- * @method static array getInterfaceLocale(string $locale)
  * @method static void registerInterfaceLocale(string $locale, string|array $strings)
+ * @method static array getInterfaceLocale(string $locale)
  *
  * @method void registerPermission(string $key)
  * @method array getPermissions()
  * @method array getPermissionFields()
  *
  * @method static array getBreadables()
- * @method static void registerBreadable(string $breadable, bool $addMenuItem = true)
+ * @method static void registerBreadable(string $breadable, bool $addMenuItem = true, ?int $menuPriority = null)
  *
  * @method static void registerPage(string $page, bool $addMenuItem = true)
  * @method static array getPage(string $pageSlug)

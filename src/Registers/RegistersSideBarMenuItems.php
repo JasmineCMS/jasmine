@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Route;
 
 trait RegistersSideBarMenuItems
 {
-    
-    
     protected array $sideBarMenuFilters = [];
     
     public function registerSideBarMenuItem(string $id, \Closure $item, ?int $priority = null): void
