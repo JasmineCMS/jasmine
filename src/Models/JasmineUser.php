@@ -23,21 +23,21 @@ use Illuminate\Notifications\Notifiable;
 /**
  * Jasmine\Jasmine\Models\JasmineUser
  *
- * @property int $id
- * @property string $name
- * @property string $email
- * @property boolean $admin
- * @property array $roles
- * @property array $permissions
- * @property string $password
- * @property string|null $otp_secret
- * @property string|null $otp_remember_token
- * @property string|null $remember_token
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read  string $avatar_url
+ * @property int                                                        $id
+ * @property string                                                     $name
+ * @property string                                                     $email
+ * @property boolean                                                    $admin
+ * @property array                                                      $roles
+ * @property array                                                      $permissions
+ * @property string                                                     $password
+ * @property string|null                                                $otp_secret
+ * @property string|null                                                $otp_remember_token
+ * @property string|null                                                $remember_token
+ * @property Carbon|null                                                $created_at
+ * @property Carbon|null                                                $updated_at
+ * @property-read  string                                               $avatar_url
  * @property-read DatabaseNotificationCollection|DatabaseNotification[] $notifications
- * @property-read int|null $notifications_count
+ * @property-read int|null                                              $notifications_count
  * @method static Builder|JasmineUser newModelQuery()
  * @method static Builder|JasmineUser newQuery()
  * @method static Builder|JasmineUser query()
@@ -96,8 +96,7 @@ class JasmineUser extends Authenticatable implements BreadableInterface
     public function jCan(string $permission): bool
     {
         if ($this->id === 1 || $this->admin) return true;
-        
-        return in_array($permission, $this->permissions ?? []);
+        return in_array($permission, $this->permissions);
     }
     
     public static function getBreadableKey(): string { return 'jasmine-users'; }
@@ -160,7 +159,6 @@ class JasmineUser extends Authenticatable implements BreadableInterface
         // normalize permissions
         if ($u->id === 1) $data['admin'] = true;
         $data['permissions'] = array_keys(array_filter(Arr::dot($data['permissions']), fn($p) => $p));
-        
         return $data;
     }
     
