@@ -4,7 +4,7 @@
           :readonly="opts.readonly"
           :required="validation.indexOf('required') > -1"
           :id="id" :name="name" v-model="val">
-    <option v-for="(option, v) in opts.options" :value="v">
+    <option a v-for="(option, v) in opts.options" :value="v">
       {{ option }}
     </option>
   </select>
