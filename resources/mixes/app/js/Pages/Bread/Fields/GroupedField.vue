@@ -93,8 +93,7 @@ export default {
     loadValues() {
       this.opts.fields.forEach(f => {
         if (f.repeats > 1) {
-          //this.val[f.name] = JSON.parse(JSON.stringify({v: f.default})).v || [];
-          this.val[f.name] = [];
+          this.val[f.name] = Array.isArray(this.val?.[f.name]) ? this.val[f.name] : [];
         }
 
         if (!this.val[f.name] && f.type === 'GroupedField') this.val[f.name] = {};
