@@ -4,6 +4,7 @@ namespace Jasmine\Jasmine\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
 use Jasmine\Jasmine\Bread\Translatable;
 use Jasmine\Jasmine\Facades\Jasmine;
@@ -71,7 +72,7 @@ class PageController extends Controller
             }
         }
         
-        $data = request()->validate($rules);
+        $data = Validator::validate(request('v', []), $rules);
         
         $locale = null;
         if (in_array(Translatable::class, class_uses($page))) {
