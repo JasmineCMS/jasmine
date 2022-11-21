@@ -11,12 +11,8 @@
 </template>
 
 <script>
-import Layout from '../Shared/Layout';
-
 export default {
   name: 'FileManagerPage',
-  components: {Layout},
-
   computed: {
     settings() {
       const token = document.head.querySelector('meta[name="csrf-token"]');

@@ -121,14 +121,9 @@
 </template>
 
 <script>
-import draggable from 'vuedraggable';
-import Layout from '../../Shared/Layout';
 
 export default {
   name: 'BreadEdit',
-  components: {
-    Layout, draggable,
-  },
   props: {
     b: {type: Object, required: true},
     entId: {type: [String, Number]},

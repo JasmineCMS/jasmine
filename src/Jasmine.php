@@ -9,11 +9,13 @@ use Jasmine\Jasmine\Registers\RegistersLocales;
 use Jasmine\Jasmine\Registers\RegistersOauth2Sso;
 use Jasmine\Jasmine\Registers\RegistersPages;
 use Jasmine\Jasmine\Registers\RegistersPermissions;
+use Jasmine\Jasmine\Registers\RegistersRoutes;
 use Jasmine\Jasmine\Registers\RegistersSideBarMenuItems;
 
 class Jasmine
 {
-    use RegistersLocales,
+    use RegistersRoutes,
+        RegistersLocales,
         RegistersInterfaceLocales,
         RegistersPermissions,
         RegistersBreadables,
@@ -21,6 +23,4 @@ class Jasmine
         RegistersSideBarMenuItems,
         RegistersCustomAssets,
         RegistersOauth2Sso;
-    
-    public function routes(callable $group = null, callable $authedGroup = null): void { require __DIR__ . '/../routes.php'; }
 }

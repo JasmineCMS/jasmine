@@ -6,6 +6,10 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static void route(callable $group = null, callable $authedGroup = null)
+ * @method array getAuthenticatedRouteGroups()
+ * @method array getGuestRouteGroups()
+ * @method static registerAuthenticatedRouteGroup(\Closure $callback, ?string $id = null)
+ * @method static registerGuestRouteGroup(\Closure $callback, ?string $id = null)
  *
  * @method static array getLocales()
  * @method static void registerLocales(array $locales)

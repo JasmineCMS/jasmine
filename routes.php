@@ -1,10 +1,7 @@
 <?php
-/**
- * @var callable|null $group
- * @var callable|null $authedGroup
- */
 
 use Illuminate\Support\Facades\Route;
+use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Http\Controllers\BreadController as Bread;
 use Jasmine\Jasmine\Http\Controllers\BreadRelationshipsController as BreadRelationships;
 use Jasmine\Jasmine\Http\Controllers\FileManagerController as FileManager;
@@ -17,7 +14,7 @@ use Jasmine\Jasmine\Http\Controllers\Auth\LoginController as Login;
 use Jasmine\Jasmine\Http\Controllers\Auth\ResetPasswordController as ResetPassword;
 use Jasmine\Jasmine\Http\Controllers\AppController;
 
-Route::middleware([JasmineMiddleware::class])->name('jasmine.')->group(function () use ($group, $authedGroup) {
+Route::middleware([JasmineMiddleware::class])->name('jasmine.')->group(function () {
     // Authentication Routes...
     Route::get('login', [Login::class, 'showLoginForm'])->name('login');
     Route::post('login', [Login::class, 'login']);
@@ -39,16 +36,17 @@ Route::middleware([JasmineMiddleware::class])->name('jasmine.')->group(function 
     Route::middleware([
         'jasmineAuth:' . config('jasmine.auth.guard'),
         HandleOtp::class,
-    ])->group(function () {
-        Route::get('/file-manager-standalone', [FileManager::class, 'standalone'])->name('fm.standalone');
-    });
+    ])
+         ->group(function () {
+             Route::get('/file-manager-standalone', [FileManager::class, 'standalone'])->name('fm.standalone');
+         });
     
     Route::middleware([
         'jasmineAuth:' . config('jasmine.auth.guard'),
         HandleOtp::class,
         HandleInertiaRequests::class,
     ])
-         ->group(function () use ($authedGroup) {
+         ->group(function () {
              Route::get('/routes.json', [AppController::class, 'ziggy'])->name('ziggy');
              Route::get('/globals.json', [AppController::class, 'globals'])->name('globals');
              Route::get('/locale.json', [AppController::class, 'localeStrings'])->name('locale');
@@ -75,7 +73,7 @@ Route::middleware([JasmineMiddleware::class])->name('jasmine.')->group(function 
                  Route::post('/{breadableId}/edit', [Bread::class, 'save']);
             
                  Route::delete('/{breadableId}', [Bread::class, 'delete'])->name('delete');
-    
+            
                  Route::get('/relations', [BreadRelationships::class, 'getRelationData']);
                  Route::get('{breadableId}/relations', [BreadRelationships::class, 'getRelationData']);
              });
@@ -84,8 +82,8 @@ Route::middleware([JasmineMiddleware::class])->name('jasmine.')->group(function 
              Route::get('/page/{jasminePage}', [Page::class, 'edit'])->name('page.edit');
              Route::post('/page/{jasminePage}', [Page::class, 'save']);
         
-             if ($authedGroup) $authedGroup();
+             Route::group([], Jasmine::getAuthenticatedRouteGroups());
          });
     
-    if ($group) $group();
+    Route::group([], Jasmine::getGuestRouteGroups());
 });

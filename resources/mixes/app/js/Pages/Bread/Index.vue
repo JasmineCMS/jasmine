@@ -43,13 +43,10 @@
 </template>
 
 <script>
-import Layout from '../../Shared/Layout';
-import DataTable from '../../Shared/DataTable';
 import Swal from '../../inc/Swal';
 
 export default {
   name: 'BreadIndex',
-  components: {DataTable, Layout},
   props: {
     b: {type: Object, required: true},
     paginator: {type: Object, required: true},

@@ -6,7 +6,12 @@ import {ZiggyVue} from 'ziggy-js/src/js/vue';
 import FileManager from 'laravel-file-manager';
 import {createI18n} from 'vue-i18n';
 import VueTinymce from '@tinymce/tinymce-vue';
+import draggable from 'vuedraggable';
 
+import Swal from './inc/Swal';
+import Layout from './Shared/Layout';
+import DataTable from './Shared/DataTable';
+import JasmineBaseField from './Pages/Bread/Fields/BaseField';
 import GroupedField from './Pages/Bread/Fields/GroupedField';
 import InputField from './Pages/Bread/Fields/InputField';
 import TextareaField from './Pages/Bread/Fields/TextareaField';
@@ -19,6 +24,9 @@ import VideoField from './Pages/Bread/Fields/VideoField';
 import GeocodingField from './Pages/Bread/Fields/GeocodingField';
 import ImageField from './Pages/Bread/Fields/ImageField';
 import RelationshipField from './Pages/Bread/Fields/RelationshipField';
+
+window.JasmineBaseField = JasmineBaseField;
+window.Swal = Swal;
 
 require('./inc/tinymce');
 
@@ -69,28 +77,29 @@ require('./inc/tinymce');
                     );
                 },
             })
-                .use(i18n)
-                .use(store)
-                .use(plugin)
+                .use(i18n).use(store).use(plugin)
                 .use(ZiggyVue, Ziggy)
-                .use(FileManager, {store})
+                .use(FileManager, {store});
+
+            app
+                .component('draggable', draggable)
                 .component('Head', Head)
                 .component('InertiaLink', Link)
-                .component('vue-tinymce', VueTinymce);
-
-
-            app.component('GroupedField', GroupedField);
-            app.component('InputField', InputField);
-            app.component('TextareaField', TextareaField);
-            app.component('SelectField', SelectField);
-            app.component('SwitchField', SwitchField);
-            app.component('WysiwygField', WysiwygField);
-            app.component('ColorField', ColorField);
-            app.component('FileField', FileField);
-            app.component('VideoField', VideoField);
-            app.component('GeocodingField', GeocodingField);
-            app.component('ImageField', ImageField);
-            app.component('RelationshipField', RelationshipField);
+                .component('vue-tinymce', VueTinymce)
+                .component('Layout', Layout)
+                .component('DataTable', DataTable)
+                .component('GroupedField', GroupedField)
+                .component('InputField', InputField)
+                .component('TextareaField', TextareaField)
+                .component('SelectField', SelectField)
+                .component('SwitchField', SwitchField)
+                .component('WysiwygField', WysiwygField)
+                .component('ColorField', ColorField)
+                .component('FileField', FileField)
+                .component('VideoField', VideoField)
+                .component('GeocodingField', GeocodingField)
+                .component('ImageField', ImageField)
+                .component('RelationshipField', RelationshipField);
 
             app.config.globalProperties.$globals = globals;
             app.config.globalProperties.$fixed = window[fixed];

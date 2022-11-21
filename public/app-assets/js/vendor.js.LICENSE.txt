@@ -32,8 +32,31 @@
 /*!
  * The buffer module from node.js, for the browser.
  *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
  * @author   Feross Aboukhadijeh <http://feross.org>
  * @license  MIT
+ */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+
+/*!
+ * vue3-sfc-loader v0.8.4 for vue3
+ *
+ * @description Vue3 Single File Component loader.
+ * @author      Franck FREIBURGER <franck.freiburger@gmail.com>
+ * @license     MIT
+ * @sources     https://github.com/FranckFreiburger/vue3-sfc-loader
  */
 
 /*!
@@ -41,6 +64,10 @@
  * (c) 2022 Evan You
  * @license MIT
  */
+
+/*! https://mths.be/cssesc v3.0.0 by @mathias */
+
+/*! https://mths.be/punycode v1.3.2 by @mathias */
 
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 

@@ -109,11 +109,9 @@
 <script>
 import VueQrcode from '@chenfengyuan/vue-qrcode';
 
-import Layout from '../Shared/Layout';
-
 export default {
   name: 'Profile',
-  components: {Layout, VueQrcode},
+  components: {VueQrcode},
   props: {
     name: {type: String, required: true},
     email: {type: String, required: true},
