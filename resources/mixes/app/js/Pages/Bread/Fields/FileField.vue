@@ -65,9 +65,18 @@ export default {
           }),
         });
 
-        fm.$store.dispatch(`fm/${fm.$store.state.fm.activeManager}/selectDirectory`, {
-          path: this.fm_path, history: true,
-        });
+        setTimeout(async () => {
+          await fm.$store.commit('fm/left/setDisk', vm.opts.disk);
+          await fm.$store.commit('fm/left/setSelectedDirectory', vm.fm_path);
+          await fm.$store.commit('fm/left/addToHistory', vm.fm_path);
+          await fm.$store.dispatch('fm/getLoadContent', {
+            manager: 'left',
+            disk: vm.opts.disk,
+            path: vm.fm_path,
+          });
+
+          vm.fmReady = true;
+        }, 100);
 
         fm.$store.commit('fm/setFileCallBack', function (fileUrl) {
           if (fileUrl.startsWith(document.location.origin)) {

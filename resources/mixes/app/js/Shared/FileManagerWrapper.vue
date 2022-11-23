@@ -6,9 +6,6 @@
 
 export default {
   name: 'FileManagerWrapper',
-  props: {
-    path: {type: String, default: ''},
-  },
   computed: {
     settings() {
       const token = document.head.querySelector('meta[name="csrf-token"]');
