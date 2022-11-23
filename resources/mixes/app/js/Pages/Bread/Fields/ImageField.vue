@@ -64,7 +64,7 @@
             <button type="button" class="btn-close" aria-label="Close" @click="showFm = false"/>
           </div>
           <div class="modal-body p-0">
-            <FileManagerWrapper ref="fmw"/>
+            <FileManagerWrapper v-show="fmReady" ref="fmw"/>
           </div>
         </div>
       </div>
@@ -97,6 +97,7 @@ export default {
       }, this.options),
 
       showFm: false,
+      fmReady: false,
       showCropper: false,
       cropImg: null,
       fileName: null,
@@ -266,14 +267,18 @@ export default {
           }),
         });
 
-        await fm.$store.dispatch('fm/selectDisk', {
-          disk: vm.opts.disk,
-          manager: fm.$store.state.fm.activeManager,
-        });
+        setTimeout(async () => {
+          await fm.$store.commit('fm/left/setDisk', vm.opts.disk);
+          await fm.$store.commit('fm/left/setSelectedDirectory', vm.fm_path);
+          await fm.$store.commit('fm/left/addToHistory', vm.fm_path);
+          await fm.$store.dispatch('fm/getLoadContent', {
+            manager: 'left',
+            disk: vm.opts.disk,
+            path: vm.fm_path,
+          });
 
-        await fm.$store.dispatch(`fm/${fm.$store.state.fm.activeManager}/selectDirectory`, {
-          path: this.fm_path, history: true,
-        });
+          vm.fmReady = true;
+        }, 100);
 
         fm.$store.commit('fm/setFileCallBack', function (fileUrl) {
           if (fileUrl.startsWith(document.location.origin)) {
@@ -307,6 +312,7 @@ export default {
             }[fileUrl.split('.').pop()] || 'png');
 
             vm.showFm = false;
+            vm.fmReady = false;
           };
 
           img.src = fileUrl;
