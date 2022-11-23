@@ -186,10 +186,10 @@ export default {
       let vm = this;
       vm.loading = true;
       //check directory exists
-      let checkRes = await fetch(vm.route('fm.content', {disk: 'public', path: vm.fm_path}));
+      let checkRes = await fetch(vm.route('fm.content', {disk: vm.opts.disk, path: vm.fm_path}));
       if (!checkRes.ok) await fetch(vm.route('fm.create-directory'), {
         method: 'post', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({
-          disk: 'public',
+          disk: vm.opts.disk,
           name: vm.fm_path,
           path: null,
           _token,
@@ -197,7 +197,7 @@ export default {
       });
 
       let fd = new FormData();
-      fd.append('disk', 'public');
+      fd.append('disk', vm.opts.disk);
       fd.append('path', vm.fm_path);
       fd.append('overwrite', '0');
       fd.append('files[]', imgFile);
@@ -207,7 +207,7 @@ export default {
 
       if (uploadRes.result.status === 'success') {
         fetch(vm.route('fm.url', {
-          disk: 'public',
+          disk: vm.opts.disk,
           path: vm.fm_path + '/' + imgFile.name,
         })).then(r => r.json()).then(r => {
           let url = r.url;
@@ -256,17 +256,22 @@ export default {
         let fm = this.$refs.fmw.$refs.fm;
 
         //check directory exists
-        let checkRes = await fetch(vm.route('fm.content', {disk: 'public', path: vm.fm_path}));
+        let checkRes = await fetch(vm.route('fm.content', {disk: vm.opts.disk, path: vm.fm_path}));
         if (!checkRes.ok) await fetch(vm.route('fm.create-directory'), {
           method: 'post', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({
-            disk: 'public',
+            disk: vm.opts.disk,
             name: vm.fm_path,
             path: null,
             _token,
           }),
         });
 
-        fm.$store.dispatch(`fm/${fm.$store.state.fm.activeManager}/selectDirectory`, {
+        await fm.$store.dispatch('fm/selectDisk', {
+          disk: vm.opts.disk,
+          manager: fm.$store.state.fm.activeManager,
+        });
+
+        await fm.$store.dispatch(`fm/${fm.$store.state.fm.activeManager}/selectDirectory`, {
           path: this.fm_path, history: true,
         });
 
