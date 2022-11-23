@@ -136,12 +136,9 @@ export default {
               )
           ) {
             let b = dataUriToBlob(reader.result);
-            let file = new File([b],
-                vm.fileName.split('.').slice(0, -1).join('')
-                + `-` + parseInt(new Date().getTime() / 1000) + `.`
-                + vm.fileName.split('.').pop(), {
-                  type: b.type,
-                });
+            let file = new File([b], vm.fileName, {
+              type: b.type,
+            });
 
             vm.upload(file);
 
@@ -150,6 +147,10 @@ export default {
         };
 
         vm.fileName = imgFile.name;
+        vm.fileName = vm.fileName.split('.').slice(0, -1).join('')
+            + `-` + parseInt(new Date().getTime() / 1000) + `.`
+            + vm.fileName.split('.').pop();
+
         img.src = reader.result;
       };
     },
