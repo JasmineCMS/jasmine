@@ -29,6 +29,12 @@ export default {
     };
   },
 
+  beforeMount() {
+    if (this.val) {
+      this.val = this.val.match(/(?<d>\d{1,4}-\d{2}-\d{2})/)?.groups?.d || this.val;
+    }
+  },
+
   mounted() {
     if (['checkbox', 'radio'].indexOf(this.opts.type) > -1) {
       console.error(`${this.name} is using <input-field>, Please use <${this.opts.type}-field> instead of <input-field> for ${this.opts.type} fields`);
