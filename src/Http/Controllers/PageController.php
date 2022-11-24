@@ -26,7 +26,7 @@ class PageController extends Controller
             !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('pages.' . $slug . '.read')
         ) abort(401);
         
-        $locale = null;
+        $locale = app()->getLocale();
         if (in_array(Translatable::class, class_uses($page))) {
             $locale = request('_locale', Jasmine::getLocales()[0]);
             $page->setLocale($locale);
