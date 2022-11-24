@@ -103,11 +103,11 @@ export default {
       }
     },
 
-    async reorder() {
+    async reorder(rows) {
       let j_actions = this.columns.find(v => v.id === 'j_actions');
       if (!j_actions) return;
       let new_order = {};
-      this.paginator.data.forEach((v, k) => {
+      rows.forEach((v, k) => {
         new_order[v[j_actions.data]] = k + 1;
       });
 
