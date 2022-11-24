@@ -36,6 +36,9 @@
                     :validation="field.validation"
                     :locale="locale" :is-locale-rtl="isLocaleRtl"
                 />
+                <small v-if="field.description" :id="field.id+index +'Help'" class="form-text text-muted">
+                  {{ field.description }}
+                </small>
               </div>
             </div>
           </template>
