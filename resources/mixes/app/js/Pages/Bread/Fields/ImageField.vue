@@ -115,7 +115,7 @@ export default {
       if (evt.dataTransfer.files.length !== 1) return;
       let imgFile = evt.dataTransfer.files[0];
 
-      if (!imgFile.type.match(/^image\/(png|gif|jpeg)$/)) return;
+      if (!imgFile.type.match(/^image\/(png|gif|jpeg|svg\+xml)$/)) return;
 
       this.fileType = imgFile.type;
 
@@ -125,14 +125,17 @@ export default {
         let img = new Image();
         img.onload = () => {
           if (
-              (
-                  vm.opts.w / img.naturalWidth > 0.99
-                  && vm.opts.w / img.naturalWidth < 1.1
-              )
-              &&
-              (
-                  vm.opts.h / img.naturalHeight > 0.99
-                  && vm.opts.h / img.naturalHeight < 1.1
+              imgFile.name.split('.').pop() === 'svg'
+              || (
+                  (
+                      vm.opts.w / img.naturalWidth > 0.99
+                      && vm.opts.w / img.naturalWidth < 1.1
+                  )
+                  &&
+                  (
+                      vm.opts.h / img.naturalHeight > 0.99
+                      && vm.opts.h / img.naturalHeight < 1.1
+                  )
               )
           ) {
             let b = dataUriToBlob(reader.result);
@@ -289,20 +292,24 @@ export default {
           let img = new Image();
           img.onload = () => {
             if (
-                (
-                    vm.opts.w / img.naturalWidth > 0.99
-                    && vm.opts.w / img.naturalWidth < 1.1
-                )
-                &&
-                (
-                    vm.opts.h / img.naturalHeight > 0.99
-                    && vm.opts.h / img.naturalHeight < 1.1
+                fileUrl.split('.').pop() === 'svg'
+                || (
+                    (
+                        vm.opts.w / img.naturalWidth > 0.99
+                        && vm.opts.w / img.naturalWidth < 1.1
+                    )
+                    &&
+                    (
+                        vm.opts.h / img.naturalHeight > 0.99
+                        && vm.opts.h / img.naturalHeight < 1.1
+                    )
                 )
             ) {
               vm.val.w = img.naturalWidth;
               vm.val.h = img.naturalHeight;
               vm.val.src = fileUrl;
             } else vm.openCropper(fileUrl);
+
 
             vm.fileName = fileUrl.split('/').pop();
             vm.fileType = 'image/' + ({
@@ -315,8 +322,10 @@ export default {
             vm.showFm = false;
             vm.fmReady = false;
           };
-
           img.src = fileUrl;
+
+          vm.showFm = false;
+          vm.fmReady = false;
         });
       });
     },

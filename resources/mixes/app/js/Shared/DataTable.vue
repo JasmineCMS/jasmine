@@ -29,15 +29,24 @@
       </th>
     </tr>
     </thead>
-    <tbody>
-    <tr v-for="(row, k) in paginator.data" :key="key || k" v-bind="rowAttrs(row)">
-      <td v-for="(col, k) in cols" class="align-middle">
-        <slot :name="col.id || col.data" :v="getValue(row, col)" :r="row">
-          <span v-text="getValue(row, col)"/>
-        </slot>
-      </td>
-    </tr>
-    </tbody>
+    <draggable
+        tag="tbody"
+        v-model="rows"
+        ghost-class="ghost"
+        handle=".dnd-handler"
+        :item-key="key || 'id'"
+        @change="$emit('reordered')"
+    >
+      <template #item="{element, index}">
+        <tr v-bind="rowAttrs(element)">
+          <td v-for="(col, k) in cols" class="align-middle">
+            <slot :name="col.id || col.data" :v="getValue(element, col)" :r="element" :col="col" :q="q">
+              <span v-text="getValue(element, col)"/>
+            </slot>
+          </td>
+        </tr>
+      </template>
+    </draggable>
     <slot name="footer"/>
   </table>
 
@@ -85,6 +94,8 @@ export default {
     rowAttrs: {type: Function, default: () => ({})},
   },
 
+  emits: ['reordered'],
+
   data() {
     let params = new URLSearchParams(document.location.search);
     let filters = {};
@@ -96,6 +107,7 @@ export default {
         );
 
     return {
+      rows: [],
       q: {
         filters,
         sortBy: params.get('sortBy'),
@@ -108,7 +120,7 @@ export default {
 
   methods: {
     sort(col) {
-      if (col.sortable === false) return;
+      if (col.sortable === false || col.id === 'j_sort') return;
 
       if (this.q.sortBy === col.data) this.q.sort = (this.q.sort === 'asc' ? 'desc' : 'asc');
       else this.q.sort = 'asc';
@@ -118,9 +130,11 @@ export default {
     thClass(col) {
       let classes = [];
 
-      if (col.sortable !== false) classes.push('sortable');
+      if (col.id !== 'j_sort') {
+        if (col.sortable !== false) classes.push('sortable');
 
-      if (this.q.sortBy === col.data) classes.push('sorting-' + this.q.sort);
+        if (this.q.sortBy === col.data) classes.push('sorting-' + this.q.sort);
+      }
 
       return classes;
     },
@@ -143,6 +157,10 @@ export default {
   },
 
   watch: {
+    'paginator.data'(v) {
+      this.rows = JSON.parse(JSON.stringify(v));
+    },
+
     q: {
       deep: true,
       handler() {
@@ -150,6 +168,10 @@ export default {
         this.$inertia.get(this.$inertia.page.url, this.q, {preserveState: true, replace: true});
       },
     },
+  },
+
+  mounted() {
+    this.rows = JSON.parse(JSON.stringify(this.paginator.data));
   },
 };
 </script>

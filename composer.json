@@ -17,7 +17,8 @@
     "inertiajs/inertia-laravel": "^0.6.3",
     "tightenco/ziggy": "^1.5",
     "composer-runtime-api": "^2.2",
-    "pragmarx/google2fa": "^8.0"
+    "pragmarx/google2fa": "^8.0",
+    "spatie/eloquent-sortable": "^4.0"
   },
   "require-dev": {
     "orchestra/testbench": "^6.0|^7.0",

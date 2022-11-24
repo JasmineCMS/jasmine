@@ -29,7 +29,7 @@ return new class extends Migration {
     public function down()
     {
         Schema::table('jasmine_users', function (Blueprint $table) {
-            $table->dropColumn(['roles', 'permissions']);
+            $table->dropColumn(['admin', 'roles', 'permissions']);
         });
     }
 };
