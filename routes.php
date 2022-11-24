@@ -64,7 +64,7 @@ Route::middleware([JasmineMiddleware::class])->name('jasmine.')->group(function 
             
                  //Route::get('/export', [Bread::class, 'export'])->name('export');
             
-                 //Route::put('/reorder', [Bread::class, 'reorder'])->name('reorder');
+                 Route::put('/reorder', [Bread::class, 'reorder'])->name('reorder');
             
                  Route::get('/create', [Bread::class, 'edit'])->name('create');
                  Route::post('/create', [Bread::class, 'save']);

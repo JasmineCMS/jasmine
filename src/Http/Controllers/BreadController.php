@@ -11,10 +11,12 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Jasmine\Jasmine\Bread\Breadable;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
 use Jasmine\Jasmine\Bread\Translatable;
 use Jasmine\Jasmine\Facades\Jasmine;
+use Jasmine\Jasmine\Bread\SortableTrait;
 
 class BreadController extends Controller
 {
@@ -34,6 +36,31 @@ class BreadController extends Controller
             : $breadableClass::query();
         
         $columns = [$q->getModel()->getKeyName() => ['data' => $q->getModel()->getKeyName()]];
+        
+        $sortable = false;
+        if (in_array(SortableTrait::class, class_uses($breadableClass))) {
+            $sortable = true;
+            
+            /** @var Model|Breadable $bi */
+            $bi = $q->getModel();
+            $columns['j_sort'] = [
+                'id'    => 'j_sort',
+                'data'  => $bi->determineOrderColumnName(),
+                'label' => 'Order',
+                //'sortable' => false,
+            ];
+            
+            if ($bi->sortable['group_by'] ?? null) {
+                if (method_exists($bi, 'getJasmineSortingGroups')) {
+                    $columns['j_sort']['groups'] = $bi->getJasmineSortingGroups();
+                } else {
+                    $columns['j_sort']['groups'] =
+                        $breadableClass
+                            ::select($bi->sortable['group_by'])->distinct()->get()
+                            ->map(fn($i) => ['v' => $i->{$bi->sortable['group_by']}]);
+                }
+            }
+        }
         
         foreach ($breadableClass::browseableColumns() as $k => $v) {
             if (is_array($v)) $columns[$k] = $v;
@@ -100,6 +127,7 @@ class BreadController extends Controller
                 'key'      => $bKey,
                 'singular' => $breadableClass::getSingularName(),
                 'plural'   => $breadableClass::getPluralName(),
+                'sortable' => $sortable,
             ],
             'locale'    => $locale,
             'columns'   => array_map(fn($c) => Arr::except($c, ['render']), array_values($columns)),
@@ -152,6 +180,9 @@ class BreadController extends Controller
                         $q->orderBy($v, \request('sort', 'asc'));
                     }
                 })
+                ->when(request('sortGroup'), function (Builder $q, $v) {
+                    $q->where($q->getModel()->sortable['group_by'], $v);
+                })
                 ->paginate(\request('perPage', 10))->withQueryString()
                 ->through(function (Model|BreadableInterface $m) use ($columns, $locale) {
                     
@@ -197,7 +228,7 @@ class BreadController extends Controller
             ? $breadableClass::find($breadableId)
             : new $breadableClass();
         
-        $locale = null;
+        $locale = app()->getLocale();
         
         if (in_array(Translatable::class, class_uses($breadableClass))) {
             $locale = request('_locale', Jasmine::getLocales()[0]);
@@ -317,6 +348,34 @@ class BreadController extends Controller
         if (method_exists($model, 'jasmineOnDeleting')) $model::jasmineOnDeleting($model);
         
         $model->delete();
+        
+        return redirect()->back();
+    }
+    
+    public function reorder()
+    {
+        $bKey = \request()->route('breadableName');
+        /** @var BreadableInterface|Model $breadableClass */
+        $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
+        
+        // Check permission
+        if (
+            !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('models.' . $bKey . '.edit')
+        ) abort(401);
+        
+        $data = request()->validate([
+            'order'   => 'required|array',
+            'order.*' => 'required|integer',
+        ]);
+        
+        foreach ($data['order'] as $id => $order) {
+            /** @var Model|Breadable|SortableTrait $m */
+            $m = $breadableClass::find($id);
+            if (!$m) continue;
+            
+            $m->{$m->determineOrderColumnName()} = $order;
+            $m->save();
+        }
         
         return redirect()->back();
     }
