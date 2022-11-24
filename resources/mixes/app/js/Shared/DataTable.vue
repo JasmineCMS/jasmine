@@ -35,7 +35,7 @@
         ghost-class="ghost"
         handle=".dnd-handler"
         :item-key="key || 'id'"
-        @change="$emit('reordered')"
+        @change="$emit('reordered', rows)"
     >
       <template #item="{element, index}">
         <tr v-bind="rowAttrs(element)">
