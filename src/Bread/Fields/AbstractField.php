@@ -24,7 +24,7 @@ abstract class AbstractField implements Arrayable, Jsonable
     {
         $this->name = $name;
         $this->id = uniqid('jf');
-        $this->label = __(Str::title(preg_replace('/[\-_]/', ' ', $name)));
+        $this->label = Str::title(preg_replace('/[\-_]/', ' ', $name));
         $this->description = '';
         $this->width = 'col-12';
         $this->repeatsWidth = 'col-12';

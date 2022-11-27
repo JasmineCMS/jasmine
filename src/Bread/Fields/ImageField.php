@@ -9,6 +9,7 @@ class ImageField extends AbstractField
     protected string $component = 'image-field';
     
     protected ?string $disk = null;
+    protected bool $flexible = false;
     
     public function __construct(string $name)
     {
@@ -22,11 +23,22 @@ class ImageField extends AbstractField
         ];
     }
     
+    
     public function getDisk(): ?string { return $this->disk ?: config('file-manager.diskList.0', 'public'); }
     
     public function setDisk(?string $disk): static
     {
         $this->disk = $disk;
+        
+        return $this;
+    }
+    
+    
+    public function isFlexible(): bool { return $this->flexible; }
+    
+    public function flexible(bool $flexible = true): static
+    {
+        $this->flexible = $flexible;
         
         return $this;
     }
@@ -41,6 +53,7 @@ class ImageField extends AbstractField
         }
         
         $array['options']['disk'] = $this->getDisk();
+        $array['options']['flexible'] = $this->isFlexible();
         
         return $array;
     }
