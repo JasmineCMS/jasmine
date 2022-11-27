@@ -5,7 +5,7 @@ namespace Jasmine\Jasmine\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static void route(callable $group = null, callable $authedGroup = null)
+ * @method static void routes()
  * @method array getAuthenticatedRouteGroups()
  * @method array getGuestRouteGroups()
  * @method static registerAuthenticatedRouteGroup(\Closure $callback, ?string $id = null)

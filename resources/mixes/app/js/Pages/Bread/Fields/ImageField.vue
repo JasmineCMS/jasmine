@@ -125,7 +125,7 @@ export default {
         let img = new Image();
         img.onload = () => {
           if (
-              imgFile.name.split('.').pop() === 'svg'
+              vm.opts.flexible || imgFile.name.split('.').pop() === 'svg'
               || (
                   (
                       vm.opts.w / img.naturalWidth > 0.99
@@ -292,7 +292,7 @@ export default {
           let img = new Image();
           img.onload = () => {
             if (
-                fileUrl.split('.').pop() === 'svg'
+                vm.opts.flexible || fileUrl.split('.').pop() === 'svg'
                 || (
                     (
                         vm.opts.w / img.naturalWidth > 0.99
