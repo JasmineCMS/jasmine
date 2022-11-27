@@ -30,7 +30,7 @@ export default {
   },
 
   beforeMount() {
-    if (this.val) {
+    if (this.val && this.opts.type === 'date') {
       this.val = this.val.match(/(?<d>\d{1,4}-\d{2}-\d{2})/)?.groups?.d || this.val;
     }
   },
