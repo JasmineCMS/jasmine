@@ -41,7 +41,7 @@ class PageController extends Controller
                 'fields'   => $page::fieldsManifest()->getFields(),
             ],
             'entId'   => $page->id,
-            'ent'     => $page->content,
+            'ent'     => $page->content ?: new \stdClass(),
             'title'   => $page::getPageName(),
             'locale'  => $locale,
             'fm_path' => 'pages/' . $page::getPageName(),

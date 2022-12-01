@@ -97,6 +97,7 @@ export default {
       this.opts.fields.forEach(f => {
         if (f.repeats > 1) {
           this.val[f.name] = Array.isArray(this.val?.[f.name]) ? this.val[f.name] : [];
+          if (this.val[f.name].length) this.val[f.name].forEach((v,k) => v === null && (this.val[f.name][k] = ''));
         }
 
         if (!this.val[f.name] && f.type === 'GroupedField') this.val[f.name] = {};
