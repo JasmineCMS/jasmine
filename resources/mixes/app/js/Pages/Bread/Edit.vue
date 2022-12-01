@@ -143,6 +143,7 @@ export default {
       data[f.name] = f.repeats > 1 ? [] : JSON.parse(JSON.stringify({v: f.default})).v;
       if (this.entId && typeof this.ent[f.name] !== 'undefined') {
         data[f.name] = JSON.parse(JSON.stringify({v: this.ent[f.name]})).v;
+        if (f.repeats > 1 && data[f.name].length) data[f.name].forEach((v,k) => v === null && (data[f.name][k] = ''));
       }
     });
 
