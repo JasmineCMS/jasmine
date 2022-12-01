@@ -4,6 +4,7 @@
 namespace Jasmine\Jasmine\Bread;
 
 
+use Illuminate\Database\Eloquent\Model;
 use Jasmine\Jasmine\Bread\Fields\FieldsManifest;
 
 interface BreadableInterface
@@ -18,6 +19,11 @@ interface BreadableInterface
     
     public static function browseableColumns(): array;
     
+    /**
+     * @param Model|Breadable $ent
+     *
+     * @return FieldsManifest
+     */
     public static function fieldsManifest(): FieldsManifest;
     
     public function getTitle(): string;

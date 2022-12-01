@@ -246,8 +246,8 @@ class BreadController extends Controller
                 'key'      => $bKey,
                 'singular' => $breadableClass::getSingularName(),
                 'plural'   => $breadableClass::getPluralName(),
-                'manifest' => $breadableClass::fieldsManifest(),
-                'fields'   => $breadableClass::fieldsManifest()->getFields(),
+                'manifest' => $breadableClass::fieldsManifest($ent),
+                'fields'   => $breadableClass::fieldsManifest($ent)->getFields(),
             ],
             'entId'   => $breadableId,
             'ent'     => $data,
@@ -277,7 +277,7 @@ class BreadController extends Controller
         ) abort(401);
         
         $rules = [];
-        foreach ($breadableClass::fieldsManifest()->getFields() as $f) {
+        foreach ($breadableClass::fieldsManifest($ent)->getFields() as $f) {
             /** @var AbstractField $f */
             $f = $f->toArray();
             if ($f['repeats'] > 1) {
@@ -296,7 +296,7 @@ class BreadController extends Controller
         }
         
         $many_to_many_fields = [];
-        foreach ($breadableClass::fieldsManifest()->getFields() as $field) {
+        foreach ($breadableClass::fieldsManifest($ent)->getFields() as $field) {
             $field = $field->toArray();
             if ($field['type'] !== 'RelationshipField') continue;
             
