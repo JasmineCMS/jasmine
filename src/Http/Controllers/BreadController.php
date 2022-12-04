@@ -135,9 +135,9 @@ class BreadController extends Controller
                 ->when(\request('q'), function (Builder $q, $v) use ($columns, $relations) {
                     return $q->where(function (Builder $q) use ($v, $columns, $relations) {
                         $relations_used = [];
-                        foreach (array_unique(array_map(fn($c) => $c['data'], $columns)) as $c) {
-                            if (isset($c['searchable']) && !$c['searchable']) continue;
-                            
+                        foreach (array_unique(array_map(fn($c) => $c['data'],
+                            array_filter($columns, fn($c) => $c['searchable'] ?? true)
+                        )) as $c) {
                             if (str_contains($c, '.')) {
                                 [$relation, $relation_cols] = explode('.', $c);
                                 if (in_array($relation, $relations_used)) continue;

@@ -41,7 +41,7 @@
         <tr v-bind="rowAttrs(element)">
           <td v-for="(col, k) in cols" class="align-middle">
             <slot :name="col.id || col.data" :v="getValue(element, col)" :r="element" :col="col" :q="q">
-              <span v-text="getValue(element, col)"/>
+              <span v-html="getValue(element, col)"/>
             </slot>
           </td>
         </tr>
