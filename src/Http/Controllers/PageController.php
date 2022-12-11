@@ -44,7 +44,7 @@ class PageController extends Controller
             'ent'     => $page->content ?: new \stdClass(),
             'title'   => $page::getPageName(),
             'locale'  => $locale,
-            'fm_path' => 'pages/' . $page::getPageName(),
+            'fm_path' => 'Pages/' . $page::getPageName(),
         ]);
     }
     
