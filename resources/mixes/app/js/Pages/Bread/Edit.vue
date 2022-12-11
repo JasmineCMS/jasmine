@@ -15,6 +15,18 @@
                         class="btn btn-outline-primary text-uppercase" :class="{active:_l === locale}"/>
         </div>
         <div class="mx-3"/>
+        <div class="btn-group btn-group-sm">
+          <a :href="exportBread()"
+             :download="b.singular+'-'+title+'-'+fileableDate()+'.jasmine.json'" class="btn btn-outline-primary"
+             :title="$t('Export')">
+            <i class="bi bi-file-earmark-arrow-down"></i>
+          </a>
+          <button type="button" class="btn btn-outline-primary" :title="$t('Import')" @click="$refs.importI.click()">
+            <i class="bi bi-file-earmark-arrow-up"></i>
+            <input type="file" class="sr-only" ref="importI" @input="importBread" accept=".jasmine.json">
+          </button>
+        </div>
+        <div class="mx-3"/>
         <button @click="$refs.form.reportValidity() && form.post('')"
                 type="button" class="btn btn-sm px-5" :disabled="form.processing"
                 :class="{'btn-primary': form.isDirty, 'btn-secondary': !form.isDirty}">
@@ -143,7 +155,7 @@ export default {
       data[f.name] = f.repeats > 1 ? [] : JSON.parse(JSON.stringify({v: f.default})).v;
       if (this.entId && typeof this.ent[f.name] !== 'undefined') {
         data[f.name] = JSON.parse(JSON.stringify({v: this.ent[f.name]})).v;
-        if (f.repeats > 1 && data[f.name].length) data[f.name].forEach((v,k) => v === null && (data[f.name][k] = ''));
+        if (f.repeats > 1 && data[f.name].length) data[f.name].forEach((v, k) => v === null && (data[f.name][k] = ''));
       }
     });
 
@@ -159,6 +171,31 @@ export default {
 
     removeRepeatedField(fieldName, i) {
       this.form.v[fieldName].splice(i, 1);
+    },
+
+    exportBread() {
+      return 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.ent));
+    },
+
+    importBread($event) {
+      let vm = this;
+      if (!$event.target.files.length) return;
+      let file = $event.target.files[0];
+
+      let reader = new FileReader();
+      reader.readAsText(file);
+
+      reader.onload = () => {
+        let data = JSON.parse(reader.result);
+        Object.keys(data).forEach(k => vm.form.v[k] = data[k]);
+      };
+    },
+
+    fileableDate() {
+      return new Date().toISOString()
+          .replace('T', '_')
+          .replace(/:/g, '-')
+          .substring(0, 19);
     },
   },
 
