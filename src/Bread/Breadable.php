@@ -2,13 +2,14 @@
 
 namespace Jasmine\Jasmine\Bread;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
- * @method static array jasmineOnRetrievedForIndex()
- * @method static array jasmineOnRetrievedForEdit()
- * @method static array jasmineOnSaving(array $data)
- * @method static void jasmineOnDeleting()
+ * @method static array jasmineOnRetrievedForIndex(BreadableInterface|Model $model)
+ * @method static array jasmineOnRetrievedForEdit(BreadableInterface|Model $model)
+ * @method static array jasmineOnSaving(array $data, BreadableInterface|Model $model)
+ * @method static void jasmineOnDeleting(BreadableInterface|Model $model)
  */
 trait Breadable
 {

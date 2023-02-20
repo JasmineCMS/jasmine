@@ -338,7 +338,7 @@ export default {
   },
 
   beforeMount() {
-
+    if (!this.val?.src) this.val = {};
   },
 };
 </script>

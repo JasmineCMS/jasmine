@@ -141,16 +141,20 @@
             <div class="d-flex">
               <a href="https://github.com/JasmineCMS/jasmine" target="_blank"
                  class="text-decoration-none text-black">
-                JasmineCMS {{ $globals.info?.jasmine }}
-                <i class="fa-brands fa-github"></i>
+                <i class="fa-brands fa-github"></i>&nbsp;
+                <b>JasmineCMS</b> {{ $globals.info?.jasmine }}
               </a>
               <div class="mx-3"></div>
               <div>
-                Laravel {{ $globals.info?.laravel }}
+                <b>Laravel</b> {{ $globals.info?.laravel }}
               </div>
               <div class="mx-3"></div>
               <div>
-                PHP {{ $globals.info?.php }}
+                <b>PHP</b> {{ $globals.info?.php }}
+              </div>
+              <div class="mx-3"></div>
+              <div>
+                <b>DB</b> {{ $globals.info?.db }}
               </div>
             </div>
             <div>

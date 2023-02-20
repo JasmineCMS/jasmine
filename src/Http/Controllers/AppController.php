@@ -6,6 +6,7 @@ use Composer\InstalledVersions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Models\JasmineUser;
 use PragmaRX\Google2FA\Google2FA;
@@ -13,13 +14,16 @@ use Tightenco\Ziggy\Ziggy;
 
 class AppController extends Controller
 {
-    public function ziggy() { return (new Ziggy()); }
-    
+    public function ziggy()
+    {
+        return (new Ziggy());
+    }
+
     public function globals()
     {
         /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.guard'))->user();
-        
+
         return [
             'locales'           => Jasmine::getLocales(),
             'interface_locales' => Jasmine::getInterfaceLocales(),
@@ -27,23 +31,27 @@ class AppController extends Controller
                 'php'     => phpversion(),
                 'laravel' => app()->version(),
                 'jasmine' => InstalledVersions::getVersion('jasminecms/jasmine'),
+                'db'      => DB::select('SELECT VERSION() AS v')[0]?->v ?? 'N\A',
             ],
             'user'              => $user->only(['name', 'email', 'avatar_url']),
             'sb_menu'           => Jasmine::getSideBarMenuItems(),
         ];
     }
-    
-    public function localeStrings() { return Jasmine::getInterfaceLocale(app()->getLocale()); }
-    
+
+    public function localeStrings()
+    {
+        return Jasmine::getInterfaceLocale(app()->getLocale());
+    }
+
     public function dashboard()
     {
         return inertia('Dashboard');
     }
-    
+
     public function profile()
     {
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
-        
+
         return inertia('Profile', [
             'name'  => $user->name,
             'email' => $user->email,
@@ -56,28 +64,28 @@ class AppController extends Controller
             ],
         ]);
     }
-    
+
     public function saveProfile()
     {
         $data = \request()->validate([
             '_sec' => ['required', 'in:details,password,otp'],
         ]);
-        
+
         return $this->{'saveProfile' . ucfirst($data['_sec'])}();
     }
-    
+
     private function saveProfileDetails()
     {
         $data = \request()->validate([
             'name' => ['required', 'string', 'min:2', 'max:255'],
         ]);
-        
+
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
-        
+
         $user->name = $data['name'];
-        
+
         $user->save();
-        
+
         return redirect()->back()->withSwal([
             'toast'             => true,
             'position'          => 'top-right',
@@ -89,19 +97,19 @@ class AppController extends Controller
             'showConfirmButton' => false,
         ]);
     }
-    
+
     private function saveProfilePassword()
     {
         $data = \request()->validate([
             'password'     => ['required', 'string', 'current_password:' . config('jasmine.auth.guard')],
             'new_password' => ['required', 'nullable', 'confirmed', 'string', 'min:10'],
         ]);
-        
+
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
-        
+
         $user->password = bcrypt($data['new_password']);
         $user->save();
-        
+
         return redirect()->back()->withSwal([
             'toast'             => true,
             'position'          => 'top-right',
@@ -113,18 +121,18 @@ class AppController extends Controller
             'showConfirmButton' => false,
         ]);
     }
-    
+
     private function saveProfileOtp()
     {
         $data = \request()->validate([
             'password' => ['required', 'string', 'current_password:' . config('jasmine.auth.guard')],
             'enabled'  => ['required', 'boolean'],
         ]);
-        
+
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
-        
+
         $google2fa = new Google2FA();
-        
+
         // Setup, create secret
         if (!$user->otp_secret && $data['enabled'] && !\request('secret')) {
             $secret = $google2fa->generateSecretKey();
@@ -135,10 +143,10 @@ class AppController extends Controller
                     $user->email, $secret,
                 ),
             ]);
-            
+
             return redirect()->back();
         }
-        
+
         // Setup, verify secret
         if (!$user->otp_secret && $data['enabled'] && \request('secret')) {
             session()->flash('otp_profile', [
@@ -148,18 +156,18 @@ class AppController extends Controller
                     $user->email, \request('secret'),
                 ),
             ]);
-            
+
             \request()->validate(['code' => [
                 'required',
                 'digits:6',
                 fn($a, $v, $f) => !$google2fa->verifyKey(\request('secret'), $v) && $f('The ' . $a . ' is invalid.'),
             ]]);
-            
+
             $user->otp_secret = \request('secret');
             $user->save();
-    
+
             session(['jasmine.otp_verified' => true]);
-            
+
             return redirect()->back()->withSwal([
                 'toast'             => true,
                 'position'          => 'top-right',
@@ -171,7 +179,7 @@ class AppController extends Controller
                 'showConfirmButton' => false,
             ]);
         }
-        
+
         // Show QR
         if ($user->otp_secret && $data['enabled']) {
             $secret = $user->otp_secret;
@@ -182,10 +190,10 @@ class AppController extends Controller
                     $user->email, $secret,
                 ),
             ]);
-            
+
             return redirect()->back();
         }
-        
+
         // opt-out otp
         if ($user->otp_secret && !$data['enabled']) {
             $user->otp_secret = null;
@@ -193,7 +201,7 @@ class AppController extends Controller
             $user->save();
             session(['jasmine.otp_verified' => false]);
         }
-        
+
         return null;
     }
 }

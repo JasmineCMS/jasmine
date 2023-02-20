@@ -25,22 +25,22 @@ class BreadController extends Controller
         $bKey = \request()->route('breadableName');
         /** @var BreadableInterface|Model $breadableClass */
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
-        
+
         // Check permission
         if (
             !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('models.' . $bKey . '.browse')
         ) abort(401);
-        
+
         $q = method_exists($breadableClass, 'jasmineQuery')
             ? $breadableClass::jasmineQuery()
             : $breadableClass::query();
-        
+
         $columns = [$q->getModel()->getKeyName() => ['data' => $q->getModel()->getKeyName()]];
-        
+
         $sortable = false;
         if (in_array(SortableTrait::class, class_uses($breadableClass))) {
             $sortable = true;
-            
+
             /** @var Model|Breadable $bi */
             $bi = $q->getModel();
             $columns['j_sort'] = [
@@ -49,7 +49,7 @@ class BreadController extends Controller
                 'label' => 'Order',
                 //'sortable' => false,
             ];
-            
+
             if ($bi->sortable['group_by'] ?? null) {
                 if (method_exists($bi, 'getJasmineSortingGroups')) {
                     $columns['j_sort']['groups'] = $bi->getJasmineSortingGroups();
@@ -61,67 +61,67 @@ class BreadController extends Controller
                 }
             }
         }
-        
+
         foreach ($breadableClass::browseableColumns() as $k => $v) {
             if (is_array($v)) $columns[$k] = $v;
             else if ($v instanceof \Closure) $columns[$k] = ['data' => $k, 'render' => $v];
             else $columns[$v] = ['data' => $v];
         }
-        
+
         if ($q->getModel()->usesTimestamps()) {
             $timestamps = [
                 $q->getModel()->getUpdatedAtColumn(),
                 $q->getModel()->getCreatedAtColumn(),
             ];
-            
+
             foreach ($timestamps as $ts) {
                 if (in_array($ts, array_keys($columns))) continue;
-                
+
                 $columns[$ts] = ['data' => $ts, 'render' => fn($v) => $v->format('d.m.Y H:i:s')];
             }
-            
+
         }
-        
+
         if (!isset($columns['j_actions'])) $columns['j_actions'] = [
             'data'     => $q->getModel()->getKeyName(),
             'label'    => 'Actions',
             'id'       => 'j_actions',
             'sortable' => false,
         ];
-        
+
         // load relations
         $relations = [];
         foreach ($columns as $id => $col) {
             if (!str_contains($col['data'], '.')) continue;
-            
+
             [$relation, $relation_cols] = explode('.', $col['data']);
             $relation = Str::camel($relation);
             $relations[$relation] ??= [];
             if (str_contains($relation_cols, ',')) $columns[$id]['sortable'] = false;
             foreach (explode(',', $relation_cols) as $relation_col) $relations[$relation][] = $relation_col;
         }
-        
+
         foreach ($relations as $relation => $cols) {
             $cols = array_unique($cols);
-            
+
             /** @var Relation $rb */
             $rb = (new $breadableClass)->{$relation}();
-            
+
             $key = null;
             if ($rb instanceof HasMany) $key = $rb->getForeignKeyName();
             if ($rb instanceof BelongsTo) $key = $rb->getOwnerKeyName();
-            
+
             if (!in_array($key, $cols)) array_unshift($cols, $key);
-            
+
             $q->with([$relation => fn($rq) => $rq->select($cols)]);
         }
-        
+
         $locale = null;
-        
+
         if (in_array(Translatable::class, class_uses($breadableClass))) {
             $locale = request('_locale', Jasmine::getLocales()[0]);
         }
-        
+
         return inertia('Bread/Index', [
             'b'         => [
                 'key'      => $bKey,
@@ -136,7 +136,7 @@ class BreadController extends Controller
                     return $q->where(function (Builder $q) use ($v, $columns, $relations) {
                         $relations_used = [];
                         foreach (array_unique(array_map(fn($c) => $c['data'],
-                            array_filter($columns, fn($c) => $c['searchable'] ?? true)
+                            array_filter($columns, fn($c) => $c['searchable'] ?? true),
                         )) as $c) {
                             if (str_contains($c, '.')) {
                                 [$relation, $relation_cols] = explode('.', $c);
@@ -163,18 +163,18 @@ class BreadController extends Controller
                     if (str_contains($v, '.')) {
                         [$relation, $relation_col] = explode('.', $v);
                         $relation = Str::camel($relation);
-                        
+
                         /** @var Relation $rb */
                         $rb = (new $breadableClass)->{$relation}();
                         $rq = $rb->getRelated()->newQuery()->select([$relation_col]);
-                        
+
                         if ($rb instanceof BelongsTo) {
                             $rq->whereColumn(
                                 $rb->getQualifiedOwnerKeyName(),
-                                $rb->getQualifiedForeignKeyName()
+                                $rb->getQualifiedForeignKeyName(),
                             );
                         }
-                        
+
                         $q->orderBy($rq, \request('sort', 'asc'));
                     } else {
                         $q->orderBy($v, \request('sort', 'asc'));
@@ -185,62 +185,54 @@ class BreadController extends Controller
                 })
                 ->paginate(\request('perPage', 10))->withQueryString()
                 ->through(function (Model|BreadableInterface $m) use ($columns, $locale) {
-                    
+
                     if (in_array(Translatable::class, class_uses($m))) {
                         $locale = request('_locale', Jasmine::getLocales()[0]);
                         $m->setLocale($locale);
                     }
-                    
-                    if (method_exists($m, 'jasmineOnRetrievedForIndex')) {
-                        $d = $m::jasmineOnRetrievedForIndex($m);
-                    } else {
-                        $d = $m->toArray();
-                    }
-                    
+
+                    $d = static::fireEvent('retrievedForIndex', $m);
+
                     foreach ($columns as $col => $v) if (isset($v['render'])) {
                         $col = is_array($v) ? $v['data'] : $col;
                         $field = $col;
                         if (str_contains($col, '.')) $field = explode('.', $col)[0];
                         $d[$col] = $v['render']($m->{$field}, $m);
                     }
-                    
+
                     $d['jasmine_title'] = $m->getTitle();
-                    
+
                     return $d;
                 }),
         ]);
     }
-    
+
     public function edit()
     {
         $bKey = \request()->route('breadableName');
         /** @var BreadableInterface|Model $breadableClass */
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
         $breadableId = \request()->route()->parameter('breadableId');
-        
+
         // Check permission
         if (
             !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('models.' . $bKey . '.read')
         ) abort(401);
-        
+
         /** @var BreadableInterface|Model $ent */
         $ent = $breadableId
             ? $breadableClass::find($breadableId)
             : new $breadableClass();
-        
+
         $locale = app()->getLocale();
-        
+
         if (in_array(Translatable::class, class_uses($breadableClass))) {
             $locale = request('_locale', Jasmine::getLocales()[0]);
             $ent->setLocale($locale);
         }
-        
-        if (method_exists($ent, 'jasmineOnRetrievedForEdit')) {
-            $data = $ent::jasmineOnRetrievedForEdit($ent);
-        } else {
-            $data = $ent->toArray();
-        }
-        
+
+        $data = static::fireEvent('retrievedForEdit', $ent);
+
         return inertia('Bread/Edit', [
             'b'       => [
                 'key'      => $bKey,
@@ -256,26 +248,26 @@ class BreadController extends Controller
             'locale'  => $locale,
         ]);
     }
-    
+
     public function save()
     {
         $bKey = \request()->route('breadableName');
         /** @var BreadableInterface|Model $breadableClass */
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
         $breadableId = \request()->route()->parameter('breadableId');
-        
+
         /** @var BreadableInterface|Model $ent */
         $ent = $breadableId
             ? $breadableClass::find($breadableId)
             : new $breadableClass();
-        
+
         // Check permission
         if (
             !Auth::guard(config('jasmine.auth.guard'))
-                 ->user()
-                 ->jCan('models.' . $bKey . '.' . ($ent->exists ? 'edit' : 'add'))
+                ->user()
+                ->jCan('models.' . $bKey . '.' . ($ent->exists ? 'edit' : 'add'))
         ) abort(401);
-        
+
         $rules = [];
         foreach ($breadableClass::fieldsManifest($ent)->getFields() as $f) {
             /** @var AbstractField $f */
@@ -286,20 +278,20 @@ class BreadController extends Controller
                 $rules[$f['name']] = $f['validation'];
             }
         }
-        
+
         $data = Validator::validate(request('v', []), $rules);
-        
+
         $locale = null;
         if (in_array(Translatable::class, class_uses($breadableClass))) {
             $locale = request('_locale', Jasmine::getLocales()[0]);
             $ent->setLocale($locale);
         }
-        
+
         $many_to_many_fields = [];
         foreach ($breadableClass::fieldsManifest($ent)->getFields() as $field) {
             $field = $field->toArray();
             if ($field['type'] !== 'RelationshipField') continue;
-            
+
             if ($field['options']['many_to_many']) {
                 $many_to_many_fields[$field['name']] = ['field' => $field, 'value' => $data[$field['name']] ?? []];
                 unset($data[$field['name']]);
@@ -308,15 +300,15 @@ class BreadController extends Controller
                 unset($data[$field['name']]);
             }
         }
-        
-        if (method_exists($ent, 'jasmineOnSaving')) $data = $ent::jasmineOnSaving($data, $ent);
-        
+
+        $data = static::fireEvent('saving', $ent, $data);
+
         $ent->fill($data)->save();
-        
+
         foreach ($many_to_many_fields as $value) {
             $ent->{$value['field']['options']['name']}()->sync($value['value']);
         }
-        
+
         return redirect()->route('jasmine.bread.edit', [$bKey, $ent->getKey(), '_locale' => $locale])->withSwal([
             'toast'             => true,
             'position'          => 'top-right',
@@ -328,55 +320,97 @@ class BreadController extends Controller
             'showConfirmButton' => false,
         ]);
     }
-    
+
     public function delete()
     {
         $bKey = \request()->route('breadableName');
         $breadableId = \request()->route()->parameter('breadableId');
         /** @var BreadableInterface|Model $breadableClass */
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
-        
-        
+
+
         // Check permission
         if (
             !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('models.' . $bKey . '.delete')
         ) abort(401);
-        
+
         /** @var Model|BreadableInterface $model */
         $model = $breadableClass::findOrFail($breadableId);
-        
-        if (method_exists($model, 'jasmineOnDeleting')) $model::jasmineOnDeleting($model);
-        
+
+        static::fireEvent('deleting', $model);
+
         $model->delete();
-        
+
         return redirect()->back();
     }
-    
+
     public function reorder()
     {
         $bKey = \request()->route('breadableName');
         /** @var BreadableInterface|Model $breadableClass */
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
-        
+
         // Check permission
         if (
             !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('models.' . $bKey . '.edit')
         ) abort(401);
-        
+
         $data = request()->validate([
             'order'   => 'required|array',
             'order.*' => 'required|integer',
         ]);
-        
+
         foreach ($data['order'] as $id => $order) {
             /** @var Model|Breadable|SortableTrait $m */
             $m = $breadableClass::find($id);
             if (!$m) continue;
-            
+
             $m->{$m->determineOrderColumnName()} = $order;
             $m->save();
         }
-        
+
         return redirect()->back();
+    }
+
+    private static function fireEvent(string $event, Model $m, ?array $data = null): ?array
+    {
+        switch ($event) {
+            case 'retrievedForIndex':
+                foreach (class_uses_recursive($m) as $trait) {
+                    if (method_exists($m, class_basename($trait) . 'JasmineOnRetrievedForIndex'))
+                        $m::{class_basename($trait) . 'JasmineOnRetrievedForIndex'}($m);
+                }
+
+                if (method_exists($m, 'jasmineOnRetrievedForIndex'))
+                    return static::fireEvent('retrievedForIndex', $m);
+                return $m->toArray();
+            case 'retrievedForEdit':
+                foreach (class_uses_recursive($m) as $trait) {
+                    if (method_exists($m, class_basename($trait) . 'JasmineOnRetrievedForEdit'))
+                        $m::{class_basename($trait) . 'JasmineOnRetrievedForEdit'}($m);
+                }
+
+                if (method_exists($m, 'jasmineOnRetrievedForEdit'))
+                    return static::fireEvent('retrievedForEdit', $m);
+                return $m->toArray();
+            case 'saving':
+                foreach (class_uses_recursive($m) as $trait) {
+                    if (method_exists($m, class_basename($trait) . 'JasmineOnSaving'))
+                        $m::{class_basename($trait) . 'JasmineOnSaving'}($m, $data);
+                }
+
+                if (method_exists($m, 'jasmineOnSaving')) return $m::jasmineOnSaving($data, $m);
+                return $m->toArray();
+            case 'deleting':
+                foreach (class_uses_recursive($m) as $trait) {
+                    if (method_exists($m, class_basename($trait) . 'JasmineOnDeleting'))
+                        $m::{class_basename($trait) . 'JasmineOnDeleting'}($m);
+                }
+
+                if (method_exists($m, 'jasmineOnDeleting')) $m::jasmineOnDeleting($m);
+                break;
+        }
+
+        return null;
     }
 }
