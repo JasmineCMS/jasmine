@@ -303,6 +303,8 @@ class BreadController extends Controller
 
         $data = static::fireEvent('saving', $ent, $data);
 
+        dd($data);
+
         $ent->fill($data)->save();
 
         foreach ($many_to_many_fields as $value) {
@@ -400,7 +402,7 @@ class BreadController extends Controller
                 }
 
                 if (method_exists($m, 'jasmineOnSaving')) return $m::jasmineOnSaving($data, $m);
-                return $m->toArray();
+                return $data;
             case 'deleting':
                 foreach (class_uses_recursive($m) as $trait) {
                     if (method_exists($m, class_basename($trait) . 'JasmineOnDeleting'))
