@@ -303,8 +303,6 @@ class BreadController extends Controller
 
         $data = static::fireEvent('saving', $ent, $data);
 
-        dd($data);
-
         $ent->fill($data)->save();
 
         foreach ($many_to_many_fields as $value) {
