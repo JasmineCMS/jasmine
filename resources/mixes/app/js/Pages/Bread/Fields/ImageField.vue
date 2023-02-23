@@ -338,7 +338,7 @@ export default {
   },
 
   beforeMount() {
-    if (!this.val?.src) this.val = {};
+    if (!this.val?.src) this.val = {src: null, alt: null, w: null, h: null};
   },
 };
 </script>
