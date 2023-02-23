@@ -5,7 +5,7 @@
        :aria-expanded="open ? 'true' : 'false'">
       <slot/>
     </a>
-    <ul class="dropdown-menu" :class="[{show: open}, menuClass]" :aria-labelledby="id" data-bs-popper>
+    <ul class="dropdown-menu" :style="menuStyle" :class="[{show: open}, menuClass]" :aria-labelledby="id" data-bs-popper>
       <slot name="menu"/>
     </ul>
   </component>
@@ -18,6 +18,7 @@ export default {
   props: {
     id: {type: String, required: true},
     menuClass: {type: String, required: false},
+    menuStyle: {type: String, required: false},
     as: {type: String, default: 'li'},
   },
 
