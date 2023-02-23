@@ -4,6 +4,7 @@ namespace Jasmine\Jasmine\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
@@ -35,7 +36,14 @@ class PageController extends Controller
             $page->setLocale($locale);
         }
 
-        $data = static::fireEvent('retrievedForEdit', $page);
+        if (request('rev')) {
+            $rev = JasmineRevision::whereRevisionableType($page::class)->whereRevisionableId($page->getKey())
+                ->where('created_at', Carbon::createFromFormat('Y-m-d-H-i-s', request('rev')))
+                ->firstOrFail();
+            $data = (array)$rev->contents;
+        } else {
+            $data = static::fireEvent('retrievedForEdit', $page);
+        }
 
         return inertia('Bread/Edit', [
             'b'         => [
@@ -50,6 +58,7 @@ class PageController extends Controller
             'title'     => $page::getPageName(),
             'locale'    => $locale,
             'fm_path'   => 'Pages/' . $page::getPageName(),
+            'loadedRev' => isset($rev) ? $rev->created_at : null,
             'revisions' => JasmineRevision
                 ::whereRevisionableType($page::class)
                 ->whereRevisionableId($page->getKey())
@@ -96,11 +105,17 @@ class PageController extends Controller
             $page->setLocale($locale);
         }
 
+        $old = static::fireEvent('retrievedForEdit', $page);
+
+        $data = static::fireEvent('saving', $page, $data);
+
         $page->content = $data;
         $changed = $page->isDirty();
         $page->save();
 
-        if ($changed) $this->recordRevision($page);
+        static::fireEvent('saved', $page);
+
+        if ($changed) $this->recordRevision($page, $old);
 
         return redirect()->route('jasmine.page.edit', [$slug, '_locale' => $locale])->withSwal([
             'toast'             => true,
@@ -146,7 +161,7 @@ class PageController extends Controller
         return null;
     }
 
-    private function recordRevision(JasminePage $m)
+    private function recordRevision(JasminePage $m, array $old)
     {
         $max = property_exists($m, 'jasmine_revisions')
             ? $m->jasmine_revisions
@@ -158,9 +173,6 @@ class PageController extends Controller
             JasmineRevision::whereRevisionableType($m::class)->whereRevisionableId($m->getKey())
                 ->latest()->take(PHP_INT_MAX)->skip($max - 1)->get()->each->delete();
         }
-
-
-        $old = static::fireEvent('retrievedForEdit', $m);
 
         JasmineRevision::create([
             'jasmine_user_id'   => \auth(config('jasmine.auth.guard'))->id(),
