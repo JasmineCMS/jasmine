@@ -210,6 +210,7 @@ export default {
       }
     });
 
+    debugger;
     return {
       form: this.$inertia.form({v: data}),
       currentHref: document.location.href,
