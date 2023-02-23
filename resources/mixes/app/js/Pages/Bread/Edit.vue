@@ -30,7 +30,7 @@
         <nav-item-dropdown v-if="revisions.length"
                            as="div" id="revisionsDd"
                            class="btn btn-sm btn-outline-primary dropdown"
-                           menu-class="bg-light px-2 rounded-3">
+                           menu-class="bg-light px-2 rounded-3 overflow-auto" style="height: 65vh">
           <i class="bi bi-clock-history"></i>
           {{ $t('Revisions') }}
           <template #menu>
@@ -210,7 +210,6 @@ export default {
       }
     });
 
-    debugger;
     return {
       form: this.$inertia.form({v: data}),
       currentHref: document.location.href,
