@@ -1,5 +1,5 @@
 <template>
-  <Head :title="entId ? $t('Edit') + ' ' + title : $t('New')"/>
+  <Head :title="entId ? $t('Edit') + ' ' + title + revTitle : $t('New')"/>
 
   <Layout>
     <template #breadcrumbs>
@@ -26,6 +26,49 @@
             <input type="file" class="sr-only" ref="importI" @input="importBread" accept=".jasmine.json">
           </button>
         </div>
+        <div class="mx-3" v-if="revisions.length"></div>
+        <nav-item-dropdown v-if="revisions.length"
+                           as="div" id="revisionsDd"
+                           class="btn btn-sm btn-outline-primary dropdown"
+                           menu-class="bg-light px-2 rounded-3">
+          <i class="bi bi-clock-history"></i>
+          {{ $t('Revisions') }}
+          <template #menu>
+            <li class="mb-2 rounded-3 overflow-hidden">
+              <InertiaLink
+                  v-if="loadedRev" :href="currentHref" :data="{rev:null}"
+                  style="gap:.75rem"
+                  class="dropdown-item px-2 text-primary fw-semibold d-flex align-items-center">
+                <i class="bi" :class="isRtl ? 'bi-arrow-left' : 'bi-arrow-right'"></i>
+                <span v-text="$t('Back to current')"/>
+              </InertiaLink>
+            </li>
+
+            <li v-for="r in revisions" :key="r.created_at" class="bg-white mb-2 rounded-3 overflow-hidden">
+              <InertiaLink class="dropdown-item px-2 d-flex align-items-center" :href="currentHref" style="gap:.75rem"
+                           :data="{rev:r.created_at.split('.')[0].replace(/[T:]/g, '-'), _locale:r.locale}">
+                <div>
+                  <img :src="r.user?.avatar_url" :alt="r.user?.name"
+                       class="rounded-circle" style="height: 28px">
+                </div>
+                <div style="font-size: 0.85rem;">
+                  <div>
+                    <time :datetime="r.created_at" class="fs-6">
+                      <span v-text="r.created_at_h.split(' ')[0]" class="text-primary fw-semibold"/>
+                      &nbsp;
+                      <span v-text="r.created_at_h.split(' ')[1]"/>
+                    </time>
+                    &nbsp;
+                    <span v-text="r.locale" class="text-uppercase badge text-bg-secondary rounded-pill"/>
+                  </div>
+                  <div :title="r.user.email" class="text-muted">
+                    {{ $t('By') }} {{ r.user?.name }}
+                  </div>
+                </div>
+              </InertiaLink>
+            </li>
+          </template>
+        </nav-item-dropdown>
         <div class="mx-3"/>
         <button @click="$refs.form.reportValidity() && form.post('')"
                 type="button" class="btn btn-sm px-5" :disabled="form.processing"
@@ -137,8 +180,11 @@
 
 <script>
 
+import NavItemDropdown from "../../Shared/NavItemDropdown.vue";
+
 export default {
   name: 'BreadEdit',
+  components: {NavItemDropdown},
   props: {
     b: {type: Object, required: true},
     entId: {type: [String, Number]},
@@ -146,6 +192,8 @@ export default {
     title: {type: String},
     locale: {type: String},
     fm_path: {type: String, default: ''},
+    revisions: {type: Array, default: []},
+    loadedRev: {type: String},
   },
 
   data() {
@@ -155,12 +203,16 @@ export default {
       data[f.name] = f.repeats > 1 ? [] : JSON.parse(JSON.stringify({v: f.default})).v;
       if (this.entId && typeof this.ent[f.name] !== 'undefined') {
         data[f.name] = JSON.parse(JSON.stringify({v: this.ent[f.name]})).v;
-        if (f.repeats > 1 && data[f.name].length) data[f.name].forEach((v, k) => v === null && (data[f.name][k] = ''));
+        if (f.repeats > 1 && !(data[f.name] instanceof Array)) data[f.name] = [];
+        if (f.repeats > 1 && data[f.name].length) {
+          data[f.name].forEach((v, k) => v === null && (data[f.name][k] = ''));
+        }
       }
     });
 
     return {
       form: this.$inertia.form({v: data}),
+      currentHref: document.location.href,
     };
   },
 
@@ -200,9 +252,21 @@ export default {
   },
 
   computed: {
+    isRtl() {
+      return document.documentElement.dir === 'rtl';
+    },
     isLocaleRtl() {
       return ['ar', 'dv', 'fa', 'ha', 'he', 'ks', 'ku', 'ps', 'sd', 'ur', 'yi'].indexOf(this.locale) > -1;
     },
+
+    revTitle() {
+      if (!this.loadedRev) return '';
+
+      let rev = this.revisions.find(r => r.created_at === this.loadedRev);
+      if (!rev) return '';
+
+      return ' ' + this.$t('Revision') + ' ' + rev.created_at_h + ' ' + this.$t('By') + ' ' + rev.user.name;
+    }
   },
 
   provide() {

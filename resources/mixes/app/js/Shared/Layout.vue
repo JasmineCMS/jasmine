@@ -17,7 +17,7 @@
 
     <!-- Navbar-->
     <ul class="navbar-nav h-100 mx-2">
-      <nav-item-dropdown id="langDd" menu-class="dropdown-menu-dark dropdown-menu-end">
+      <nav-item-dropdown id="langDd" menu-class="dropdown-menu-dark dropdown-menu-end" class="nav-item">
         <span v-text="$i18n.locale" class="text-uppercase"/>
         <template #menu>
           <li v-for="l in $globals.interface_locales">
@@ -29,7 +29,7 @@
         </template>
       </nav-item-dropdown>
 
-      <nav-item-dropdown id="profileDd" menu-class="dropdown-menu-dark dropdown-menu-end">
+      <nav-item-dropdown id="profileDd" menu-class="dropdown-menu-dark dropdown-menu-end" class="nav-item">
         <img class="rounded-circle h-100"
              :src="$globals.user?.avatar_url" :alt="$globals.user?.name">
 

@@ -1,5 +1,5 @@
 <template>
-  <li class="nav-item dropdown">
+  <component :is="as" class="dropdown">
     <a class="nav-link dropdown-toggle h-100" :class="{show: open}" :id="id" href="#" role="button" ref="btn"
        data-bs-toggle="dropdown" @click.prevent="open = !open" @keydown.esc="open = false"
        :aria-expanded="open ? 'true' : 'false'">
@@ -8,7 +8,7 @@
     <ul class="dropdown-menu" :class="[{show: open}, menuClass]" :aria-labelledby="id" data-bs-popper>
       <slot name="menu"/>
     </ul>
-  </li>
+  </component>
 </template>
 
 <script>
@@ -16,14 +16,9 @@ export default {
   name: 'NavItemDropdown',
 
   props: {
-    id: {
-      required: true,
-      type: String,
-    },
-    menuClass: {
-      required: false,
-      type: String,
-    },
+    id: {type: String, required: true},
+    menuClass: {type: String, required: false},
+    as: {type: String, default: 'li'},
   },
 
   data() {

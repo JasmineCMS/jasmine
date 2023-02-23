@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -17,6 +18,7 @@ use Jasmine\Jasmine\Bread\Fields\AbstractField;
 use Jasmine\Jasmine\Bread\Translatable;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Bread\SortableTrait;
+use Jasmine\Jasmine\Models\JasmineRevision;
 
 class BreadController extends Controller
 {
@@ -231,21 +233,40 @@ class BreadController extends Controller
             $ent->setLocale($locale);
         }
 
-        $data = static::fireEvent('retrievedForEdit', $ent);
+        if (request('rev')) {
+            $rev = JasmineRevision::whereRevisionableType($breadableClass)->whereRevisionableId($breadableId)
+                ->where('created_at', Carbon::createFromFormat('Y-m-d-H-i-s', request('rev')))
+                ->firstOrFail();
+            $data = $rev->contents;
+        } else {
+            $data = static::fireEvent('retrievedForEdit', $ent);
+        }
 
         return inertia('Bread/Edit', [
-            'b'       => [
+            'b'         => [
                 'key'      => $bKey,
                 'singular' => $breadableClass::getSingularName(),
                 'plural'   => $breadableClass::getPluralName(),
                 'manifest' => $breadableClass::fieldsManifest($ent),
                 'fields'   => $breadableClass::fieldsManifest($ent)->getFields(),
             ],
-            'entId'   => $breadableId,
-            'ent'     => $data,
-            'title'   => $ent->exists ? $ent->getTitle() : null,
-            'fm_path' => $breadableClass::getPluralName() . '/' . $ent->getKey(),
-            'locale'  => $locale,
+            'entId'     => $breadableId,
+            'ent'       => $data,
+            'title'     => $ent->exists ? $ent->getTitle() : null,
+            'fm_path'   => $breadableClass::getPluralName() . '/' . $ent->getKey(),
+            'locale'    => $locale,
+            'loadedRev' => isset($rev) ? $rev->created_at : null,
+            'revisions' => JasmineRevision
+                ::whereRevisionableType($ent::class)
+                ->whereRevisionableId($ent->getKey())
+                ->latest()
+                ->with('user:id,name,email')
+                ->get(['id', 'jasmine_user_id', 'locale', 'created_at'])
+                ->map(fn(JasmineRevision $r) => [
+                    ...$r->only(['locale', 'created_at']),
+                    'created_at_h' => $r->created_at->format('d.m.y H:i:s'),
+                    'user'         => $r->user?->only(['name', 'email', 'avatar_url']),
+                ]),
         ]);
     }
 
@@ -301,9 +322,17 @@ class BreadController extends Controller
             }
         }
 
+        $old = static::fireEvent('retrievedForEdit', $ent);
+
         $data = static::fireEvent('saving', $ent, $data);
 
-        $ent->fill($data)->save();
+        $ent->fill($data);
+        $changed = $ent->exists && $ent->isDirty();
+        $ent->save();
+
+        static::fireEvent('saved', $ent);
+
+        if ($changed) $this->recordRevision($ent, $old);
 
         foreach ($many_to_many_fields as $value) {
             $ent->{$value['field']['options']['name']}()->sync($value['value']);
@@ -381,8 +410,7 @@ class BreadController extends Controller
                         $m::{class_basename($trait) . 'JasmineOnRetrievedForIndex'}($m);
                 }
 
-                if (method_exists($m, 'jasmineOnRetrievedForIndex'))
-                    return static::fireEvent('retrievedForIndex', $m);
+                if (method_exists($m, 'jasmineOnRetrievedForIndex')) return $m::jasmineOnRetrievedForIndex($m);
                 return $m->toArray();
             case 'retrievedForEdit':
                 foreach (class_uses_recursive($m) as $trait) {
@@ -390,8 +418,7 @@ class BreadController extends Controller
                         $m::{class_basename($trait) . 'JasmineOnRetrievedForEdit'}($m);
                 }
 
-                if (method_exists($m, 'jasmineOnRetrievedForEdit'))
-                    return static::fireEvent('retrievedForEdit', $m);
+                if (method_exists($m, 'jasmineOnRetrievedForEdit')) return $m::jasmineOnRetrievedForEdit($m);
                 return $m->toArray();
             case 'saving':
                 foreach (class_uses_recursive($m) as $trait) {
@@ -401,6 +428,14 @@ class BreadController extends Controller
 
                 if (method_exists($m, 'jasmineOnSaving')) return $m::jasmineOnSaving($data, $m);
                 return $data;
+            case 'saved':
+                foreach (class_uses_recursive($m) as $trait) {
+                    if (method_exists($m, class_basename($trait) . 'JasmineOnSaved'))
+                        $m::{class_basename($trait) . 'JasmineOnSaved'}($m);
+                }
+
+                if (method_exists($m, 'jasmineOnSaved')) return $m::jasmineOnSaved($m);
+                break;
             case 'deleting':
                 foreach (class_uses_recursive($m) as $trait) {
                     if (method_exists($m, class_basename($trait) . 'JasmineOnDeleting'))
@@ -412,5 +447,27 @@ class BreadController extends Controller
         }
 
         return null;
+    }
+
+    private function recordRevision(Model|BreadableInterface $m, array $old)
+    {
+        $max = property_exists($m, 'jasmine_revisions')
+            ? $m->jasmine_revisions
+            : config('jasmine.revisions', 100);
+
+        if ($max === false) return;
+
+        if (intval($max) > 0) {
+            JasmineRevision::whereRevisionableType($m::class)->whereRevisionableId($m->getKey())
+                ->latest()->take(PHP_INT_MAX)->skip($max - 1)->get()->each->delete();
+        }
+
+        JasmineRevision::create([
+            'jasmine_user_id'   => \auth(config('jasmine.auth.guard'))->id(),
+            'revisionable_type' => $m::class,
+            'revisionable_id'   => $m->getKey(),
+            'locale'            => method_exists($m, 'getLocale') ? $m->getLocale() : null,
+            'contents'          => $old,
+        ]);
     }
 }
