@@ -98,7 +98,7 @@ export default {
         if (f.repeats > 1) {
           this.val[f.name] = Array.isArray(this.val?.[f.name]) ? this.val[f.name] : [];
           if (this.val[f.name].length) this.val[f.name].forEach((v, k) => v === null && (this.val[f.name][k] = ''));
-        } else if (!this.val[f.name]) this.val[f.name] = JSON.parse(JSON.stringify({v: f.default})).v;
+        } else if (typeof this.val[f.name] === 'undefined') this.val[f.name] = JSON.parse(JSON.stringify({v: f.default})).v;
 
         if (!this.val[f.name] && f.type === 'GroupedField') this.val[f.name] = {};
       });
