@@ -60,7 +60,7 @@ require('./inc/tinymce');
         },
         resolve: name => import(/* webpackChunkName: "[request]" */ `./Pages/${name}`),
         setup({el, App, props, plugin}) {
-            const app = createApp({
+            window.app = createApp({
                 render: () => h(App, props),
                 beforeCreate() {
                     loadGlobals();
