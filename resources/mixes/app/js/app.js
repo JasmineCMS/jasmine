@@ -107,7 +107,7 @@ require('./inc/tinymce');
             fetch(document.head.querySelector('meta[name="locale"]').content).then(r => r.json())
                 .then(m => {
                     i18n.global.setLocaleMessage(document.documentElement.lang, m);
-                    document.dispatchEvent(new CustomEvent('jasmine:beforeMount', {detail: app}))
+                    document.dispatchEvent(new CustomEvent('jasmine:beforeMount', {detail: {app: app}}))
                     app.mount(el);
                 });
         },
