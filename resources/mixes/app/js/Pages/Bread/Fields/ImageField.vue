@@ -2,7 +2,7 @@
   <div>
     <div class="border border-2 d-inline-block" ref="dz">
       <div class="preview position-relative" @dragover.prevent @drop.prevent>
-        <input type="text" :required="validation.indexOf('required') > -1" class="sr-only">
+        <input type="text" :required="validation.indexOf('required') > -1" class="sr-only" :value="val.src">
         <img v-if="val.src" :src="val.src" :alt="val.alt" class="d-block mx-auto"
              @drop="handleDrop" @dragenter="dragEnter" @dragleave="dragLeave">
         <svg v-else @drop="handleDrop" class="d-block mx-auto"
