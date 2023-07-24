@@ -2,6 +2,7 @@
 
 namespace Jasmine\Jasmine\Bread;
 
+use Illuminate\Database\Eloquent\Casts\Json;
 use Spatie\Translatable\HasTranslations;
 
 /**
@@ -51,8 +52,8 @@ trait Translatable
         }
 
         if (is_array($value)) {
-            $this->attributes[$key] = json_encode(
-                array_merge(json_decode($this->attributes[$key] ?? '{}', true), [
+            $this->attributes[$key] = Json::encode(
+                array_merge(Json::decode($this->attributes[$key] ?? '{}', true), [
                     $this->getLocale() => $value,
                 ]));
             return $this;
