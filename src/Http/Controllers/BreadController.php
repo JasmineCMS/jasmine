@@ -204,6 +204,10 @@ class BreadController extends Controller
 
                     $d['jasmine_title'] = $m->getTitle();
 
+                    if (method_exists($m, 'jasmineGetPublicUrl')) {
+                        $d['jasmine_public_url'] = $m->jasmineGetPublicUrl();
+                    }
+
                     return $d;
                 }),
         ]);
@@ -243,20 +247,21 @@ class BreadController extends Controller
         }
 
         return inertia('Bread/Edit', [
-            'b'         => [
+            'b'          => [
                 'key'      => $bKey,
                 'singular' => $breadableClass::getSingularName(),
                 'plural'   => $breadableClass::getPluralName(),
                 'manifest' => $breadableClass::fieldsManifest($ent),
                 'fields'   => $breadableClass::fieldsManifest($ent)->getFields(),
             ],
-            'entId'     => $breadableId,
-            'ent'       => $data,
-            'title'     => $ent->exists ? $ent->getTitle() : null,
-            'fm_path'   => $breadableClass::getPluralName() . '/' . $ent->getKey(),
-            'locale'    => $locale,
-            'loadedRev' => isset($rev) ? $rev->created_at : null,
-            'revisions' => JasmineRevision
+            'entId'      => $breadableId,
+            'ent'        => $data,
+            'title'      => $ent->exists ? $ent->getTitle() : null,
+            'fm_path'    => $breadableClass::getPluralName() . '/' . $ent->getKey(),
+            'locale'     => $locale,
+            'public_url' => $ent->exists ? method_exists($ent, 'jasmineGetPublicUrl') ? $ent->jasmineGetPublicUrl() : null : null,
+            'loadedRev'  => isset($rev) ? $rev->created_at : null,
+            'revisions'  => JasmineRevision
                 ::whereRevisionableType($ent::class)
                 ->whereRevisionableId($ent->getKey())
                 ->latest()

@@ -44,7 +44,12 @@
         </template>
 
         <template #j_actions="{v,r}">
-          <div>
+          <div class="d-flex align-items-center">
+            <a v-if="r.jasmine_public_url" target="_blank" :href="r.jasmine_public_url" :title="$t('View')"
+               class="btn">
+              <i class="bi bi-link" style="font-size: 1.5rem;"></i>
+            </a>
+
             <inertia-link class="btn" :title="$t('Edit')"
                           :href="route('jasmine.bread.edit', {breadableName: b.key, breadableId: v})">
               <i class="bi bi-pencil"></i>

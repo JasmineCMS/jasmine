@@ -10,6 +10,12 @@
 
     <template #pageActions>
       <div class="d-flex align-items-center p-2">
+        <a v-if="public_url" target="_blank" :href="public_url"
+           class="btn btn-sm btn-link d-flex align-items-center" style="gap: .5rem">
+          <i class="bi bi-link" style="font-size: 1.5rem;"></i>
+          {{ $t('View on site') }}
+        </a>
+        <div class="mx-3"></div>
         <div v-if="locale" class="btn-group btn-group-sm">
           <inertia-link v-for="_l in $globals.locales" href="" :data="{_locale:_l}" v-text="_l"
                         class="btn btn-outline-primary text-uppercase" :class="{active:_l === locale}"/>
@@ -180,7 +186,7 @@
 
 <script>
 
-import NavItemDropdown from "../../Shared/NavItemDropdown.vue";
+import NavItemDropdown from '../../Shared/NavItemDropdown.vue';
 
 export default {
   name: 'BreadEdit',
@@ -191,6 +197,7 @@ export default {
     ent: {type: Object, required: true},
     title: {type: String},
     locale: {type: String},
+    public_url: {type: String},
     fm_path: {type: String, default: ''},
     revisions: {type: Array, default: []},
     loadedRev: {type: String},

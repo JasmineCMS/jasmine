@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
  * @method static array jasmineOnSaving(array $data, BreadableInterface|Model $model)
  * @method static void jasmineOnSaved(BreadableInterface|Model $model)
  * @method static void jasmineOnDeleting(BreadableInterface|Model $model)
+ * @method string jasmineGetPublicUrl()
  */
 trait Breadable
 {
