@@ -22,6 +22,7 @@ use Jasmine\Jasmine\Bread\Translatable;
  * @method static Builder|JasmineUser newQuery()
  * @method static Builder|JasmineUser query()
  * @mixin \Eloquent
+ * @method string jasmineGetPublicUrl()
  */
 abstract class JasminePage extends Model
 {

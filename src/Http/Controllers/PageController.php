@@ -57,6 +57,7 @@ class PageController extends Controller
             'ent'       => $data['content'] ?? new \stdClass(),
             'title'     => $page::getPageName(),
             'locale'    => $locale,
+            'public_url' => $page->exists ? method_exists($page, 'jasmineGetPublicUrl') ? $page->jasmineGetPublicUrl() : null : null,
             'fm_path'   => 'Pages/' . $page::getPageName(),
             'loadedRev' => isset($rev) ? $rev->created_at : null,
             'revisions' => JasmineRevision
