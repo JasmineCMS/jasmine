@@ -17,7 +17,7 @@ export default {
   methods: {
     async load() {
       let vm = this;
-      vm.c = await window['vue2-sfc-loader'].loadModule('c.vue', {
+      vm.c = await window['vue3-sfc-loader'].loadModule('c.vue', {
         moduleCache: {vue: Vue},
         getFile: (url) => vm.sfc,
         addStyle(css) {
