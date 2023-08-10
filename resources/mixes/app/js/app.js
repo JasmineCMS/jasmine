@@ -1,6 +1,6 @@
 import {createStore} from 'vuex';
 import * as Vue from 'vue';
-import 'vue3-sfc-loader/dist/vue3-sfc-loader';
+import * as SfcLoader from 'vue3-sfc-loader/dist/vue3-sfc-loader.esm';
 import {createInertiaApp, Head, Link} from '@inertiajs/inertia-vue3';
 import {InertiaProgress} from '@inertiajs/progress';
 import {ZiggyVue} from 'ziggy-js/src/js/vue';
@@ -30,6 +30,7 @@ window.JasmineBaseField = JasmineBaseField;
 window.Swal = Swal;
 
 window.Vue = Vue;
+window.SfcLoader = SfcLoader;
 
 require('./inc/tinymce');
 
@@ -110,7 +111,7 @@ require('./inc/tinymce');
             fetch(document.head.querySelector('meta[name="locale"]').content).then(r => r.json())
                 .then(m => {
                     i18n.global.setLocaleMessage(document.documentElement.lang, m);
-                    document.dispatchEvent(new CustomEvent('jasmine:beforeMount', {detail: {app: app}}))
+                    document.dispatchEvent(new CustomEvent('jasmine:beforeMount', {detail: {app: app}}));
                     app.mount(el);
                 });
         },
