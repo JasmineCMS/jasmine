@@ -1,5 +1,6 @@
 import {createStore} from 'vuex';
-import {createApp, h, reactive} from 'vue';
+import * as Vue from 'vue';
+import 'vue3-sfc-loader/dist/vue3-sfc-loader';
 import {createInertiaApp, Head, Link} from '@inertiajs/inertia-vue3';
 import {InertiaProgress} from '@inertiajs/progress';
 import {ZiggyVue} from 'ziggy-js/src/js/vue';
@@ -28,6 +29,8 @@ import RelationshipField from './Pages/Bread/Fields/RelationshipField';
 window.JasmineBaseField = JasmineBaseField;
 window.Swal = Swal;
 
+window.Vue = Vue;
+
 require('./inc/tinymce');
 
 (async function () {
@@ -35,7 +38,7 @@ require('./inc/tinymce');
     const Ziggy = await fetch(document.head.querySelector('meta[name="routes"]').content).then(r => r.json());
     const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Laravel';
 
-    let globals = reactive({});
+    let globals = Vue.reactive({});
 
     const i18n = createI18n({
         locale: document.documentElement.lang,
@@ -60,8 +63,8 @@ require('./inc/tinymce');
         },
         resolve: name => import(/* webpackChunkName: "[request]" */ `./Pages/${name}`),
         setup({el, App, props, plugin}) {
-            window.app = createApp({
-                render: () => h(App, props),
+            window.app = Vue.createApp({
+                render: () => Vue.h(App, props),
                 beforeCreate() {
                     loadGlobals();
                 },

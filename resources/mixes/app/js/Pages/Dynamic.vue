@@ -3,10 +3,6 @@
 </template>
 
 <script>
-import * as Vue from 'vue';
-import {shallowRef} from 'vue';
-import {loadModule} from 'vue3-sfc-loader/dist/vue3-sfc-loader.esm';
-
 export default {
   name: 'Dynamic',
   props: {
@@ -15,13 +11,13 @@ export default {
   },
 
   data() {
-    return {c: shallowRef(null)};
+    return {c: Vue.shallowRef(null)};
   },
 
   methods: {
     async load() {
       let vm = this;
-      vm.c = await loadModule('c.vue', {
+      vm.c = await window['vue2-sfc-loader'].loadModule('c.vue', {
         moduleCache: {vue: Vue},
         getFile: (url) => vm.sfc,
         addStyle(css) {
