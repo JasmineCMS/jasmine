@@ -208,8 +208,12 @@ export default {
 
     this.b.fields.forEach(f => {
       data[f.name] = f.repeats > 1 ? [] : JSON.parse(JSON.stringify({v: f.default})).v;
+
       if (this.entId && typeof this.ent[f.name] !== 'undefined') {
         data[f.name] = JSON.parse(JSON.stringify({v: this.ent[f.name]})).v;
+
+        if (!data[f.name] && typeof f.default === 'object') data[f.name] = JSON.parse(JSON.stringify({v: f.default})).v;
+
         if (f.repeats > 1 && !(data[f.name] instanceof Array)) data[f.name] = [];
         if (f.repeats > 1 && data[f.name].length) {
           data[f.name].forEach((v, k) => v === null && (data[f.name][k] = ''));

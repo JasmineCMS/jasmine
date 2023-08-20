@@ -15,7 +15,7 @@ trait Translatable
 {
     use HasTranslations;
 
-    protected $_locale;
+    protected string $_locale;
 
     public function setLocale($locale): self
     {
@@ -23,10 +23,7 @@ trait Translatable
         return $this;
     }
 
-    public function getLocale(): string
-    {
-        return $this->_locale ?? 'en';
-    }
+    public function getLocale(): string { return $this->_locale ?? config('app.locale', 'en'); }
 
     /**
      * Convert the model instance to an array.
