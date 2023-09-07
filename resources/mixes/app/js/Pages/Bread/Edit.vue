@@ -122,17 +122,28 @@
                             </button>
                           </div>
                           <div class="form-group flex-fill my-2">
-                            <label :for="field.id+index" class="form-label">
+                            <label :for="field.id+index" class="form-label"
+                                   @click="collapsed['_'+index] = !collapsed['_'+index]">
                               <span class="fw-semibold" v-text="field.label"/> {{ index + 1 }}
+
+                              <button type="button" class="btn btn-sm">
+                                <i class="bi bi-arrow-down-short d-inline-block"
+                                   :class="{'uncollapsed-arrow':!collapsed['_'+index]}"/>
+                              </button>
                             </label>
-                            <component
-                                :is="field.component" :id="field.id+index"
-                                :name="field.name + '['+index+']'"
-                                :invalid="!!form.errors[field.name]" v-model="form.v[field.name][index]"
-                                :label="field.label" :options="field.options"
-                                :validation="field.validation"
-                                :locale="locale" :is-locale-rtl="isLocaleRtl"
-                            />
+
+                            <CollapseTransition>
+                              <component
+                                  v-show="collapsed['_'+index]"
+                                  :is="field.component" :id="field.id+index"
+                                  :name="field.name + '['+index+']'"
+                                  :invalid="!!form.errors[field.name]" v-model="form.v[field.name][index]"
+                                  :label="field.label" :options="field.options"
+                                  :validation="field.validation"
+                                  :locale="locale" :is-locale-rtl="isLocaleRtl"
+                              />
+                            </CollapseTransition>
+
                             <small v-if="field.description" :id="field.id+index+'Help'"
                                    class="form-text text-muted"
                                    v-text="field.description"/>
@@ -187,10 +198,11 @@
 <script>
 
 import NavItemDropdown from '../../Shared/NavItemDropdown.vue';
+import CollapseTransition from '@ivanv/vue-collapse-transition/src/CollapseTransition.vue';
 
 export default {
   name: 'BreadEdit',
-  components: {NavItemDropdown},
+  components: {NavItemDropdown, CollapseTransition},
   props: {
     b: {type: Object, required: true},
     entId: {type: [String, Number]},
@@ -222,6 +234,7 @@ export default {
     });
 
     return {
+      collapsed: {},
       form: this.$inertia.form({v: data}),
       currentHref: document.location.href,
     };
@@ -289,5 +302,16 @@ export default {
 </script>
 
 <style scoped>
+.uncollapsed-arrow {
+  transition: transform .3s ease-in-out;
+}
+
+.uncollapsed-arrow {
+  transform: rotate(-90deg);
+}
+
+[dir='rtl'] .uncollapsed-arrow {
+  transform: rotate(90deg);
+}
 
 </style>
