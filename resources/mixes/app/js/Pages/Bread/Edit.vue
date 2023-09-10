@@ -134,7 +134,7 @@
 
                             <CollapseTransition>
                               <component
-                                  v-show="collapsed['_'+field.id+'_'+index]"
+                                  v-show="!collapsed['_'+field.id+'_'+index]"
                                   :is="field.component" :id="field.id+index"
                                   :name="field.name + '['+index+']'"
                                   :invalid="!!form.errors[field.name]" v-model="form.v[field.name][index]"
