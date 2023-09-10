@@ -123,18 +123,18 @@
                           </div>
                           <div class="form-group flex-fill my-2">
                             <label :for="field.id+index" class="form-label"
-                                   @click="collapsed['_'+index] = !collapsed['_'+index]">
+                                   @click="collapsed['_'+field.id+'_'+index] = !collapsed['_'+field.id+'_'+index]">
                               <span class="fw-semibold" v-text="field.label"/> {{ index + 1 }}
 
                               <button type="button" class="btn btn-sm">
                                 <i class="bi bi-arrow-down-short d-inline-block"
-                                   :class="{'uncollapsed-arrow':!collapsed['_'+index]}"/>
+                                   :class="{'uncollapsed-arrow':!collapsed['_'+field.id+'_'+index]}"/>
                               </button>
                             </label>
 
                             <CollapseTransition>
                               <component
-                                  v-show="collapsed['_'+index]"
+                                  v-show="collapsed['_'+field.id+'_'+index]"
                                   :is="field.component" :id="field.id+index"
                                   :name="field.name + '['+index+']'"
                                   :invalid="!!form.errors[field.name]" v-model="form.v[field.name][index]"
