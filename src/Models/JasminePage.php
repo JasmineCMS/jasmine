@@ -62,7 +62,7 @@ abstract class JasminePage extends Model
         $page = static::query()->whereUrl($slug)->firstOrFail();
 
         if (in_array(Translatable::class, class_uses(static::class))) {
-            $page->setLocale(session('locale'));
+            $page->setLocale(session('locale', app()->getLocale()));
         }
 
         return $page;
