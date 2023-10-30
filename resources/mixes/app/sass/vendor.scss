@@ -8,3 +8,7 @@
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
 @import "rtl";
+
+.fm-modal {
+  @extend .modal;
+}
