@@ -4,6 +4,7 @@
 namespace Jasmine\Jasmine;
 
 
+use Alexusmai\LaravelFileManager\Services\ConfigService\ConfigRepository;
 use Illuminate\Config\Repository;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Arr;
@@ -29,6 +30,8 @@ class JasmineServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) $this->registerConsoleCommands();
         
         $this->jasmine(app('jasmine'));
+        
+        $this->app->bind(ConfigRepository::class, FmConfigRepository::class);
     }
     
     /**
