@@ -129,7 +129,7 @@ class JasmineUser extends Authenticatable implements BreadableInterface
                     (new InputField('email'))->setOptions(['type' => 'email'])->setValidation(['required']),
                 ],
             ],
-            'col-md-4 xperms' => [
+            'col-md-8 xperms' => [
                 '_Access' => [
                     (new SwitchField('admin'))
                         ->setDescription('Admins have access to everything'),
