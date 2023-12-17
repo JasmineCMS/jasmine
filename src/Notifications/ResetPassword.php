@@ -60,9 +60,9 @@ class ResetPassword extends Notification
         }
         
         $url = route('jasmine.password.reset', [
-                'token' => $this->token,
-                'email' => $notifiable->getEmailForPasswordReset(),
-            ], false);
+            'token' => $this->token,
+            'email' => $notifiable->getEmailForPasswordReset(),
+        ]);
         
         return (new MailMessage)
             ->subject(Lang::get('Reset Password Notification'))
