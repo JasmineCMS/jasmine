@@ -31,7 +31,10 @@ class AppController extends Controller
                 'php'     => phpversion(),
                 'laravel' => app()->version(),
                 'jasmine' => InstalledVersions::getVersion('jasminecms/jasmine'),
-                'db'      => DB::select('SELECT VERSION() AS v')[0]?->v ?? 'N\A',
+                'db'      =>
+                    DB::getConfig('driver') === 'sqlite'
+                        ? 'sqlite ' . DB::select('SELECT SQLITE_VERSION() AS v')[0]?->v ?? 'N\A'
+                        : DB::select('SELECT VERSION() AS v')[0]?->v ?? 'N\A',
             ],
             'user'              => $user->only(['name', 'email', 'avatar_url']),
             'sb_menu'           => Jasmine::getSideBarMenuItems(),
