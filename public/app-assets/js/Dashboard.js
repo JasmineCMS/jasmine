@@ -1,2 +1,2 @@
 "use strict";(self.webpackChunk=self.webpackChunk||[]).push([[362],{1350:(e,t,n)=>{n.r(t),n.d(t,{default:()=>r});var o=n(821);const a={name:"Dashboard"};const r=(0,n(3744).Z)(a,[["render",function(e,t,n,a,r,l){var c=(0,o.resolveComponent)("Head"),u=(0,o.resolveComponent)("Layout");return(0,o.openBlock)(),(0,o.createElementBlock)(o.Fragment,null,[(0,o.createVNode)(c,{title:e.$t("Dashboard")},null,8,["title"]),(0,o.createVNode)(u,null,{default:(0,o.withCtx)((function(){return[(0,o.createTextVNode)(" Welcome to JasmineCMS ")]})),_:1})],64)}]])}}]);
-//# sourceMappingURL=Dashboard.js.map?id=280f0f965e940b35
+//# sourceMappingURL=Dashboard.js.map?id=69f9c16888280cc0

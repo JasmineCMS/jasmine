@@ -1,10 +1,15 @@
 <template>
   <Multiselect
+      ref="ms"
       :id="id" :name="name" v-model="val"
       :required="validation.indexOf('required') > -1"
       class="form-control"
       :class="{'is-invalid': invalid}"
-      v-bind="opts"/>
+      v-bind="conf.opts">
+    <template v-for="(slot, sk) in conf.slots" :key="sk" v-slot:[sk]="slotProps">
+      <component :is="slot" :props="slotProps"/>
+    </template>
+  </Multiselect>
 </template>
 
 <script>
@@ -23,6 +28,25 @@ export default {
         options: [],
       }, this.options),
     };
+  },
+
+  computed: {
+    conf() {
+      let vm = this;
+      let opts = JSON.parse(JSON.stringify(vm.opts));
+      delete opts.slots;
+
+      let slots = {};
+      Object.keys(vm.opts.slots || {}).forEach(k => {
+        slots[k] = {
+          template: vm.opts.slots[k],
+          data() {
+            return vm.opts.slots[k].data || {};
+          },
+        };
+      });
+      return {opts, slots};
+    },
   },
 };
 </script>
