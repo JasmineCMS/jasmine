@@ -17,6 +17,7 @@
     "@inertiajs/progress": "^0.2.7",
     "@ivanv/vue-collapse-transition": "^1.0.2",
     "@tinymce/tinymce-vue": "^5.0.0",
+    "@vueform/multiselect": "^2.6.6",
     "bootstrap": "^5.2.2",
     "bootstrap-icons": "^1.9.1",
     "laravel-file-manager": "^3.0.3",
