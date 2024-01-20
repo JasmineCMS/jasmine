@@ -25,6 +25,7 @@ import VideoField from './Pages/Bread/Fields/VideoField';
 import GeocodingField from './Pages/Bread/Fields/GeocodingField';
 import ImageField from './Pages/Bread/Fields/ImageField';
 import RelationshipField from './Pages/Bread/Fields/RelationshipField';
+import MultiSelectField from "./Pages/Bread/Fields/MultiSelectField.vue";
 
 window.JasmineBaseField = JasmineBaseField;
 window.Swal = Swal;
@@ -103,7 +104,8 @@ require('./inc/tinymce');
                 .component('VideoField', VideoField)
                 .component('GeocodingField', GeocodingField)
                 .component('ImageField', ImageField)
-                .component('RelationshipField', RelationshipField);
+                .component('RelationshipField', RelationshipField)
+                .component('MultiSelectField', MultiSelectField);
 
             app.config.globalProperties.$globals = globals;
             app.config.globalProperties.$fixed = window[fixed];
