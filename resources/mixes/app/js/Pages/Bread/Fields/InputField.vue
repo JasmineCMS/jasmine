@@ -1,5 +1,6 @@
 <template>
-  <input :type="opts.type" class="form-control form-control-sm" :class="{'is-invalid': invalid}"
+  <input :type="opts.type" class="form-control form-control-sm" :class="[{'is-invalid': invalid}, opts.class]"
+         :style="opts.style"
          :placeholder="opts.placeholder"
          :pattern="opts.pattern"
          :autofocus="opts.autofocus"
