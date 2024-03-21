@@ -103,6 +103,17 @@ class BreadController extends Controller
             foreach (explode(',', $relation_cols) as $relation_col) $relations[$relation][] = $relation_col;
         }
         
+        // count
+        foreach ($columns as $id => $col) {
+            if (!str_ends_with($col['data'], '_count')) continue;
+            [$relation] = explode('_count', $col['data']);
+            if (!$q->getModel()->isRelation($relation)) continue;
+            $q->withCount($relation);
+            
+            $columns[$id]['label'] ??= Str::title($relation);
+        }
+        
+        
         foreach ($relations as $relation => $cols) {
             $cols = array_unique($cols);
             
