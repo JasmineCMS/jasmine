@@ -24,7 +24,30 @@
   <table class="table table-striped table-responsive-md">
     <thead>
     <tr>
-      <th v-for="(col, k) in cols" @click="sort(col)" :class="[thClass(col)]">
+      <th v-for="(col, k) in cols" @click="colAction(col)" :class="[thClass(col)]" :aria-sort="ariaSort(col)">
+        <div v-if="col.filtering === 'date'" style="font-weight: normal;">
+          <DatePicker @selected="setDateRange($event, col)"/>
+        </div>
+        <Listbox v-else-if="col.filtering" v-model="q.filters[col.data]" multiple>
+          <CollapseTransition :duration="200">
+            <div v-if="showFilter[col.data]" class="filter-box">
+              <ListboxOptions static class="list-unstyled shadow">
+                <ListboxOption
+                    v-for="(o,ok) in col.filtering" as="template" v-slot="{active,selected}"
+                    :key="ok" :value="Array.isArray(col.filtering) ? o : ok"
+                >
+                  <li class="" :class="{'active':active,'selected':selected}">
+                    <span class="border" role="none">
+                        <i class="fas fa-check text-primary" :class="{'invisible':!selected}"/>
+                    </span>
+                    <span class="mx-1"/>
+                    <span v-text="o"/>
+                  </li>
+                </ListboxOption>
+              </ListboxOptions>
+            </div>
+          </CollapseTransition>
+        </Listbox>
         <slot :name="'h_' + (col.id || col.data)" :col="col" :q="q"><span v-text="col.label"/></slot>
       </th>
     </tr>
@@ -82,9 +105,14 @@
 
 <script>
 import {get} from 'lodash';
+import CollapseTransition from '@ivanv/vue-collapse-transition/src/CollapseTransition';
+import {Listbox, ListboxOption, ListboxOptions} from '@headlessui/vue';
+import {toRaw} from 'vue';
+import DatePicker from './DatePicker.vue';
 
 export default {
   name: 'DataTable',
+  components: {DatePicker, ListboxOption, ListboxOptions, Listbox, CollapseTransition},
   props: {
     paginator: {type: Object, required: true},
     columns: {type: Array, required: true},
@@ -103,7 +131,8 @@ export default {
     Array.from(params.entries())
         .filter(ent => ent[0].indexOf('filters[') === 0)
         .map(f => filters[f[0].replace(/^filters\[/, '')
-            .replace(/]$/, '')] = (f[1] || null),
+            .replace(/]$/, '')] = (f[1] || '').split(',')
+            .filter(v => v !== ''),
         );
 
     return {
@@ -115,10 +144,22 @@ export default {
         perPage: parseInt(params.get('perPage')) || 10,
         q: params.get('q'),
       },
+      showFilter: {},
     };
   },
 
   methods: {
+    filter(col) {
+      this.showFilter[col.data] = !this.showFilter[col.data];
+    },
+
+    setDateRange(v, col) {
+      this.q.filters[col.data] = [
+        v.start.toISOString(),
+        v.end.toISOString(),
+      ];
+    },
+
     sort(col) {
       if (col.sortable === false || col.id === 'j_sort') return;
 
@@ -127,17 +168,35 @@ export default {
 
       this.q.sortBy = col.data;
     },
+
     thClass(col) {
-      let classes = [];
+      let classes = ['position-relative'];
 
       if (col.id !== 'j_sort') {
-        if (col.sortable !== false) classes.push('sortable');
+        // filtering
+        if (col.filtering) {
+          classes.push('filterable');
+          if (this.q.filters[col.data]?.length) classes.push('filtering');
+        } else {
+          if (col.sortable !== false) classes.push('sortable');
 
-        if (this.q.sortBy === col.data) classes.push('sorting-' + this.q.sort);
+          if (this.q.sortBy === col.data) classes.push('sorting-' + this.q.sort);
+        }
       }
 
       return classes;
     },
+
+    ariaSort(col) {
+      if (this.q.sortBy !== col.data) return undefined;
+      return this.q.sort === 'asc' ? 'ascending' : 'descending';
+    },
+
+    colAction(col) {
+      if (col.filtering) return this.filter(col);
+      else return this.sort(col);
+    },
+
     render(val, row) {
       return val;
     },
@@ -165,7 +224,11 @@ export default {
       deep: true,
       handler() {
         this.q.page = 1;
-        this.$inertia.get(this.$inertia.page.url, this.q, {preserveState: true, replace: true});
+        let q = JSON.parse(JSON.stringify(this.q));
+
+        Object.keys(q.filters).forEach(k => Array.isArray(q.filters[k]) && (q.filters[k] = q.filters[k].join(',')));
+
+        this.$inertia.get(this.$inertia.page.url, q, {preserveState: true, replace: true});
       },
     },
   },

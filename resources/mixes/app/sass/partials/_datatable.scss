@@ -1,50 +1,104 @@
 .sortable {
-    cursor: pointer;
+  cursor: pointer;
 
-    &.sorting-asc {
-        &:after {
-            content: "\F15E";
-            font-family: 'Font Awesome 5 Free';
-            -moz-osx-font-smoothing: grayscale;
-            -webkit-font-smoothing: antialiased;
-            font-weight: 900;
-            display: inline;
-            font-style: normal;
-            font-variant: normal;
-            text-rendering: auto;
-            line-height: 1;
-            margin-inline-start: 0.25em;
-            color: $primary;
-        }
+  &.sorting-asc {
+    &:after {
+      content: "\F15E";
+      font-family: 'Font Awesome 5 Free';
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-font-smoothing: antialiased;
+      font-weight: 900;
+      display: inline;
+      font-style: normal;
+      font-variant: normal;
+      text-rendering: auto;
+      line-height: 1;
+      margin-inline-start: 0.25em;
+      color: $primary;
     }
+  }
 
-    &.sorting-desc {
-        &:after {
-            content: "\F881";
-            font-family: 'Font Awesome 5 Free';
-            -moz-osx-font-smoothing: grayscale;
-            -webkit-font-smoothing: antialiased;
-            font-weight: 900;
-            display: inline;
-            font-style: normal;
-            font-variant: normal;
-            text-rendering: auto;
-            line-height: 1;
-            margin-inline-start: 0.25em;
-            color: $primary;
-        }
+  &.sorting-desc {
+    &:after {
+      content: "\F881";
+      font-family: 'Font Awesome 5 Free';
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-font-smoothing: antialiased;
+      font-weight: 900;
+      display: inline;
+      font-style: normal;
+      font-variant: normal;
+      text-rendering: auto;
+      line-height: 1;
+      margin-inline-start: 0.25em;
+      color: $primary;
     }
+  }
+}
+
+.filterable {
+  cursor: pointer;
+
+  &:after {
+    content: "\f0b0";
+    font-family: 'Font Awesome 5 Free';
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 900;
+    display: inline;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    line-height: 1;
+    margin-inline-start: 0.25em;
+    color: $secondary;
+  }
+
+  &.filtering {
+    &:after {
+      color: $primary;
+    }
+  }
+
+  .filter-box {
+    position: absolute;
+    z-index: 10;
+    top: 100%;
+    inset-inline-start: 0;
+    margin-top: -.15rem;
+    min-width: 100px;
+
+    > ul {
+      overflow: auto;
+      background: #fff;
+      font-weight: normal;
+
+      li {
+        padding: .25em .5rem;
+        padding-inline-end: 1rem;
+
+        &.active {
+          background: $secondary;
+        }
+
+        &.selected {
+          //background: $primary;
+        }
+
+      }
+    }
+  }
 }
 
 .has-pagination {
-    @media screen and (max-width: 992px) {
-        display: block;
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
+  @media screen and (max-width: 992px) {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 
-    ul.pagination {
-        margin-bottom: 0;
-    }
+  ul.pagination {
+    margin-bottom: 0;
+  }
 }
