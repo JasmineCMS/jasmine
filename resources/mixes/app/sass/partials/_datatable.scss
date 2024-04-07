@@ -37,9 +37,11 @@
 }
 
 .filterable {
-  cursor: pointer;
+  &:not(.date) {
+    cursor: pointer;
+  }
 
-  &:after {
+  &:not(.date):after {
     content: "\f0b0";
     font-family: 'Font Awesome 5 Free';
     -moz-osx-font-smoothing: grayscale;
@@ -87,6 +89,10 @@
 
       }
     }
+  }
+
+  .vue-drp-input.chosen:before {
+    color: $primary;
   }
 }
 

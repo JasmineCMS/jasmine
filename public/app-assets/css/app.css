@@ -30,10 +30,10 @@
   color: #0d6efd;
 }
 
-.filterable {
+.filterable:not(.date) {
   cursor: pointer;
 }
-.filterable:after {
+.filterable:not(.date):after {
   content: "\f0b0";
   font-family: "Font Awesome 5 Free";
   -moz-osx-font-smoothing: grayscale;
@@ -70,6 +70,10 @@
 .filterable .filter-box > ul li.active {
   background: #6c757d;
 }
+.filterable .vue-drp-input.chosen:before {
+  color: #0d6efd;
+}
+
 @media screen and (max-width: 992px) {
   .has-pagination {
     display: block;

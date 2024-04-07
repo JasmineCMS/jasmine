@@ -26,7 +26,7 @@
     <tr>
       <th v-for="(col, k) in cols" @click="colAction(col)" :class="[thClass(col)]" :aria-sort="ariaSort(col)">
         <div v-if="col.filtering === 'date'" style="font-weight: normal;">
-          <DatePicker @selected="setDateRange($event, col)"/>
+          <DatePicker @selected="setDateRange($event, col)" :value="q.filters[col.data]"/>
         </div>
         <Listbox v-else-if="col.filtering" v-model="q.filters[col.data]" multiple>
           <CollapseTransition :duration="200">
@@ -41,7 +41,7 @@
                         <i class="fas fa-check text-primary" :class="{'invisible':!selected}"/>
                     </span>
                     <span class="mx-1"/>
-                    <span v-text="o"/>
+                    <span v-text="o" :class="{'text-primary':selected}"/>
                   </li>
                 </ListboxOption>
               </ListboxOptions>
@@ -107,7 +107,6 @@
 import {get} from 'lodash';
 import CollapseTransition from '@ivanv/vue-collapse-transition/src/CollapseTransition';
 import {Listbox, ListboxOption, ListboxOptions} from '@headlessui/vue';
-import {toRaw} from 'vue';
 import DatePicker from './DatePicker.vue';
 
 export default {
@@ -154,10 +153,14 @@ export default {
     },
 
     setDateRange(v, col) {
-      this.q.filters[col.data] = [
-        v.start.toISOString(),
-        v.end.toISOString(),
-      ];
+      if (v === null) {
+        this.q.filters[col.data] = null;
+      } else {
+        this.q.filters[col.data] = [
+          v.start.toISOString(),
+          v.end.toISOString(),
+        ];
+      }
     },
 
     sort(col) {
@@ -176,6 +179,7 @@ export default {
         // filtering
         if (col.filtering) {
           classes.push('filterable');
+          if (col.filtering === 'date') classes.push('date');
           if (this.q.filters[col.data]?.length) classes.push('filtering');
         } else {
           if (col.sortable !== false) classes.push('sortable');

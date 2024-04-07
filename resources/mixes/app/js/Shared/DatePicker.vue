@@ -1,21 +1,31 @@
 <style>
 .vue-date-range-picker {
   color: #333;
+  width: 100%;
 }
 
 .vue-drp-input {
-  display: block;
+  display: flex;
+  align-items: center;
   cursor: pointer;
   user-select: none;
-  border: 1px solid #ccc;
-  padding: 0.5em 0.7em;
-  width: 250px;
+  font-size: .8em;
+  font-weight: 300;
 }
 
-.vue-drp-input:after {
-  content: "▼";
-  float: right;
+.vue-drp-input:before {
+  content: "\f073";
+  font-family: 'Font Awesome 5 Free';
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-weight: 900;
+  display: inline;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
   font-size: smaller;
+  margin-inline-end: .5em;
 }
 
 .vue-drp-calendar {
@@ -188,11 +198,20 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.vue-drp-clear {
+  margin-top: .5em;
+  cursor: pointer;
+  text-align: center;
+  padding: .2em .2em 0;
+  font-weight: 300;
+}
 </style>
 
 <template>
   <div class="vue-date-range-picker">
-    <div class="vue-drp-input" @click="toggleCalendar" v-text="rangeString"/>
+    <div class="vue-drp-input" :class="{'chosen': dateRangeStart && dateRangeEnd}"
+         @click="toggleCalendar" v-text="rangeString"/>
 
     <div class="vue-drp-calendar" v-if="open">
 
@@ -260,8 +279,12 @@
              :class="{'vue-drp-selected-preset': (selectedPreset === preset.label)}"
              v-text="preset.label" @click="setPreset(preset)"></div>
 
-        <div class="vue-drp-apply" :disabled="dateRangeEnd === null ? true : null"
+        <div class="vue-drp-apply" tabindex="1" role="button" :disabled="dateRangeEnd === null ? true : null"
              @click="apply">Apply
+        </div>
+
+        <div class="vue-drp-clear" tabindex="1" role="button" :disabled="!dateRangeEnd ? true : undefined"
+             @click="clear">Clear
         </div>
       </div>
 
@@ -286,13 +309,6 @@ export default {
       required: false,
       default() {
         return [
-          {
-            label: 'All',
-            dateRange: {
-              start: dayjs('2000-01-01'),
-              end: dayjs(),
-            },
-          },
           {
             label: 'Today',
             dateRange: {
@@ -324,6 +340,8 @@ export default {
         ];
       },
     },
+
+    value: {type: Array},
   },
 
   data() {
@@ -629,43 +647,44 @@ export default {
      * @param dateRange {{start: dayjs, end: dayjs}}
      */
     setRange(dateRange) {
+      if (dateRange) {
+        /** If is not a dayjs, load into a dayjs */
+        if (
+            typeof dateRange.start !== 'object'
+            || typeof dateRange.start.$d === 'undefined'
+        ) {
 
-      /** If is not a dayjs, load into a dayjs */
-      if (
-          typeof dateRange.start !== 'object'
-          || typeof dateRange.start.$d === 'undefined'
-      ) {
+          /** If is a moment object extract js Date */
+          if (dateRange.start._isAMomentObject) {
+            dateRange.start = dateRange.start._d;
+          }
 
-        /** If is a moment object extract js Date */
-        if (dateRange.start._isAMomentObject) {
-          dateRange.start = dateRange.start._d;
+          dateRange.start = dayjs(dateRange.start);
         }
 
-        dateRange.start = dayjs(dateRange.start);
-      }
+        if (
+            typeof dateRange.end !== 'object'
+            || typeof dateRange.end.$d === 'undefined'
+        ) {
 
-      if (
-          typeof dateRange.end !== 'object'
-          || typeof dateRange.end.$d === 'undefined'
-      ) {
+          /** If is a moment object extract js Date */
+          if (dateRange.end._isAMomentObject) {
+            dateRange.end = dateRange.end._d;
+          }
 
-        /** If is a moment object extract js Date */
-        if (dateRange.end._isAMomentObject) {
-          dateRange.end = dateRange.end._d;
+          dateRange.end = dayjs(dateRange.end);
         }
-
-        dateRange.end = dayjs(dateRange.end);
       }
 
-      this.dateRangeStart = dateRange.start;
-      this.dateRangeEnd = dateRange.end;
+      this.dateRangeStart = dateRange?.start || null;
+      this.dateRangeEnd = dateRange?.end || null;
 
       /** Move start of range in to calendar view */
-      this.active.start.month = this.dateRangeStart.month();
-      this.active.start.year = this.dateRangeStart.year();
+      this.active.start.month = this.dateRangeStart?.month() || new Date().getMonth();
+      this.active.start.year = this.dateRangeStart?.year() || new Date().getFullYear();
 
       if (this.nextActiveMonth === 0) {
-        this.active.end.year = this.dateRangeStart.year() + 1;
+        this.active.end.year = (this.dateRangeStart?.year() || new Date().getFullYear()) + 1;
       }
     },
 
@@ -701,6 +720,15 @@ export default {
         end: this.dateRangeEnd,
       });
     },
+
+    /** Clear */
+    clear() {
+      this.setRange(null);
+      this.toggleCalendar();
+
+      /** Emit the selected event */
+      this.$emit('selected', null);
+    },
   },
 
   watch: {
@@ -720,6 +748,15 @@ export default {
     /** If the first month is December, set the end year to the next one */
     if (this.active.start.month === 11) {
       this.active.end.year++;
+    }
+  },
+
+  mounted() {
+    if (Array.isArray(this.value) && this.value.length === 2) {
+      this.setRange({
+        start: this.value[0],
+        end: this.value[1],
+      });
     }
   },
 };
