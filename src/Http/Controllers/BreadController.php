@@ -79,7 +79,10 @@ class BreadController extends Controller
             foreach ($timestamps as $ts) {
                 if (in_array($ts, array_keys($columns))) continue;
                 
-                $columns[$ts] = ['data' => $ts, 'render' => fn($v) => $v->format('d.m.Y H:i:s')];
+                $columns[$ts] = [
+                    'data'   => $ts, 'sortable' => true, 'filtering' => 'date',
+                    'render' => fn($v) => $v->format('d.m.Y H:i:s'),
+                ];
             }
             
         }
@@ -131,6 +134,16 @@ class BreadController extends Controller
         
         $locale = null;
         
+        // load filter options
+        foreach ($columns as $k => $col) if (
+            is_array($col['filtering'] ?? null)
+            && count($col['filtering']) === 0
+        ) {
+            $columns[$k]['filtering'] = $q->getModel()->newQuery()
+                ->select($col['data'])->distinct()->pluck($col['data'])->toArray();
+        }
+        
+        
         if (in_array(Translatable::class, class_uses($breadableClass))) {
             $locale = request('_locale', Jasmine::getLocales()[0]);
         }
@@ -149,7 +162,23 @@ class BreadController extends Controller
                 return $c;
             }, array_values($columns)),
             'paginator' => $q
-                ->when(\request('q'), function (Builder $q, $v) use ($columns, $relations) {
+                ->when(request('filters'), fn(Builder $q, $v) => $q->where(function (Builder $q) use ($v, $columns) {
+                    if (!is_array($v)) return;
+                    
+                    $filterable = array_column(array_filter($columns,
+                        fn($x) => $x['filtering'] ?? null
+                    ), 'data');
+                    
+                    foreach (array_filter($v) as $ff => $fv) {
+                        if (!in_array($ff, $filterable)) continue;
+                        // TODO handle relationships
+                        
+                        $col = array_values(array_filter($columns, fn($x) => $x['data'] === $ff))[0];
+                        if($col['filtering'] === 'date') $q->whereBetween($ff, explode(',', $fv));
+                        else $q->whereIn($ff, explode(',', $fv));
+                    }
+                }))
+                ->when(request('q'), function (Builder $q, $v) use ($columns, $relations) {
                     return $q->where(function (Builder $q) use ($v, $columns, $relations) {
                         $relations_used = [];
                         foreach (array_unique(array_map(fn($c) => $c['data'],
@@ -173,7 +202,7 @@ class BreadController extends Controller
                         }
                     });
                 })
-                ->when(\request('sortBy'), function (Builder $q, $v) use ($breadableClass, $columns) {
+                ->when(request('sortBy'), function (Builder $q, $v) use ($breadableClass, $columns) {
                     $col = $columns[$v] ?? array_values(array_filter($columns, fn($c) => $c['data'] === $v))[0] ?? null;
                     if (!$col) abort(404);
                     if (isset($col['sortable']) && !$col['sortable']) return;
@@ -200,7 +229,7 @@ class BreadController extends Controller
                 ->when(request('sortGroup'), function (Builder $q, $v) {
                     $q->where($q->getModel()->sortable['group_by'], $v);
                 })
-                ->paginate(\request('perPage', 10))->withQueryString()
+                ->paginate(request('perPage', 10))->withQueryString()
                 ->through(function (Model|BreadableInterface $m) use ($columns, $locale) {
                     
                     if (in_array(Translatable::class, class_uses($m))) {
