@@ -110,6 +110,7 @@ class BreadController extends Controller
         foreach ($columns as $id => $col) {
             if (!str_ends_with($col['data'], '_count')) continue;
             [$relation] = explode('_count', $col['data']);
+            $relation = Str::camel($relation);
             if (!$q->getModel()->isRelation($relation)) continue;
             $q->withCount($relation);
             
