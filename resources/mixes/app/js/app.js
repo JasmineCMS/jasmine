@@ -12,6 +12,7 @@ import draggable from 'vuedraggable';
 import Swal from './inc/Swal';
 import Layout from './Shared/Layout';
 import DataTable from './Shared/DataTable';
+import DatePicker from './Shared/DatePicker.vue';
 import JasmineBaseField from './Pages/Bread/Fields/BaseField';
 import GroupedField from './Pages/Bread/Fields/GroupedField';
 import InputField from './Pages/Bread/Fields/InputField';
@@ -93,6 +94,7 @@ require('./inc/tinymce');
                 .component('vue-tinymce', VueTinymce)
                 .component('Layout', Layout)
                 .component('DataTable', DataTable)
+                .component('DatePicker', DatePicker)
                 .component('GroupedField', GroupedField)
                 .component('InputField', InputField)
                 .component('TextareaField', TextareaField)
