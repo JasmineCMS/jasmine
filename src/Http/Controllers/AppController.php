@@ -5,6 +5,7 @@ namespace Jasmine\Jasmine\Http\Controllers;
 use Composer\InstalledVersions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Jasmine\Jasmine\Facades\Jasmine;
@@ -50,7 +51,10 @@ class AppController extends Controller
     public function dashboard()
     {
         return inertia('Dashboard', [
-            'cards' => Jasmine::getDashboardCards(),
+            'cards' => array_map(
+                fn($c) => array_map(fn($v) => $v instanceof \Closure ? App::call($v) : $v, $c),
+                Jasmine::getDashboardCards()
+            ),
         ]);
     }
     
