@@ -37,7 +37,10 @@ use Illuminate\Support\Facades\Facade;
  * @method static void registerCustomJs(string $path)
  * @method static void registerCustomStyle(string $path)
  *
- * @method static void registerOauth2Sso(string $name, string $icon, string $client_id, string $client_secret, string $authorize_url, string $token_url,array $scopes, \Closure|bool $allowCreate, \Closure $userDataCallback)
+ * @method static void registerOauth2Sso(string $name, string $icon, string $client_id, string $client_secret, string $authorize_url, string $token_url, array $scopes, \Closure|bool $allowCreate, \Closure $userDataCallback)
  * @method static array getOauth2Ssos(?string $name = null)
+ *
+ * @method static string registerDashboardCard(array $config, ?string $id = null)
+ * @method static array|null getDashboardCards(?string $name = null)
  */
 class Jasmine extends Facade { protected static function getFacadeAccessor(): string { return 'jasmine'; } }

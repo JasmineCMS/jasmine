@@ -4,6 +4,7 @@ namespace Jasmine\Jasmine;
 
 use Jasmine\Jasmine\Registers\RegistersBreadables;
 use Jasmine\Jasmine\Registers\RegistersCustomAssets;
+use Jasmine\Jasmine\Registers\RegistersDashboardCards;
 use Jasmine\Jasmine\Registers\RegistersInterfaceLocales;
 use Jasmine\Jasmine\Registers\RegistersLocales;
 use Jasmine\Jasmine\Registers\RegistersOauth2Sso;
@@ -22,5 +23,6 @@ class Jasmine
         RegistersPages,
         RegistersSideBarMenuItems,
         RegistersCustomAssets,
+        RegistersDashboardCards,
         RegistersOauth2Sso;
 }

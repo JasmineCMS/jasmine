@@ -49,7 +49,9 @@ class AppController extends Controller
     
     public function dashboard()
     {
-        return inertia('Dashboard');
+        return inertia('Dashboard', [
+            'cards' => Jasmine::getDashboardCards(),
+        ]);
     }
     
     public function profile()
