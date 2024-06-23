@@ -1,9 +1,8 @@
 import {createStore} from 'vuex';
 import * as Vue from 'vue';
 import * as SfcLoader from 'vue3-sfc-loader/dist/vue3-sfc-loader.esm';
-import {createInertiaApp, Head, Link} from '@inertiajs/inertia-vue3';
-import {InertiaProgress} from '@inertiajs/progress';
-import {ZiggyVue} from 'ziggy-js/src/js/vue';
+import {createInertiaApp, Head, Link} from '@inertiajs/vue3'
+import {ZiggyVue} from 'ziggy-js/dist/vue';
 import FileManager from 'laravel-file-manager';
 import {createI18n} from 'vue-i18n';
 import VueTinymce from '@tinymce/tinymce-vue';
@@ -26,7 +25,7 @@ import VideoField from './Pages/Bread/Fields/VideoField';
 import GeocodingField from './Pages/Bread/Fields/GeocodingField';
 import ImageField from './Pages/Bread/Fields/ImageField';
 import RelationshipField from './Pages/Bread/Fields/RelationshipField';
-import MultiSelectField from "./Pages/Bread/Fields/MultiSelectField.vue";
+import MultiSelectField from './Pages/Bread/Fields/MultiSelectField.vue';
 
 window.JasmineBaseField = JasmineBaseField;
 window.Swal = Swal;
@@ -60,6 +59,7 @@ require('./inc/tinymce');
     }
 
     createInertiaApp({
+        progress: {color: '#29d', delay: 25},
         title: (title) => {
             window[fixed].title = title;
             return `${title} - Jasmine - ${appName}`;
@@ -120,6 +120,4 @@ require('./inc/tinymce');
                 });
         },
     });
-
-    InertiaProgress.init({color: '#29d', delay: 25});
 })();
