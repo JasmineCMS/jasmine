@@ -153,22 +153,30 @@
                 <i class="fa-brands fa-github"></i>&nbsp;
                 <b>JasmineCMS</b> {{ $globals.info?.jasmine }}
               </a>
-              <div class="mx-3"></div>
-              <div>
-                <b>Laravel</b> {{ $globals.info?.laravel }}
-              </div>
-              <div class="mx-3"></div>
-              <div>
-                <b>PHP</b> {{ $globals.info?.php }}
-              </div>
-              <div class="mx-3"></div>
-              <div>
-                <b>DB</b> {{ $globals.info?.db }}
-              </div>
-              <div class="mx-3"></div>
-              <div v-if="$globals.info?.updated">
-                <b>Last update</b> {{ (new Date($globals.info?.updated * 1000)).toLocaleString() }}
-              </div>
+              <template v-if="$globals.info?.laravel">
+                <div class="mx-3"></div>
+                <div>
+                  <b>Laravel</b> {{ $globals.info?.laravel }}
+                </div>
+              </template>
+              <template v-if="$globals.info?.php">
+                <div class="mx-3"></div>
+                <div>
+                  <b>PHP</b> {{ $globals.info?.php }}
+                </div>
+              </template>
+              <template v-if="$globals.info?.db">
+                <div class="mx-3"></div>
+                <div>
+                  <b>DB</b> {{ $globals.info?.db }}
+                </div>
+              </template>
+              <template v-if="$globals.info?.updated">
+                <div class="mx-3"></div>
+                <div>
+                  <b>Last update</b> {{ (new Date($globals.info?.updated * 1000)).toLocaleString() }}
+                </div>
+              </template>
             </div>
             <div>
 

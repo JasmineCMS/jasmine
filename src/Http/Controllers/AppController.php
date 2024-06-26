@@ -25,22 +25,28 @@ class AppController extends Controller
         /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.guard'))->user();
 
+        $info = [
+            'jasmine' => InstalledVersions::getVersion('jasminecms/jasmine'),
+        ];
+
+        if ($user->admin) {
+            $info['updated'] = filemtime(base_path('./composer.lock'));
+            $info['php'] = phpversion();
+            $info['laravel'] = app()->version();
+            $info['jasmine'] = InstalledVersions::getVersion('jasminecms/jasmine');
+            $info['db'] =
+                DB::getConfig('driver') === 'sqlite'
+                    ? 'sqlite ' . DB::select('SELECT SQLITE_VERSION() AS v')[0]?->v ?? 'N\A'
+                    : DB::select('SELECT VERSION() AS v')[0]?->v ?? 'N\A';
+        }
+
         return [
             'locales'           => Jasmine::getLocales(),
             'interface_locales' => Jasmine::getInterfaceLocales(),
             'user'              => $user->only(['name', 'email', 'avatar_url']),
             'sb_menu'           => Jasmine::getSideBarMenuItems(),
 
-            'info' => [
-                'updated' => filemtime(base_path('./composer.lock')),
-                'php'     => phpversion(),
-                'laravel' => app()->version(),
-                'jasmine' => InstalledVersions::getVersion('jasminecms/jasmine'),
-                'db'      =>
-                    DB::getConfig('driver') === 'sqlite'
-                        ? 'sqlite ' . DB::select('SELECT SQLITE_VERSION() AS v')[0]?->v ?? 'N\A'
-                        : DB::select('SELECT VERSION() AS v')[0]?->v ?? 'N\A',
-            ],
+            'info' => $info,
         ];
     }
 
