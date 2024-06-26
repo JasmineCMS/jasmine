@@ -26,9 +26,11 @@ class PageController extends Controller
         $page = $page::firstOrCreate(['name' => $slug], ['url' => $slug, 'content' => []]);
 
         // Check permission
-        if (
-            !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('pages.' . $slug . '.read')
-        ) abort(401);
+        $user = Auth::guard(config('jasmine.auth.guard'))->user();
+        if (!$user->jCan('pages.' . $slug . '.read')) abort(401);
+
+        $permissions = ['r'];
+        if ($user->jCan('pages.' . $slug . '.edit')) $permissions[] = 'e';
 
         $locale = app()->getLocale();
         if (in_array(Translatable::class, class_uses($page))) {
@@ -46,21 +48,22 @@ class PageController extends Controller
         }
 
         return inertia('Bread/Edit', [
-            'b'         => [
+            'can'        => $permissions,
+            'b'          => [
                 'key'      => 'pages',
                 'singular' => 'Page',
                 'plural'   => 'Pages',
                 'manifest' => $page::fieldsManifest(),
                 'fields'   => $page::fieldsManifest()->getFields(),
             ],
-            'entId'     => $page->id,
-            'ent'       => $data['content'] ?? new \stdClass(),
-            'title'     => $page::getPageName(),
-            'locale'    => $locale,
+            'entId'      => $page->id,
+            'ent'        => $data['content'] ?? new \stdClass(),
+            'title'      => $page::getPageName(),
+            'locale'     => $locale,
             'public_url' => $page->exists ? method_exists($page, 'jasmineGetPublicUrl') ? $page->jasmineGetPublicUrl() : null : null,
-            'fm_path'   => 'Pages/' . $page::getPageName(),
-            'loadedRev' => isset($rev) ? $rev->created_at : null,
-            'revisions' => JasmineRevision
+            'fm_path'    => 'Pages/' . $page::getPageName(),
+            'loadedRev'  => isset($rev) ? $rev->created_at : null,
+            'revisions'  => JasmineRevision
                 ::whereRevisionableType($page::class)
                 ->whereRevisionableId($page->getKey())
                 ->latest()

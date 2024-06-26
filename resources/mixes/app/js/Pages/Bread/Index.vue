@@ -6,8 +6,9 @@
     <template #pageActions>
       <div class="d-flex align-items-center p-2">
         <div v-if="locale" class="btn-group btn-group-sm">
-          <inertia-link v-for="_l in $globals.locales" href="" :data="{_locale:_l}" v-text="_l"
-                        class="btn btn-outline-primary text-uppercase" :class="{active:_l === locale}"/>
+          <inertia-link
+              v-for="_l in $globals.locales" href="" :data="{_locale:_l}" v-text="_l"
+              class="btn btn-outline-primary text-uppercase" :class="{active:_l === locale}"/>
         </div>
       </div>
     </template>
@@ -15,9 +16,11 @@
     <div class="px-1 px-lg-4">
       <DataTable :paginator="paginator" :columns="columns" ref="dt" :searchable="searchable" @reordered="reorder">
         <template #tableActions>
-          <inertia-link :href="route('jasmine.bread.create', {breadableName: b.key})"
-                        class="btn text-primary d-flex align-items-center"
-                        title="Create">
+          <inertia-link
+              v-if="can.indexOf('a') > -1"
+              :href="route('jasmine.bread.create', {breadableName: b.key})"
+              class="btn text-primary d-flex align-items-center"
+              title="Create">
             <i class="fs-3 bi bi-plus-circle-fill"></i>
             <span class="mx-1"/>
             {{ $t('New') }}
@@ -50,12 +53,17 @@
               <i class="bi bi-link" style="font-size: 1.5rem;"></i>
             </a>
 
-            <inertia-link class="btn" :title="$t('Edit')"
-                          :href="route('jasmine.bread.edit', {breadableName: b.key, breadableId: v})">
+            <inertia-link
+                v-if="can.indexOf('r') > -1"
+                class="btn" :title="$t('Edit')"
+                :href="route('jasmine.bread.edit', {breadableName: b.key, breadableId: v})">
               <i class="bi bi-pencil"></i>
             </inertia-link>
 
-            <button type="button" class="btn" :title="$t('Delete')" @click="del(v, r)">
+            <button
+                v-if="can.indexOf('d') > -1"
+                type="button" class="btn" :title="$t('Delete')" @click="del(v, r)"
+            >
               <i class="bi bi-trash3"></i>
             </button>
           </div>
@@ -72,6 +80,7 @@ import Swal from '../../inc/Swal';
 export default {
   name: 'BreadIndex',
   props: {
+    can: {type: Array, required: true},
     b: {type: Object, required: true},
     paginator: {type: Object, required: true},
     columns: {type: Array, required: true},

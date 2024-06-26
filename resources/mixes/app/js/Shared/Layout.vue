@@ -59,11 +59,14 @@
         <div class="sb-sidenav-menu">
           <div class="nav">
             <template v-for="(i,k) in $globals.sb_menu || {}" :key="k">
-              <template v-if="i.children && len(i.children)">
-                <a class="nav-link" :class="{'collapsed':i.open,'active': i.active}"
-                   href="#" role="button"
-                   :aria-expanded="i.open ? 'true' : 'false'" :aria-controls="'collapse_' + k"
-                   @click="i.open = !i.open">
+              <template v-if="i.hidden"/>
+              <template v-else-if="i.children && len(i.children, true)">
+                <a
+                    v-if="len(i.children, false)"
+                    class="nav-link" :class="{'collapsed':i.open,'active': i.active}"
+                    href="#" role="button"
+                    :aria-expanded="i.open ? 'true' : 'false'" :aria-controls="'collapse_' + k"
+                    @click="i.open = !i.open">
                   <div class="sb-nav-link-icon">
                     <i v-if="i.icon.indexOf('fa-') > -1" class="fs-4 fas" :class="i.icon"/>
                     <i v-else-if="i.icon.indexOf('bi-') > -1" class="fs-4 bi" :class="i.icon"/>
@@ -74,25 +77,31 @@
                 <CollapseTransition>
                   <div v-show="i.open" :id="'collapse_' + k" aria-labelledby="headingOne">
                     <nav class="sb-sidenav-menu-nested nav">
-                      <component v-for="(c,ck) in i.children" :key="ck" class="nav-link"
-                                 :class="{'active': isRoute(c['is-route'] || null)}"
-                                 :is="c.target === '_blank' ? 'a' : 'inertia-link'" :target="c.target || '_self'"
-                                 :href="c.href"
-                      >
-                        <div class="sb-nav-link-icon">
-                          <i v-if="c.icon.indexOf('fa-') > -1" class="fs-5 fas" :class="c.icon"/>
-                          <i v-else-if="c.icon.indexOf('bi-') > -1" class="fs-5 bi" :class="c.icon"/>
-                        </div>
-                        {{ $t(c.title) }}
-                      </component>
+                      <template v-for="(c,ck) in i.children" :key="ck">
+                        <template v-if="c.hidden"/>
+                        <component
+                            v-else
+                            class="nav-link"
+                            :class="{'active': isRoute(c['is-route'] || null)}"
+                            :is="c.target === '_blank' ? 'a' : 'inertia-link'" :target="c.target || '_self'"
+                            :href="c.href"
+                        >
+                          <div class="sb-nav-link-icon">
+                            <i v-if="c.icon.indexOf('fa-') > -1" class="fs-5 fas" :class="c.icon"/>
+                            <i v-else-if="c.icon.indexOf('bi-') > -1" class="fs-5 bi" :class="c.icon"/>
+                          </div>
+                          {{ $t(c.title) }}
+                        </component>
+                      </template>
                     </nav>
                   </div>
                 </CollapseTransition>
               </template>
               <template v-else>
-                <component class="nav-link" :class="{'active': isRoute(i['is-route'] || null)}"
-                           :is="i.target === '_blank' ? 'a' : 'inertia-link'" :target="i.target || '_self'"
-                           :href="i.href"
+                <component
+                    class="nav-link" :class="{'active': isRoute(i['is-route'] || null)}"
+                    :is="i.target === '_blank' ? 'a' : 'inertia-link'" :target="i.target || '_self'"
+                    :href="i.href"
                 >
                   <div class="sb-nav-link-icon">
                     <i v-if="i.icon.indexOf('fa-') > -1" class="fs-4 fas" :class="i.icon"/>
@@ -156,6 +165,10 @@
               <div>
                 <b>DB</b> {{ $globals.info?.db }}
               </div>
+              <div class="mx-3"></div>
+              <div v-if="$globals.info?.updated">
+                <b>Last update</b> {{ (new Date($globals.info?.updated * 1000)).toLocaleString() }}
+              </div>
             </div>
             <div>
 
@@ -192,8 +205,11 @@ export default {
       }
     },
 
-    len(v) {
-      return (Array.isArray(v) ? v : Object.keys(v)).length;
+    len(v, withHidden = true) {
+      if (Array.isArray(v)) return v.length;
+      let res = Object.keys(v);
+      if (!withHidden) res = res.filter(k => !v[k].hidden);
+      return res.length;
     },
 
     changeLocale(locale) {

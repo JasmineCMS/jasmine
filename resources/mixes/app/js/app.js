@@ -37,10 +37,29 @@ require('./inc/tinymce');
 
 (async function () {
     const store = createStore({});
-    const Ziggy = await fetch(document.head.querySelector('meta[name="routes"]').content).then(r => r.json());
-    const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Laravel';
 
-    let globals = Vue.reactive({});
+    // Ziggy routes
+    let Ziggy = await Vue.reactive({
+        async reload() {
+            let r = await fetch(document.head.querySelector('meta[name="routes"]').content)
+                .then(r => r.json());
+            Object.keys(r).forEach(zk => this[zk] = r[zk]);
+            return this;
+        },
+    }).reload();
+
+    // Globals
+    let globals = await Vue.reactive({
+        async reload() {
+            let r = await fetch(document.head.querySelector('meta[name="globals"]').content)
+                .then(r => r.json());
+
+            Object.keys(r).forEach(gk => this[gk] = r[gk]);
+            return this;
+        },
+    }).reload();
+
+    const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Laravel';
 
     const i18n = createI18n({
         locale: document.documentElement.lang,
@@ -52,12 +71,6 @@ require('./inc/tinymce');
     const fixed = '_' + Math.floor(Math.random() * 99999999) + 100000;
     window[fixed] = window[fixed] || {};
 
-    async function loadGlobals() {
-        let res = await fetch(document.head.querySelector('meta[name="globals"]').content).then(r => r.json());
-
-        Object.keys(res).forEach(k => globals[k] = res[k]);
-    }
-
     createInertiaApp({
         progress: {color: '#29d', delay: 25},
         title: (title) => {
@@ -68,19 +81,22 @@ require('./inc/tinymce');
         setup({el, App, props, plugin}) {
             window.app = Vue.createApp({
                 render: () => Vue.h(App, props),
-                beforeCreate() {
-                    loadGlobals();
-                },
-                methods: {
-                    loadGlobals,
+                data() {
+                    return {Ziggy, $globals: globals};
                 },
                 mounted() {
                     document.getElementById('loader').remove();
-                    window.addEventListener('keydown',
-                        e => (e.key?.toLowerCase() === 'r' && e.shiftKey
-                                && ['input', 'select', 'textarea'].indexOf(e.target.tagName?.toLowerCase()) < 0)
-                            && this.$inertia.reload(),
-                    );
+                    // handle shift + r (soft reload)
+                    window.addEventListener('keydown', evt => {
+                        if (
+                            evt.key?.toLowerCase() === 'r' && evt.shiftKey
+                            && ['input', 'select', 'textarea'].indexOf(evt.target.tagName?.toLowerCase()) < 0
+                        ) {
+                            this.$inertia.reload({preserveState: false});
+                            Ziggy.reload();
+                            globals.reload();
+                        }
+                    });
                 },
             })
                 .use(i18n).use(store).use(plugin)
