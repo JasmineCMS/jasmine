@@ -154,6 +154,9 @@ class BreadController extends Controller
             $locale = request('_locale', Jasmine::getLocales()[0]);
         }
 
+        // label
+        foreach ($columns as $k => $v) $columns[$k]['label'] ??= Str::headline($v['data']);
+
         return inertia('Bread/Index', [
             'b'         => [
                 'key'      => $bKey,
