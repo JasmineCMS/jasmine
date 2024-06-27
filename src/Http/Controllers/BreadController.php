@@ -53,7 +53,7 @@ class BreadController extends Controller
             $columns['j_sort'] = [
                 'id'    => 'j_sort',
                 'data'  => $bi->determineOrderColumnName(),
-                'label' => 'Order',
+                'label' => __('Order'),
                 //'sortable' => false,
             ];
 
@@ -94,7 +94,7 @@ class BreadController extends Controller
 
         if (!isset($columns['j_actions'])) $columns['j_actions'] = [
             'data'     => $q->getModel()->getKeyName(),
-            'label'    => 'Actions',
+            'label'    => __('Actions'),
             'id'       => 'j_actions',
             'sortable' => false,
         ];
@@ -119,7 +119,7 @@ class BreadController extends Controller
             if (!$q->getModel()->isRelation($relation)) continue;
             $q->withCount($relation);
 
-            $columns[$id]['label'] ??= Str::title($relation);
+            $columns[$id]['label'] ??= __(Str::title($relation));
         }
 
 
