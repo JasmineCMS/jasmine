@@ -7,6 +7,7 @@ import FileManager from 'laravel-file-manager';
 import {createI18n} from 'vue-i18n';
 import VueTinymce from '@tinymce/tinymce-vue';
 import draggable from 'vuedraggable';
+import VueGoogleMaps from '@fawmi/vue-google-maps';
 
 import Swal from './inc/Swal';
 import Layout from './Shared/Layout';
@@ -101,7 +102,9 @@ require('./inc/tinymce');
             })
                 .use(i18n).use(store).use(plugin)
                 .use(ZiggyVue, Ziggy)
-                .use(FileManager, {store});
+                .use(FileManager, {store})
+                .use(VueGoogleMaps)
+            ;
 
             app
                 .component('draggable', draggable)
