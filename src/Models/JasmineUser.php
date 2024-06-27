@@ -115,6 +115,8 @@ class JasmineUser extends Authenticatable implements BreadableInterface
         return [
             'name',
             'email',
+            'admin',
+            'permissions' => fn($i) => count($i),
             [
                 'data'       => 'otp_secret',
                 'label'      => '2FA',
