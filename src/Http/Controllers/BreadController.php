@@ -155,7 +155,7 @@ class BreadController extends Controller
         }
 
         // label
-        foreach ($columns as $k => $v) $columns[$k]['label'] ??= Str::headline($v['data']);
+        foreach ($columns as $k => $v) $columns[$k]['label'] ??= __(Str::headline($v['data']));
 
         return inertia('Bread/Index', [
             'b'         => [
