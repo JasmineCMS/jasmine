@@ -22,12 +22,12 @@ trait Breadable
 
     public static function getPluralName(): string
     {
-        return Str::title(Str::snake(Str::pluralStudly(class_basename(static::class)), ' '));
+        return __(Str::title(Str::snake(Str::pluralStudly(class_basename(static::class)), ' ')));
     }
 
     public static function getSingularName(): string
     {
-        return Str::singular(Str::title(Str::snake(class_basename(static::class), ' ')));
+        return __(Str::singular(Str::title(Str::snake(class_basename(static::class), ' '))));
     }
 
     public static function getMenuIcon(): string { return 'bi-files'; }

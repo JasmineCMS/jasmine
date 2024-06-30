@@ -1,9 +1,26 @@
 <template>
   <div>
-    <input type="text" :name="name+'[address]'" class="form-control form-control-sm"
-           :class="{'is-invalid': invalid}" ref="addressElem" v-model="val.address">
+    <GMapAutocomplete
+        class="form-control form-control-sm"
+        :class="{'is-invalid': invalid}"
+        @place_changed="setLocation"
+        :types="opts.types || []"
+        :value="val.address"
+        ref="gmapAutocomplete"
+    >
+    </GMapAutocomplete>
 
-    <div class="j-location-field-map" ref="mapElem"></div>
+    <div class="input-group input-group-sm my-2">
+      <span class="input-group-text" v-text="$t('Lat')"/>
+      <input class="form-control form-control-sm" type="text" v-model="val.lat">
+      <span class="input-group-text" v-text="$t('Lng')"/>
+      <input class="form-control form-control-sm" type="text" v-model="val.lng">
+    </div>
+
+    <GMapMap :zoom="zoom" :center="{lat:val.lat, lng:val.lng}"
+             class="j-location-field-map">
+      <GMapMarker v-if="val.lat && val.lng" :position="{lat:val.lat, lng:val.lng}" draggable @dragend="onMove"/>
+    </GMapMap>
   </div>
 </template>
 
@@ -15,13 +32,8 @@ export default {
   extends: JasmineBaseField,
   data() {
     return {
-      opts: Object.assign({
-        type: 'text',
-      }, this.options),
-
-      latLng: null,
-      map: null,
-      marker: null,
+      opts: Object.assign({}, this.options),
+      zoom: 10,
     };
   },
 
@@ -38,61 +50,25 @@ export default {
       }
     },
 
-    createMarker(location) {
-      let vm = this;
-      if (vm.marker) {
-        vm.marker.setMap(null);
-      }
-
-      //Create a marker and placed it on the map.
-      vm.marker = new google.maps.Marker({
-        position: location,
-        map: vm.map,
-      });
-
-      vm.map.panTo(location);
-
-      // Add location to hidden fields
-      vm.val.lat = location.lat();
-      vm.val.lng = location.lng();
-    },
-
     initMap() {
-      let vm = this;
-      vm.latLng = new google.maps.LatLng(vm.val.lat, vm.val.lng);
-      vm.map = new google.maps.Map(vm.$refs.mapElem, {
-        center: vm.latLng,
-        zoom: 2,
-      });
-
-      let markerLatLng = new google.maps.LatLng(vm.val.lat, vm.val.lng);
-      vm.marker = new google.maps.Marker({
-        position: markerLatLng,
-        map: vm.map,
-      });
-
-      vm.map.panTo(markerLatLng);
-      vm.map.setZoom(10);
-
-      let autocomplete = new google.maps.places.Autocomplete(
-          /** @type {!HTMLInputElement} */
-          (vm.$refs.addressElem),
-          {types: ['geocode']},
-      );
-
-      autocomplete.addListener('place_changed', function () {
-        let place = autocomplete.getPlace();
-        vm.val.address = place.formatted_address;
-        vm.createMarker(place.geometry.location);
-      });
-
-      google.maps.event.addListener(vm.map, 'click', function (e) {
-        //Determine the location where the user has clicked.
-        let location = e.latLng;
-        vm.createMarker(location);
-      });
+      window.vueGoogleMapsInit();
     },
 
+    setLocation(loc) {
+      this.val.lat = loc.geometry.location.lat();
+      this.val.lng = loc.geometry.location.lng();
+      this.val.address = loc.formatted_address;
+
+      this.zoom = 16;
+    },
+
+    onMove(evt) {
+      this.val.lat = evt.latLng.lat();
+      this.val.lng = evt.latLng.lng();
+
+      this.val.address = '';
+      this.$refs.gmapAutocomplete.$refs.input.value = '';
+    },
   },
 
   mounted() {

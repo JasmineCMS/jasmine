@@ -76,9 +76,11 @@
           </template>
         </nav-item-dropdown>
         <div class="mx-3"/>
-        <button @click="$refs.form.reportValidity() && form.post('')"
-                type="button" class="btn btn-sm px-5" :disabled="form.processing"
-                :class="{'btn-primary': form.isDirty, 'btn-secondary': !form.isDirty}">
+        <button
+            v-if="can.indexOf('a') > -1 || can.indexOf('e') > -1"
+            @click="$refs.form.reportValidity() && form.post('')"
+            type="button" class="btn btn-sm px-5" :disabled="form.processing"
+            :class="{'btn-primary': form.isDirty, 'btn-secondary': !form.isDirty}">
           <span v-if="form.processing" role="status" aria-hidden="true" class="spinner-border spinner-border-sm"/>
           {{ $t('Save') }}
         </button>
@@ -204,6 +206,7 @@ export default {
   name: 'BreadEdit',
   components: {NavItemDropdown, CollapseTransition},
   props: {
+    can: {type: Array, required: true},
     b: {type: Object, required: true},
     entId: {type: [String, Number]},
     ent: {type: Object, required: true},
@@ -290,7 +293,7 @@ export default {
       if (!rev) return '';
 
       return ' ' + this.$t('Revision') + ' ' + rev.created_at_h + ' ' + this.$t('By') + ' ' + rev.user.name;
-    }
+    },
   },
 
   provide() {

@@ -14,8 +14,6 @@ class {{ class }} extends Model implements BreadableInterface
     use HasFactory;
     use Breadable, Translatable;
 
-    protected function asJson($value) { return json_encode($value, JSON_UNESCAPED_UNICODE); }
-
     protected $fillable = [
         // TODO
     ];

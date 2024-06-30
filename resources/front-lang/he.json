@@ -36,8 +36,12 @@
   "You Cannot delete yourself": "אין באפשרותך למחוק את עצמך",
   "Remove": "הסר",
   "Add": "הוסף",
+  "View": "צפייה",
   "Choose file": "קובץ",
   "Back to current": "חזרה לגרסה נוכחית",
   "By": "ע\"י",
-  "Revisions": "היסטוריה"
+  "Revisions": "היסטוריה",
+  "View on site": "צפייה באתר",
+  "Import": "ייבוא",
+  "Export": "ייצוא"
 }
