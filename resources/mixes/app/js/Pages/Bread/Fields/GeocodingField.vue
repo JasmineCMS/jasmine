@@ -17,7 +17,7 @@
       <input class="form-control form-control-sm" type="text" v-model="val.lng">
     </div>
 
-    <GMapMap :zoom="zoom" :center="{lat:val.lat, lng:val.lng}"
+    <GMapMap :zoom="zoom" :center="{lat:val.lat || 0, lng:val.lng || 0}"
              class="j-location-field-map">
       <GMapMarker v-if="val.lat && val.lng" :position="{lat:val.lat, lng:val.lng}" draggable @dragend="onMove"/>
     </GMapMap>
