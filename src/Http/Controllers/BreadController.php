@@ -145,8 +145,12 @@ class BreadController extends Controller
             is_array($col['filtering'] ?? null)
             && count($col['filtering']) === 0
         ) {
-            $columns[$k]['filtering'] = $q->getModel()->newQuery()
-                ->select($col['data'])->distinct()->pluck($col['data'])->toArray();
+            if (str_contains($col['data'], '.')) {
+                $columns[$k]['filtering'] = []; // TODO?
+            } else {
+                $columns[$k]['filtering'] = $q->getModel()->newQuery()
+                    ->select($col['data'])->distinct()->pluck($col['data'])->toArray();
+            }
         }
 
 
@@ -183,9 +187,18 @@ class BreadController extends Controller
                         if (!in_array($ff, $filterable)) continue;
                         // TODO handle relationships
 
-                        $col = array_values(array_filter($columns, fn($x) => $x['data'] === $ff))[0];
-                        if ($col['filtering'] === 'date') $q->whereBetween($ff, explode(',', $fv));
-                        else $q->whereIn($ff, explode(',', $fv));
+                        if (str_contains($ff, '.')) {
+                            $col = array_values(array_filter($columns, fn($x) => $x['data'] === $ff))[0];
+                            [$relation, $relation_col] = explode('.', $col['data']);
+                            $q->whereHas($relation, function (Builder $fq) use ($col, $fv, $relation, $relation_col) {
+                                if ($col['filtering'] === 'date') $fq->whereBetween($relation_col, explode(',', $fv));
+                                else $fq->whereIn($relation_col, explode(',', $fv));
+                            });
+                        } else {
+                            $col = array_values(array_filter($columns, fn($x) => $x['data'] === $ff))[0];
+                            if ($col['filtering'] === 'date') $q->whereBetween($ff, explode(',', $fv));
+                            else $q->whereIn($ff, explode(',', $fv));
+                        }
                     }
                 }))
                 ->when(request('q'), function (Builder $q, $v) use ($columns, $relations) {
