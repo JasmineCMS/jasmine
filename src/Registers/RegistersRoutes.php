@@ -27,4 +27,6 @@ trait RegistersRoutes
     }
     
     public function routes(): void { require __DIR__ . '/../../routes.php'; }
+
+    public function api(): void { require __DIR__ . '/../../api.php'; }
 }
