@@ -8,4 +8,23 @@ Route::name('jasmine.api.')->prefix('api')
     ->middleware([JasmineApi::class])
     ->controller(ApiCtl::class)->group(function () {
         Route::get('info', 'info')->name('info');
+
+        Route::get('/bread', 'breadList')->name('bread.list');
+        Route::prefix('/bread/{breadableName}')->name('bread.')->group(function () {
+            Route::get('', 'breadIndex')->name('index');
+
+            Route::put('/reorder', 'breadReorder')->name('reorder');
+
+            Route::get('/create', 'breadEdit')->name('create');
+            Route::post('/create', 'breadSave');
+
+            Route::get('/{breadableId}/edit', 'breadEdit')->name('edit');
+            Route::post('/{breadableId}/edit', 'breadSave');
+
+            Route::delete('/{breadableId}', 'breadDelete')->name('delete');
+        });
+
+        Route::get('/page', 'pageList')->name('page.list');
+        Route::get('/page/{jasminePage}', 'pageEdit')->name('page.edit');
+        Route::post('/page/{jasminePage}', 'pageSave');
     });

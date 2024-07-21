@@ -12,6 +12,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Jasmine\Jasmine\Bread\Breadable;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\FieldsManifest;
@@ -146,11 +147,17 @@ class JasmineUser extends Authenticatable implements BreadableInterface
 
     public static function fieldsManifest(): FieldsManifest
     {
+        /** @var JasmineUser $user */
+        $user = func_get_arg(0);
+        $unique = Rule::unique('jasmine_users', 'email');
+        if ($user->exists) $unique->ignore($user->id);
+
         return new FieldsManifest([
             'col-md-4'        => [
                 'Details' => [
                     (new InputField('name'))->setValidation(['required']),
-                    (new InputField('email'))->setOptions(['type' => 'email'])->setValidation(['required']),
+                    (new InputField('email'))->setOptions(['type' => 'email'])
+                        ->setValidation(['required', $unique]),
                 ],
             ],
             'col-md-8 xperms' => [
@@ -183,7 +190,7 @@ class JasmineUser extends Authenticatable implements BreadableInterface
 
         // normalize permissions
         if ($u->id === 1) $data['admin'] = true;
-        $data['permissions'] = array_keys(array_filter(Arr::dot($data['permissions']), fn($p) => $p));
+        $data['permissions'] = array_keys(array_filter(Arr::dot($data['permissions'] ?? []), fn($p) => $p));
 
         return $data;
     }

@@ -3,10 +3,18 @@
 namespace Jasmine\Jasmine\Http\Controllers;
 
 use Composer\InstalledVersions;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Process;
+use Inertia\Response as InertiaResponse;
+use Inertia\Support\Header as InertiaHeader;
+use Jasmine\Jasmine\Bread\Fields\FieldsManifest;
+use Jasmine\Jasmine\Facades\Jasmine;
+use Jasmine\Jasmine\Models\JasminePage;
 
 class ApiController extends Controller
 {
@@ -42,5 +50,88 @@ class ApiController extends Controller
                 ]
             ),
         ];
+    }
+
+
+    private function proxyInertia(string $controller, string $action)
+    {
+        request()->headers->set(InertiaHeader::INERTIA, true);
+
+        $res = app()->make($controller)->{$action}();
+
+        if ($res instanceof InertiaResponse) $res = $res->toResponse(request());
+
+        if ($res instanceof JsonResponse) {
+            $data = $res->getOriginalContent()['props'];
+            return $data;
+        }
+
+        if ($res instanceof RedirectResponse) {
+            $req = Request::create($res->getTargetUrl());
+            /** @var Router $router */
+            $router = app('router');
+            $route = $router->getRoutes()->match($req);
+
+            if (!str_starts_with($route->getName(), 'jasmine.')) abort(204);
+
+            $newUrl = route(
+                preg_replace('/^jasmine\./', 'jasmine.api.', $route->getName()),
+                $route->parameters()
+            );
+
+            $res->setTargetUrl($newUrl);
+        }
+
+        return $res;
+    }
+
+    public function breadList()
+    {
+        return array_keys(Jasmine::getBreadables());
+    }
+
+    public function breadIndex()
+    {
+        return $this->proxyInertia(BreadController::class, 'index');
+    }
+
+    public function breadEdit()
+    {
+        return $this->proxyInertia(BreadController::class, 'edit');
+    }
+
+    public function breadReorder()
+    {
+        return $this->proxyInertia(BreadController::class, 'reorder');
+    }
+
+    public function breadSave()
+    {
+        return $this->proxyInertia(BreadController::class, 'save');
+    }
+
+    public function breadDelete()
+    {
+        return $this->proxyInertia(BreadController::class, 'delete');
+    }
+
+
+    public function pageList()
+    {
+        $tmp = new class extends JasminePage {
+            public static function fieldsManifest(): FieldsManifest { return new FieldsManifest([]); }
+        };
+
+        return $tmp::pluck('url');
+    }
+
+    public function pageEdit()
+    {
+        return $this->proxyInertia(PageController::class, 'edit');
+    }
+
+    public function pageSave()
+    {
+        return $this->proxyInertia(PageController::class, 'save');
     }
 }
