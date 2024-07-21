@@ -8,8 +8,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Models\JasmineUser;
+use Jasmine\Jasmine\Models\JasmineUserApiToken;
 use PragmaRX\Google2FA\Google2FA;
 use Tightenco\Ziggy\Ziggy;
 
@@ -34,10 +36,14 @@ class AppController extends Controller
             $info['php'] = phpversion();
             $info['laravel'] = app()->version();
             $info['jasmine'] = InstalledVersions::getVersion('jasminecms/jasmine');
-            $info['db'] =
-                DB::getConfig('driver') === 'sqlite'
-                    ? 'sqlite ' . DB::select('SELECT SQLITE_VERSION() AS v')[0]?->v ?? 'N\A'
-                    : DB::select('SELECT VERSION() AS v')[0]?->v ?? 'N\A';
+            $info['db'] = match (DB::getConfig('driver')) {
+                'sqlite' => 'sqlite ' . DB::select('SELECT SQLITE_VERSION() AS v')[0]?->v ?? 'N\A',
+                'mariadb',
+                'mysql',
+                'pgsql'  => DB::select('SELECT VERSION() AS v')[0]?->v ?? 'N\A',
+                'sqlsrv' => DB::select('SELECT @@version AS v')[0]?->v ?? 'N\A',
+                default  => DB::getConfig('driver')
+            };
         }
 
         return [
@@ -70,22 +76,23 @@ class AppController extends Controller
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
 
         return inertia('Profile', [
-            'name'  => $user->name,
-            'email' => $user->email,
-            'otp'   => [
+            'name'   => $user->name,
+            'email'  => $user->email,
+            'otp'    => [
                 'enabled' => !!$user->otp_secret,
                 ...session('otp_profile', [
                     'secret' => null,
                     'url'    => null,
                 ]),
             ],
+            'tokens' => $user->apiTokens->map(fn(JasmineUserApiToken $t) => $t->makeVisible(['token'])),
         ]);
     }
 
     public function saveProfile()
     {
         $data = \request()->validate([
-            '_sec' => ['required', 'in:details,password,otp'],
+            '_sec' => ['required', 'in:details,password,otp,createToken,updateToken,deleteToken'],
         ]);
 
         return $this->{'saveProfile' . ucfirst($data['_sec'])}();
@@ -220,5 +227,51 @@ class AppController extends Controller
         }
 
         return null;
+    }
+
+    private function saveProfileCreateToken()
+    {
+        $data = \request()->validate([
+            'name' => ['required', 'string', 'min:2', 'max:255'],
+        ]);
+
+        /** @var JasmineUser $user */
+        $user = Auth::guard(config('jasmine.auth.guard'))->user();
+
+        $user->apiTokens()->create([
+            ...$data,
+            'token' => Str::random(33),
+        ]);
+
+        return redirect()->back();
+    }
+
+    private function saveProfileUpdateToken()
+    {
+        $data = \request()->validate([
+            'id'   => ['required', 'integer', 'min:1', 'exists:jasmine_user_api_tokens,id'],
+            'name' => ['required', 'string', 'min:2', 'max:255'],
+        ]);
+
+        /** @var JasmineUser $user */
+        $user = Auth::guard(config('jasmine.auth.guard'))->user();
+
+        $user->apiTokens()->find($data['id'])->update(['name' => $data['name']]);
+
+        return redirect()->back();
+    }
+
+    private function saveProfileDeleteToken()
+    {
+        $data = \request()->validate([
+            'id' => ['required', 'integer', 'min:1', 'exists:jasmine_user_api_tokens,id'],
+        ]);
+
+        /** @var JasmineUser $user */
+        $user = Auth::guard(config('jasmine.auth.guard'))->user();
+
+        $user->apiTokens()->find($data['id'])->delete();
+
+        return redirect()->back();
     }
 }

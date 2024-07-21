@@ -25,7 +25,7 @@
             </form>
           </div>
         </div>
-        <div class="card">
+        <div class="card mb-4">
           <div class="card-body">
             <h5 class="mb-2" v-text="$t('Change password')"/>
             <form @submit.prevent="password_form.post('')">
@@ -56,9 +56,7 @@
             </form>
           </div>
         </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card">
+        <div class="card mb-4">
           <div class="card-body">
             <h5 class="mb-2" v-text="$t('Two factor authentication')"/>
             <form
@@ -102,12 +100,84 @@
           </div>
         </div>
       </div>
+      <div class="col-md-9">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="mb-2" v-text="$t('API Tokens')"/>
+
+            <div class="row">
+              <div class="col-md-3">
+                <p class="form-label" v-text="$t('Name')"/>
+              </div>
+              <div class="col-md-5">
+                <p class="form-label" v-text="$t('Token')"/>
+              </div>
+            </div>
+            <form
+                v-for="t in tokens" :key="t.id" @submit.prevent="updateToken($event, t)"
+                class="row mb-3"
+            >
+              <div class="col-md-2">
+                <label :for="'token_'+t.id+'_name'" class="sr-only" v-text="$t('Name')"/>
+                <input type="text" :id="'token_'+t.id+'_name'" name="name" :value="t.name"
+                       class="form-control form-control-sm">
+              </div>
+              <div class="col-md-4">
+                <label :for="'token_'+t.id+'_token'" class="sr-only" v-text="$t('Token')"/>
+                <input type="text" readonly :id="'token_'+t.id+'_token'" name="token" :value="t.token"
+                       class="form-control form-control-sm font-monospace" style="background: #e9ecef">
+              </div>
+              <div class="col-md-6">
+                <div class="d-flex">
+                  <button type="submit" class="btn btn-primary btn-sm rounded-1" v-text="$t('Update')"/>
+                  <div class="mx-1"/>
+                  <button type="button" @click="deleteToken(t)" v-text="$t('Delete')"
+                          class="btn btn-danger btn-sm rounded-1"/>
+                  <div class="mx-2"/>
+                  <div class="d-flex">
+                    <small><strong>Created</strong>: {{ formatDate(t.created_at) }}</small>
+                    <div class="mx-2"/>
+                    <small><strong>Used</strong>: {{ formatDate(t.last_used_at) || 'Never' }}</small>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            <form
+                @submit.prevent="create_token_form.post('',{onSuccess:() => create_token_form.name = ''})"
+                class="mt-5 row">
+              <h6 v-text="$t('Create new token')"/>
+              <div class="col-md-3">
+                <label for="create_token_name" class="form-label" v-text="$t('Name')"/>
+                <input type="text" class="form-control form-control-sm"
+                       :class="{'is-invalid': create_token_form.errors.name}"
+                       id="create_token_name" aria-describedby="createTokenNameHelp" v-model="create_token_form.name">
+                <div
+                    v-if="create_token_form.errors.name"
+                    v-text="create_token_form.errors.name"
+                    id="createTokenNameHelp" class="invalid-feedback"
+                />
+              </div>
+              <div class="col-md-6">
+                <label for="create_token_token" class="form-label" v-text="$t('Token')"/>
+                <input type="text" disabled class="form-control form-control-sm" id="create_token_token">
+              </div>
+              <div class="col-md-2">
+                <div class="form-label">&nbsp;</div>
+                <button v-if="create_token_form.isDirty" type="submit"
+                        class="btn btn-primary btn-sm rounded-1" v-text="$t('Create')"/>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </Layout>
 </template>
 
 <script>
 import VueQrcode from '@chenfengyuan/vue-qrcode';
+import dayjs from 'dayjs';
 
 export default {
   name: 'Profile',
@@ -116,6 +186,7 @@ export default {
     name: {type: String, required: true},
     email: {type: String, required: true},
     otp: {type: Object, required: true},
+    tokens: {type: Array, required: true},
   },
 
   data() {
@@ -137,12 +208,41 @@ export default {
         enabled: this.otp.enabled,
         code: null,
       }),
+
+      create_token_form: this.$inertia.form({
+        _sec: 'createToken',
+        name: null,
+        abilities: ['*'], // TODO
+      }),
     };
   },
 
   methods: {
-    otpSub(v) {
-      debugger;
+    updateToken(evt, token) {
+      this.$inertia.form({
+        _sec: 'updateToken',
+        id: token.id,
+        name: evt.target.name.value,
+        //abilities: ['*'], // TODO
+      }).post('');
+    },
+
+    deleteToken(token) {
+      Swal.fire({
+        icon: 'warning',
+        title: this.$t('Are you sure'),
+        text: this.$t('Are you sure you want to delete') + ' "' + token.name + '"',
+        showCancelButton: true,
+      }).then(({isConfirmed}) => {
+        if (isConfirmed) this.$inertia.form({
+          _sec: 'deleteToken',
+          id: token.id,
+        }).post('');
+      });
+    },
+
+    formatDate(date, format = 'DD.MM.YYYY HH:mm:ss') {
+      return date ? dayjs(date).format(format) : null;
     },
   },
 };

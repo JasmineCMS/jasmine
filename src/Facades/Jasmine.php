@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static void routes()
+ * @method static void apiRoutes()
  * @method array getAuthenticatedRouteGroups()
  * @method array getGuestRouteGroups()
  * @method static registerAuthenticatedRouteGroup(\Closure $callback, ?string $id = null)
