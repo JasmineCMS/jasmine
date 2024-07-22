@@ -24,6 +24,12 @@ class ApiController extends Controller
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
         if (!$user->jCan('api.system.info')) abort(401);
 
+        preg_match(
+            '/^(?<commit>\S+)\s+branch\s\'(?<branch>.*)\'\sof\s(?<remote>.*)$/',
+            @file_get_contents(base_path('.git/FETCH_HEAD')) ?? '',
+            $git
+        );
+
         return [
             'uname'    => php_uname(),
             'php'      => phpversion(),
@@ -37,6 +43,11 @@ class ApiController extends Controller
                 'sqlsrv' => DB::select('SELECT @@version AS v')[0]?->v ?? 'N\A',
                 default  => DB::getConfig('driver'),
             },
+            'git'      => [
+                'remote' => $git['remote'] ?? null,
+                'branch' => $git['branch'] ?? null,
+                'commit' => $git['commit'] ?? null,
+            ],
             'npm'      => Cache::remember('jasmine.info.npm', 60,
                 fn() => [
                     'package.json'      => json_decode(file_get_contents(base_path('package.json'))),
