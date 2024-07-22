@@ -39,6 +39,10 @@ Add Jasmine routes to your `routes/web.php` routes file (you may change the pref
 Route::prefix('jasmine')->group(fn() => Jasmine::routes());
 ```
 
+Add Jasmine api routes to your `routes/api.php` routes file (you may change the prefix to anything you like)
+```php
+Route::prefix('jasmine')->group(fn() => Jasmine::apiRoutes());
+```
 You can now log in to Jasmine,  
 Navigate to `/jasmine`  
 And login
