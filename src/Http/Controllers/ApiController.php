@@ -64,6 +64,20 @@ class ApiController extends Controller
     }
 
 
+    public function globals(): array
+    {
+        return [
+            'locales'           => Jasmine::getLocales(),
+            'interface_locales' => Jasmine::getInterfaceLocales(),
+        ];
+    }
+
+    public function localeStrings()
+    {
+        return Jasmine::getInterfaceLocale(\request()->route('locale'));
+    }
+
+
     private function proxyInertia(string $controller, string $action)
     {
         request()->headers->set(InertiaHeader::INERTIA, true);
@@ -94,6 +108,17 @@ class ApiController extends Controller
         }
 
         return $res;
+    }
+
+
+    public function profile()
+    {
+        return $this->proxyInertia(AppController::class, 'profile');
+    }
+
+    public function saveProfile()
+    {
+        return $this->proxyInertia(AppController::class, 'saveProfile');
     }
 
 
