@@ -85,9 +85,14 @@ class ApiController extends Controller
         return $res;
     }
 
-    public function breadList()
+
+    public function breadList(): array
     {
-        return array_keys(Jasmine::getBreadables());
+        return array_filter(
+            array_keys(Jasmine::getBreadables()),
+            fn($key) => Auth::guard(config('jasmine.auth.guard'))
+                ->user()->jCan('models.' . $key . '.browse')
+        );
     }
 
     public function breadIndex()
@@ -116,13 +121,16 @@ class ApiController extends Controller
     }
 
 
-    public function pageList()
+    public function pageList(): array
     {
         $tmp = new class extends JasminePage {
             public static function fieldsManifest(): FieldsManifest { return new FieldsManifest([]); }
         };
 
-        return $tmp::pluck('url');
+        return $tmp::pluck('url')->filter(
+            fn($slug) => Auth::guard(config('jasmine.auth.guard'))
+                ->user()->jCan('pages.' . $slug . '.read')
+        )->toArray();
     }
 
     public function pageEdit()
