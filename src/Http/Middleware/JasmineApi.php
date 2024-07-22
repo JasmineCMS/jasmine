@@ -27,7 +27,7 @@ class JasmineApi
 
         if (!$token || ($token->expires_at && $token->expires_at < now())) {
             RateLimiter::increment('jasmine.api.auth.' . $request->ip(), 60 * 5);
-            abort(401);
+            abort(429);
         }
 
         Auth::guard(config('jasmine.auth.guard'))->loginUsingId($token->jasmine_user_id);
