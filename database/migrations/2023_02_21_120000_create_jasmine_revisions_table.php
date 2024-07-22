@@ -14,8 +14,7 @@ return new class extends Migration {
     {
         Schema::create('jasmine_revisions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('jasmine_user_id')->nullable()->references('id')->on('jasmine_users')
-                ->cascadeOnUpdate()->nullOnDelete();
+            $table->foreignId('jasmine_user_id')->nullable()->constrained()->cascadeOnUpdate()->nullOnDelete();
             $table->morphs('revisionable');
             $table->string('locale', 5)->nullable();
             $table->json('contents')->nullable();

@@ -3,12 +3,16 @@
 namespace Jasmine\Jasmine\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Jasmine\Jasmine\Bread\Breadable;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\FieldsManifest;
@@ -20,33 +24,41 @@ use Jasmine\Jasmine\Notifications\ResetPassword as ResetPasswordNotification;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+
 /**
- * Jasmine\Jasmine\Models\JasmineUser
  *
- * @property int                                                        $id
- * @property string                                                     $name
- * @property string                                                     $email
- * @property boolean                                                    $admin
- * @property array                                                      $roles
- * @property array                                                      $permissions
- * @property string                                                     $password
- * @property string|null                                                $otp_secret
- * @property string|null                                                $otp_remember_token
- * @property string|null                                                $remember_token
- * @property Carbon|null                                                $created_at
- * @property Carbon|null                                                $updated_at
- * @property-read  string                                               $avatar_url
- * @property-read DatabaseNotificationCollection|DatabaseNotification[] $notifications
- * @property-read int|null                                              $notifications_count
+ *
+ * @property int                                                            $id
+ * @property string                                                         $name
+ * @property string                                                         $email
+ * @property bool                                                           $admin
+ * @property array                                                          $roles
+ * @property array                                                          $permissions
+ * @property string                                                         $password
+ * @property string|null                                                    $otp_secret
+ * @property string|null                                                    $otp_remember_token
+ * @property string|null                                                    $remember_token
+ * @property Carbon|null                                                    $created_at
+ * @property Carbon|null                                                    $updated_at
+ * @property-read Collection<int, JasmineUserApiToken>                      $apiTokens
+ * @property-read int|null                                                  $api_tokens_count
+ * @property-read mixed                                                     $avatar_url
+ * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
+ * @property-read int|null                                                  $notifications_count
  * @method static Builder|JasmineUser newModelQuery()
  * @method static Builder|JasmineUser newQuery()
  * @method static Builder|JasmineUser query()
+ * @method static Builder|JasmineUser whereAdmin($value)
  * @method static Builder|JasmineUser whereCreatedAt($value)
  * @method static Builder|JasmineUser whereEmail($value)
  * @method static Builder|JasmineUser whereId($value)
  * @method static Builder|JasmineUser whereName($value)
+ * @method static Builder|JasmineUser whereOtpRememberToken($value)
+ * @method static Builder|JasmineUser whereOtpSecret($value)
  * @method static Builder|JasmineUser wherePassword($value)
+ * @method static Builder|JasmineUser wherePermissions($value)
  * @method static Builder|JasmineUser whereRememberToken($value)
+ * @method static Builder|JasmineUser whereRoles($value)
  * @method static Builder|JasmineUser whereUpdatedAt($value)
  * @mixin \Eloquent
  */
@@ -77,15 +89,22 @@ class JasmineUser extends Authenticatable implements BreadableInterface
         'permissions' => 'array',
     ];
 
-    public function getAvatarUrlAttribute(): string
+    public function avatarUrl(): Attribute
     {
-        $uiAvatar = 'https://ui-avatars.com/api/' . urlencode($this->name ?? 'X') . '/100/EBF4FF/7F9CF5';
+        return Attribute::get(function () {
+            $uiAvatar = 'https://ui-avatars.com/api/' . urlencode($this->name ?? 'X') . '/100/EBF4FF/7F9CF5';
 
-        if (!$this->email) return $uiAvatar;
+            if (!$this->email) return $uiAvatar;
 
-        return 'https://www.gravatar.com/avatar/' . md5(strtolower($this->email))
-            . '?d=' . urlencode($uiAvatar)
-            . '&s=100';
+            return 'https://www.gravatar.com/avatar/' . md5(strtolower($this->email))
+                . '?d=' . urlencode($uiAvatar)
+                . '&s=100';
+        });
+    }
+
+    public function apiTokens(): HasMany
+    {
+        return $this->hasMany(JasmineUserApiToken::class);
     }
 
     public function sendPasswordResetNotification($token)
@@ -128,11 +147,17 @@ class JasmineUser extends Authenticatable implements BreadableInterface
 
     public static function fieldsManifest(): FieldsManifest
     {
+        /** @var JasmineUser $user */
+        $user = func_get_arg(0);
+        $unique = Rule::unique('jasmine_users', 'email');
+        if ($user->exists) $unique->ignore($user->id);
+
         return new FieldsManifest([
             'col-md-4'        => [
                 'Details' => [
                     (new InputField('name'))->setValidation(['required']),
-                    (new InputField('email'))->setOptions(['type' => 'email'])->setValidation(['required']),
+                    (new InputField('email'))->setOptions(['type' => 'email'])
+                        ->setValidation(['required', $unique]),
                 ],
             ],
             'col-md-8 xperms' => [
@@ -165,7 +190,7 @@ class JasmineUser extends Authenticatable implements BreadableInterface
 
         // normalize permissions
         if ($u->id === 1) $data['admin'] = true;
-        $data['permissions'] = array_keys(array_filter(Arr::dot($data['permissions']), fn($p) => $p));
+        $data['permissions'] = array_keys(array_filter(Arr::dot($data['permissions'] ?? []), fn($p) => $p));
 
         return $data;
     }
