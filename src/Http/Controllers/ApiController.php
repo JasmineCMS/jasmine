@@ -25,7 +25,7 @@ class ApiController extends Controller
         if (!$user->jCan('api.system.info')) abort(401);
 
         preg_match(
-            '/^(?<commit>\S+)\s+branch\s\'(?<branch>.*)\'\sof\s(?<remote>.*)$/',
+            '/^(?<commit>\S+)\s+branch\s\'(?<branch>.*)\'\sof\s(?<remote>.*)$/m',
             @file_get_contents(base_path('.git/FETCH_HEAD')) ?? '',
             $git
         );
