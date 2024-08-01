@@ -12,6 +12,8 @@ use Jasmine\Jasmine\Models\JasmineUser;
  */
 class JasmineUserFactory extends Factory
 {
+    protected $model = JasmineUser::class;
+    
     /**
      * The current password being used by the factory.
      */
