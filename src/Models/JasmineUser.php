@@ -2,7 +2,6 @@
 
 namespace Jasmine\Jasmine\Models;
 
-use Database\Factories\JasmineUserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -67,8 +66,6 @@ class JasmineUser extends Authenticatable implements BreadableInterface
 {
     use HasFactory;
     use Notifiable, Breadable;
-    
-    protected static string $factory = JasmineUserFactory::class;
     
     protected $fillable = [
         'name',

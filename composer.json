@@ -26,7 +26,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Jasmine\\Jasmine\\": "src/"
+      "Jasmine\\Jasmine\\": "src/",
+      "Jasmine\\Jasmine\\Database\\Factories\\": "database/factories/"
     },
     "files": [
       "helpers.php"
