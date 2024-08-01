@@ -2,6 +2,7 @@
 
 namespace Jasmine\Jasmine\Models;
 
+use Database\Factories\JasmineUserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -24,7 +25,6 @@ use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Notifications\ResetPassword as ResetPasswordNotification;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
 
 /**
  *
@@ -67,6 +67,8 @@ class JasmineUser extends Authenticatable implements BreadableInterface
 {
     use HasFactory;
     use Notifiable, Breadable;
+    
+    protected static string $factory = JasmineUserFactory::class;
     
     protected $fillable = [
         'name',
