@@ -4,6 +4,7 @@ namespace Jasmine\Jasmine\Bread;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Jasmine\Jasmine\ManifestFaker;
 
 /**
  * @method static array jasmineOnRetrievedForIndex(BreadableInterface|Model $model)
@@ -37,4 +38,9 @@ trait Breadable
     public static function getMenuIcon(): string { return 'bi-files'; }
     
     public function getTitle(): string { return (string)$this->getKey(); }
+    
+    public static function fake(bool $all = false, array $override = []): array
+    {
+        return ManifestFaker::fake(static::class, $all, $override);
+    }
 }
