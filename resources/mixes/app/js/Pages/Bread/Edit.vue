@@ -76,6 +76,14 @@
           </template>
         </nav-item-dropdown>
         <div class="mx-3"/>
+
+        <button
+            v-if="$globals.env !== 'production' && b.key === 'page' && (can.indexOf('a') > -1 || can.indexOf('e') > -1)"
+            type="button" @click="fake" class="btn btn-sm btn-info px-4">
+          {{ $t('Fake') }}
+        </button>
+        <div class="mx-2"/>
+
         <button
             v-if="can.indexOf('a') > -1 || can.indexOf('e') > -1"
             @click="$refs.form.reportValidity() && form.post('')"
@@ -199,8 +207,9 @@
 
 <script>
 
-import NavItemDropdown from '../../Shared/NavItemDropdown.vue';
 import CollapseTransition from '@ivanv/vue-collapse-transition/src/CollapseTransition.vue';
+import Swal from '../../inc/Swal';
+import NavItemDropdown from '../../Shared/NavItemDropdown.vue';
 
 export default {
   name: 'BreadEdit',
@@ -275,6 +284,22 @@ export default {
           .replace('T', '_')
           .replace(/:/g, '-')
           .substring(0, 19);
+    },
+
+    async fake() {
+      let {isConfirmed} = await Swal.fire({
+        icon: 'question',
+        title: this.$t('Fill Fake Data?'),
+        text: this.$t('All existing data will be lost'),
+        showCancelButton: true,
+        showConfirmButton: true,
+      });
+
+      if (!isConfirmed) return;
+
+      this.$inertia.post(this.route('jasmine.page.fake', {jasminePage: this.b.slug}), {}, {
+        preserveState: false,
+      });
     },
   },
 

@@ -10,34 +10,35 @@ use Illuminate\Support\Facades\Validator;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
 use Jasmine\Jasmine\Bread\Translatable;
 use Jasmine\Jasmine\Facades\Jasmine;
+use Jasmine\Jasmine\ManifestFaker;
 use Jasmine\Jasmine\Models\JasminePage;
 use Jasmine\Jasmine\Models\JasmineRevision;
 use Jasmine\Jasmine\Models\JasmineUser;
 
 class PageController extends Controller
 {
-
+    
     public function edit()
     {
         $slug = \request()->route('jasminePage');
         if (!$page = Jasmine::getPage($slug)) abort(404);
-
+        
         /** @var JasminePage $page */
         $page = $page::firstOrCreate(['name' => $slug], ['url' => $slug, 'content' => []]);
-
+        
         // Check permission
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
         if (!$user->jCan('pages.' . $slug . '.read')) abort(401);
-
+        
         $permissions = ['r'];
         if ($user->jCan('pages.' . $slug . '.edit')) $permissions[] = 'e';
-
+        
         $locale = app()->getLocale();
         if (in_array(Translatable::class, class_uses($page))) {
             $locale = request('_locale', Jasmine::getLocales()[0]);
             $page->setLocale($locale);
         }
-
+        
         if (request('rev')) {
             $rev = JasmineRevision::whereRevisionableType($page::class)->whereRevisionableId($page->getKey())
                 ->where('created_at', Carbon::createFromFormat('Y-m-d-H-i-s', request('rev')))
@@ -46,13 +47,14 @@ class PageController extends Controller
         } else {
             $data = static::fireEvent('retrievedForEdit', $page);
         }
-
+        
         return inertia('Bread/Edit', [
             'can'        => $permissions,
             'b'          => [
-                'key'      => 'pages',
+                'key'      => 'page',
                 'singular' => 'Page',
                 'plural'   => 'Pages',
+                'slug'     => $slug,
                 'manifest' => $page::fieldsManifest(),
                 'fields'   => $page::fieldsManifest()->getFields(),
             ],
@@ -76,20 +78,20 @@ class PageController extends Controller
                 ]),
         ]);
     }
-
+    
     public function save()
     {
         $slug = \request()->route('jasminePage');
         if (!$page = Jasmine::getPage($slug)) abort(404);
-
+        
         /** @var JasminePage $page */
         $page = $page::whereName($slug)->first();
-
+        
         // Check permission
         if (
             !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('pages.' . $slug . '.edit')
         ) abort(401);
-
+        
         $rules = [];
         foreach ($page::fieldsManifest()->getFields() as $f) {
             /** @var AbstractField $f */
@@ -100,27 +102,27 @@ class PageController extends Controller
                 $rules[$f['name']] = $f['validation'];
             }
         }
-
+        
         $data = Validator::validate(request('v', []), $rules);
-
+        
         $locale = null;
         if (in_array(Translatable::class, class_uses($page))) {
             $locale = request('_locale', Jasmine::getLocales()[0]);
             $page->setLocale($locale);
         }
-
+        
         $old = static::fireEvent('retrievedForEdit', $page);
-
+        
         $data = static::fireEvent('saving', $page, $data);
-
+        
         $page->content = $data;
         $changed = $page->isDirty();
         $page->save();
-
+        
         static::fireEvent('saved', $page);
-
+        
         if ($changed) $this->recordRevision($page, $old);
-
+        
         return redirect()->route('jasmine.page.edit', [$slug, '_locale' => $locale])->withSwal([
             'toast'             => true,
             'position'          => 'top-right',
@@ -132,7 +134,7 @@ class PageController extends Controller
             'showConfirmButton' => false,
         ]);
     }
-
+    
     private static function fireEvent(string $event, Model $m, ?array $data = null): ?array
     {
         switch ($event) {
@@ -141,7 +143,7 @@ class PageController extends Controller
                     if (method_exists($m, class_basename($trait) . 'JasmineOnRetrievedForEdit'))
                         $m::{class_basename($trait) . 'JasmineOnRetrievedForEdit'}($m);
                 }
-
+                
                 if (method_exists($m, 'jasmineOnRetrievedForEdit')) return $m::jasmineOnRetrievedForEdit($m);
                 return $m->toArray();
             case 'saving':
@@ -149,7 +151,7 @@ class PageController extends Controller
                     if (method_exists($m, class_basename($trait) . 'JasmineOnSaving'))
                         $m::{class_basename($trait) . 'JasmineOnSaving'}($m, $data);
                 }
-
+                
                 if (method_exists($m, 'jasmineOnSaving')) return $m::jasmineOnSaving($data, $m);
                 return $data;
             case 'saved':
@@ -157,33 +159,57 @@ class PageController extends Controller
                     if (method_exists($m, class_basename($trait) . 'JasmineOnSaved'))
                         $m::{class_basename($trait) . 'JasmineOnSaved'}($m);
                 }
-
+                
                 if (method_exists($m, 'jasmineOnSaved')) return $m::jasmineOnSaved($m);
                 break;
         }
-
+        
         return null;
     }
-
+    
     private function recordRevision(JasminePage $m, array $old)
     {
         $max = property_exists($m, 'jasmine_revisions')
             ? $m->jasmine_revisions
             : config('jasmine.revisions', 100);
-
+        
         if ($max === false) return;
-
+        
         if (intval($max) > 0) {
             JasmineRevision::whereRevisionableType($m::class)->whereRevisionableId($m->getKey())
                 ->latest()->take(PHP_INT_MAX)->skip($max - 1)->get()->each->delete();
         }
-
+        
         JasmineRevision::create([
             'jasmine_user_id'   => \auth(config('jasmine.auth.guard'))->id(),
             'revisionable_type' => $m::class,
             'revisionable_id'   => $m->getKey(),
             'locale'            => method_exists($m, 'getLocale') ? $m->getLocale() : null,
             'contents'          => $old,
+        ]);
+    }
+    
+    public function fake()
+    {
+        if (app()->environment('production')) abort(404);
+        
+        $slug = \request()->route('jasminePage');
+        if (!$pageClass = Jasmine::getPage($slug)) abort(404);
+        /** @var JasminePage $pageClass */
+        
+        /** @var JasminePage $page */
+        $page = $pageClass::where('url', $slug)->first();
+        $page->update(['content' => $page::fake(true)]);
+        
+        return redirect()->back()->withSwal([
+            'toast'             => true,
+            'position'          => 'top-right',
+            'timer'             => 2 * 1000,
+            'timerProgressBar'  => true,
+            'backdrop'          => null,
+            'icon'              => 'success',
+            'title'             => 'Saved!',
+            'showConfirmButton' => false,
         ]);
     }
 }

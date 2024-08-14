@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Jasmine\Jasmine\Bread\Fields\FieldsManifest;
 use Jasmine\Jasmine\Bread\Translatable;
+use Jasmine\Jasmine\ManifestFaker;
 
 /**
  * Class JasminePage
@@ -67,6 +68,11 @@ abstract class JasminePage extends Model
 
         return $page;
     }
-
+    
+    public static function fake(bool $all = false, array $override = []): array
+    {
+        return ManifestFaker::fake(static::class, $all, $override);
+    }
+    
     abstract public static function fieldsManifest(): FieldsManifest;
 }

@@ -16,15 +16,25 @@
     <div class="px-1 px-lg-4">
       <DataTable :paginator="paginator" :columns="columns" ref="dt" :searchable="searchable" @reordered="reorder">
         <template #tableActions>
-          <inertia-link
-              v-if="can.indexOf('a') > -1"
-              :href="route('jasmine.bread.create', {breadableName: b.key})"
-              class="btn text-primary d-flex align-items-center"
-              title="Create">
-            <i class="fs-3 bi bi-plus-circle-fill"></i>
-            <span class="mx-1"/>
-            {{ $t('New') }}
-          </inertia-link>
+          <div class="d-flex">
+            <button
+                v-if="$globals.env !== 'production' && (can.indexOf('a') > -1 || can.indexOf('e') > -1)"
+                type="button" @click="fake" class="btn text-info d-flex align-items-center">
+              <i class="fs-3 fas fa-tractor"></i>
+              <span class="mx-1"/>
+              {{ $t('Fake') }}
+            </button>
+            <div class="mx-2"/>
+            <inertia-link
+                v-if="can.indexOf('a') > -1"
+                :href="route('jasmine.bread.create', {breadableName: b.key})"
+                class="btn text-primary d-flex align-items-center"
+                title="Create">
+              <i class="fs-3 bi bi-plus-circle-fill"></i>
+              <span class="mx-1"/>
+              {{ $t('New') }}
+            </inertia-link>
+          </div>
         </template>
 
         <template #h_j_sort="{col, q}">
@@ -129,6 +139,23 @@ export default {
           this.route('jasmine.bread.reorder', {breadableName: this.b.key}),
           {order: new_order},
       );
+    },
+
+    async fake() {
+      let {isConfirmed, value} = await Swal.fire({
+        icon: 'question',
+        title: this.$t('How many?'),
+        showCancelButton: true,
+        showConfirmButton: true,
+        input: 'number',
+        inputValue: 1,
+      });
+
+      if (!isConfirmed) return;
+
+      this.$inertia.post(this.route('jasmine.bread.fake', {breadableName: this.b.key}), {count: value}, {
+        preserveState: false,
+      });
     },
   },
 };
