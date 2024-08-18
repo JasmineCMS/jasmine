@@ -3,8 +3,6 @@
 namespace Jasmine\Jasmine\Http\Controllers;
 
 use Composer\InstalledVersions;
-use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,18 +17,18 @@ class AppController extends Controller
 {
     public function ziggy()
     {
-        return (new Ziggy());
+        return new Ziggy;
     }
-    
+
     public function globals()
     {
         /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.guard'))->user();
-        
+
         $info = [
             'jasmine' => InstalledVersions::getVersion('jasminecms/jasmine'),
         ];
-        
+
         if ($user->admin) {
             $info['updated'] = filemtime(base_path('./composer.lock'));
             $info['php'] = phpversion();
@@ -40,28 +38,28 @@ class AppController extends Controller
                 'sqlite' => 'sqlite ' . DB::select('SELECT SQLITE_VERSION() AS v')[0]?->v ?? 'N\A',
                 'mariadb',
                 'mysql',
-                'pgsql' => DB::select('SELECT VERSION() AS v')[0]?->v ?? 'N\A',
+                'pgsql'  => DB::select('SELECT VERSION() AS v')[0]?->v ?? 'N\A',
                 'sqlsrv' => DB::select('SELECT @@version AS v')[0]?->v ?? 'N\A',
-                default => DB::getConfig('driver')
+                default  => DB::getConfig('driver')
             };
         }
-        
+
         return [
             'locales'           => Jasmine::getLocales(),
             'interface_locales' => Jasmine::getInterfaceLocales(),
             'user'              => $user->only(['name', 'email', 'avatar_url']),
             'sb_menu'           => Jasmine::getSideBarMenuItems(),
             'env'               => app()->environment(),
-            
+
             'info' => $info,
         ];
     }
-    
+
     public function localeStrings()
     {
         return Jasmine::getInterfaceLocale(app()->getLocale());
     }
-    
+
     public function dashboard()
     {
         return inertia('Dashboard', [
@@ -71,16 +69,16 @@ class AppController extends Controller
             ),
         ]);
     }
-    
+
     public function profile()
     {
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
-        
+
         return inertia('Profile', [
             'name'   => $user->name,
             'email'  => $user->email,
             'otp'    => [
-                'enabled' => !!$user->otp_secret,
+                'enabled' => (bool)$user->otp_secret,
                 ...session('otp_profile', [
                     'secret' => null,
                     'url'    => null,
@@ -89,28 +87,28 @@ class AppController extends Controller
             'tokens' => $user->apiTokens->map(fn(JasmineUserApiToken $t) => $t->makeVisible(['token'])),
         ]);
     }
-    
+
     public function saveProfile()
     {
         $data = \request()->validate([
             '_sec' => ['required', 'in:details,password,otp,createToken,updateToken,deleteToken'],
         ]);
-        
+
         return $this->{'saveProfile' . ucfirst($data['_sec'])}();
     }
-    
+
     private function saveProfileDetails()
     {
         $data = \request()->validate([
             'name' => ['required', 'string', 'min:2', 'max:255'],
         ]);
-        
+
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
-        
+
         $user->name = $data['name'];
-        
+
         $user->save();
-        
+
         return redirect()->back()->withSwal([
             'toast'             => true,
             'position'          => 'top-right',
@@ -122,19 +120,19 @@ class AppController extends Controller
             'showConfirmButton' => false,
         ]);
     }
-    
+
     private function saveProfilePassword()
     {
         $data = \request()->validate([
             'password'     => ['required', 'string', 'current_password:' . config('jasmine.auth.guard')],
             'new_password' => ['required', 'nullable', 'confirmed', 'string', 'min:10'],
         ]);
-        
+
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
-        
+
         $user->password = bcrypt($data['new_password']);
         $user->save();
-        
+
         return redirect()->back()->withSwal([
             'toast'             => true,
             'position'          => 'top-right',
@@ -146,18 +144,18 @@ class AppController extends Controller
             'showConfirmButton' => false,
         ]);
     }
-    
+
     private function saveProfileOtp()
     {
         $data = \request()->validate([
             'password' => ['required', 'string', 'current_password:' . config('jasmine.auth.guard')],
             'enabled'  => ['required', 'boolean'],
         ]);
-        
+
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
-        
-        $google2fa = new Google2FA();
-        
+
+        $google2fa = new Google2FA;
+
         // Setup, create secret
         if (!$user->otp_secret && $data['enabled'] && !\request('secret')) {
             $secret = $google2fa->generateSecretKey();
@@ -168,10 +166,10 @@ class AppController extends Controller
                     $user->email, $secret,
                 ),
             ]);
-            
+
             return redirect()->back();
         }
-        
+
         // Setup, verify secret
         if (!$user->otp_secret && $data['enabled'] && \request('secret')) {
             session()->flash('otp_profile', [
@@ -181,18 +179,18 @@ class AppController extends Controller
                     $user->email, \request('secret'),
                 ),
             ]);
-            
+
             \request()->validate(['code' => [
                 'required',
                 'digits:6',
                 fn($a, $v, $f) => !$google2fa->verifyKey(\request('secret'), $v) && $f('The ' . $a . ' is invalid.'),
             ]]);
-            
+
             $user->otp_secret = \request('secret');
             $user->save();
-            
+
             session(['jasmine.otp_verified' => true]);
-            
+
             return redirect()->back()->withSwal([
                 'toast'             => true,
                 'position'          => 'top-right',
@@ -204,7 +202,7 @@ class AppController extends Controller
                 'showConfirmButton' => false,
             ]);
         }
-        
+
         // Show QR
         if ($user->otp_secret && $data['enabled']) {
             $secret = $user->otp_secret;
@@ -215,10 +213,10 @@ class AppController extends Controller
                     $user->email, $secret,
                 ),
             ]);
-            
+
             return redirect()->back();
         }
-        
+
         // opt-out otp
         if ($user->otp_secret && !$data['enabled']) {
             $user->otp_secret = null;
@@ -226,53 +224,52 @@ class AppController extends Controller
             $user->save();
             session(['jasmine.otp_verified' => false]);
         }
-        
-        return null;
+
     }
-    
+
     private function saveProfileCreateToken()
     {
         $data = \request()->validate([
             'name' => ['required', 'string', 'min:2', 'max:255'],
         ]);
-        
+
         /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
-        
+
         $user->apiTokens()->create([
             ...$data,
             'token' => Str::random(33),
         ]);
-        
+
         return redirect()->back();
     }
-    
+
     private function saveProfileUpdateToken()
     {
         $data = \request()->validate([
             'id'   => ['required', 'integer', 'min:1', 'exists:jasmine_user_api_tokens,id'],
             'name' => ['required', 'string', 'min:2', 'max:255'],
         ]);
-        
+
         /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
-        
+
         $user->apiTokens()->find($data['id'])->update(['name' => $data['name']]);
-        
+
         return redirect()->back();
     }
-    
+
     private function saveProfileDeleteToken()
     {
         $data = \request()->validate([
             'id' => ['required', 'integer', 'min:1', 'exists:jasmine_user_api_tokens,id'],
         ]);
-        
+
         /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
-        
+
         $user->apiTokens()->find($data['id'])->delete();
-        
+
         return redirect()->back();
     }
 }

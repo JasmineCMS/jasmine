@@ -2,9 +2,9 @@
 
 namespace Jasmine\Jasmine\Http\Controllers\Auth;
 
+use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 use Illuminate\Support\Facades\Password;
 use Jasmine\Jasmine\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 
 class ForgotPasswordController extends Controller
 {
@@ -21,7 +21,13 @@ class ForgotPasswordController extends Controller
 
     use SendsPasswordResetEmails;
 
-    public function broker() { return Password::broker(config('jasmine.auth.broker')); }
+    public function broker()
+    {
+        return Password::broker(config('jasmine.auth.broker'));
+    }
 
-    public function showLinkRequestForm() { return view('jasmine::auth.email'); }
+    public function showLinkRequestForm()
+    {
+        return view('jasmine::auth.email');
+    }
 }

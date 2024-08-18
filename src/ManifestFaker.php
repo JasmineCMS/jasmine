@@ -88,7 +88,7 @@ class ManifestFaker
 
             if (!$this->all && !in_array('required', $field['validation']) && $this->faker->boolean) {
                 continue;
-            } else if (method_exists(self::class, lcfirst($field['type']))) {
+            } elseif (method_exists(self::class, lcfirst($field['type']))) {
                 if (($field['repeats'] ?? 1) > 1) {
                     $data[$field['name']] = [];
                     $fill = $this->faker->numberBetween(2, $field['repeats']);

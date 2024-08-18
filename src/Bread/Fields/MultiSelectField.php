@@ -1,13 +1,10 @@
 <?php
 
-
 namespace Jasmine\Jasmine\Bread\Fields;
-
 
 class MultiSelectField extends AbstractField
 {
     protected string $component = 'multi-select-field';
-
 
     public function toArray(): array
     {

@@ -3,7 +3,6 @@
 namespace Jasmine\Jasmine\Registers;
 
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Exceptions\MustImplementBreadableInterface;
 
@@ -11,7 +10,10 @@ trait RegistersBreadables
 {
     private array $breadables = [];
 
-    public function getBreadables(): array { return $this->breadables; }
+    public function getBreadables(): array
+    {
+        return $this->breadables;
+    }
 
     /**
      * Register a breadable model

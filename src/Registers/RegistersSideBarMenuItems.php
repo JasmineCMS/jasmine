@@ -3,7 +3,6 @@
 namespace Jasmine\Jasmine\Registers;
 
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Route;
 
 trait RegistersSideBarMenuItems
 {
@@ -16,7 +15,6 @@ trait RegistersSideBarMenuItems
         $this->sideBarMenuItems[$id] = [$priority, $item];
     }
 
-
     public function registerSideBarSubMenuItem(string $parent, string $id, \Closure $item, ?int $priority = 50): void
     {
         if (!isset($this->sideBarMenuItems[$parent])) {
@@ -25,7 +23,6 @@ trait RegistersSideBarMenuItems
 
         $this->sideBarMenuItems[$parent]['children'][$id] = [$priority, $item];
     }
-
 
     public function getSideBarMenuItems(): array
     {
@@ -37,21 +34,21 @@ trait RegistersSideBarMenuItems
             if (isset($item['children'])) {
                 $childrenList = Arr::sort($item['children'], fn($c) => $c[0]);
                 $items[$id] = $item[1]() + [
-                        'title'  => $id,
-                        'icon'   => '',
-                        'class'  => '',
-                        'opened' => false,
-                        'hidden' => false,
-                    ];
+                    'title'  => $id,
+                    'icon'   => '',
+                    'class'  => '',
+                    'opened' => false,
+                    'hidden' => false,
+                ];
                 $childrenItems = [];
                 foreach ($childrenList as $cid => $c) {
                     $childrenItems[$cid] = $c[1]() + [
-                            'title'  => $cid,
-                            'class'  => '',
-                            'active' => false,
-                            'icon'   => '',
-                            'hidden' => false,
-                        ];
+                        'title'  => $cid,
+                        'class'  => '',
+                        'active' => false,
+                        'icon'   => '',
+                        'hidden' => false,
+                    ];
 
                     $childrenItems[$cid]['is-route'] ??= null;
                     if ($childrenItems[$cid]['is-route'] instanceof \Closure) $childrenItems[$cid]['is-route'] = null;
@@ -60,13 +57,13 @@ trait RegistersSideBarMenuItems
                 $items[$id]['children'] = $childrenItems;
             } else {
                 $items[$id] = $item[1]() + [
-                        'title'  => $id,
-                        'href'   => '#',
-                        'target' => '_self',
-                        'icon'   => '',
-                        'class'  => '',
-                        'hidden' => false,
-                    ];
+                    'title'  => $id,
+                    'href'   => '#',
+                    'target' => '_self',
+                    'icon'   => '',
+                    'class'  => '',
+                    'hidden' => false,
+                ];
 
                 $items[$id]['is-route'] ??= null;
                 if ($items[$id]['is-route'] instanceof \Closure) $items[$id]['is-route'] = null;

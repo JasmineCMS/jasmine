@@ -9,7 +9,6 @@ use Spatie\Translatable\HasTranslations;
  * Trait Translatable
  *
  * @property array $translatable
- * @package Jasmine\Jasmine\Bread
  */
 trait Translatable
 {
@@ -20,10 +19,14 @@ trait Translatable
     public function setLocale($locale): self
     {
         $this->_locale = $locale;
+
         return $this;
     }
 
-    public function getLocale(): string { return $this->_locale ?? config('app.locale', 'en'); }
+    public function getLocale(): string
+    {
+        return $this->_locale ?? config('app.locale', 'en');
+    }
 
     /**
      * Convert the model instance to an array.
@@ -53,6 +56,7 @@ trait Translatable
                 array_merge(Json::decode($this->attributes[$key] ?? '{}', true), [
                     $this->getLocale() => $value,
                 ]));
+
             return $this;
         } else {
             // If the attribute is translatable and not already translated, set a

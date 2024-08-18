@@ -15,14 +15,14 @@ use Jasmine\Jasmine\Registers\RegistersSideBarMenuItems;
 
 class Jasmine
 {
-    use RegistersRoutes,
-        RegistersLocales,
-        RegistersInterfaceLocales,
-        RegistersPermissions,
-        RegistersBreadables,
-        RegistersPages,
-        RegistersSideBarMenuItems,
+    use RegistersBreadables,
         RegistersCustomAssets,
         RegistersDashboardCards,
-        RegistersOauth2Sso;
+        RegistersInterfaceLocales,
+        RegistersLocales,
+        RegistersOauth2Sso,
+        RegistersPages,
+        RegistersPermissions,
+        RegistersRoutes,
+        RegistersSideBarMenuItems;
 }

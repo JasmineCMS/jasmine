@@ -4,18 +4,16 @@ namespace Jasmine\Jasmine;
 
 if (!function_exists('array2csv')) {
     /**
-     * @param        $data
      * @param string $delimiter
      * @param string $enclosure
      * @param string $escape_char
-     *
      * @return false|string
      */
-    function array2csv($data, $delimiter = ',', $enclosure = '"', $escape_char = "\\")
+    function array2csv($data, $delimiter = ',', $enclosure = '"', $escape_char = '\\')
     {
         $f = fopen('php://memory', 'r+');
 
-        if (count($data) < 1) return null;
+        if (count($data) < 1) return;
 
         if (\Arr::isAssoc($data[0])) fputcsv($f, array_keys($data[0]), $delimiter, $enclosure, $escape_char);
 
@@ -29,14 +27,12 @@ if (!function_exists('array2csv')) {
 
 if (!function_exists('csv2array')) {
     /**
-     * @param        $path
      * @param string $delimiter
      * @param string $enclosure
      * @param string $escape_char
-     *
-     * @return array|boolean
+     * @return array|bool
      */
-    function csv2array($path, $delimiter = ',', $enclosure = '"', $escape_char = "\\")
+    function csv2array($path, $delimiter = ',', $enclosure = '"', $escape_char = '\\')
     {
         if (!file_exists($path) || !is_readable($path)) return false;
 

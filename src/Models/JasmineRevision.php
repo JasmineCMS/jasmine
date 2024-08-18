@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
-
 /**
  * Jasmine\Jasmine\Models\JasmineRevision
  *
@@ -20,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null           $updated_at
  * @property-read Model|\Eloquent  $revisionable
  * @property-read JasmineUser|null $user
+ *
  * @method static Builder|JasmineRevision newModelQuery()
  * @method static Builder|JasmineRevision newQuery()
  * @method static Builder|JasmineRevision query()
@@ -31,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @method static Builder|JasmineRevision whereRevisionableId($value)
  * @method static Builder|JasmineRevision whereRevisionableType($value)
  * @method static Builder|JasmineRevision whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class JasmineRevision extends Model
@@ -45,7 +46,13 @@ class JasmineRevision extends Model
 
     protected $casts = ['contents' => 'object'];
 
-    public function user() { return $this->belongsTo(JasmineUser::class, 'jasmine_user_id'); }
+    public function user()
+    {
+        return $this->belongsTo(JasmineUser::class, 'jasmine_user_id');
+    }
 
-    public function revisionable() { return $this->morphTo(); }
+    public function revisionable()
+    {
+        return $this->morphTo();
+    }
 }

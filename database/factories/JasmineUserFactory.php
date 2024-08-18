@@ -13,12 +13,10 @@ use Jasmine\Jasmine\Models\JasmineUser;
 class JasmineUserFactory extends Factory
 {
     protected $model = JasmineUser::class;
-    
-    /**
-     * The current password being used by the factory.
-     */
+
+    /** The current password being used by the factory. */
     protected static ?string $password;
-    
+
     /**
      * Define the model's default state.
      *
@@ -33,7 +31,7 @@ class JasmineUserFactory extends Factory
             //'remember_token'    => Str::random(10),
         ];
     }
-    
+
     public function verified(): static
     {
         return $this->state(fn(array $attributes) => [

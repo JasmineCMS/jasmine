@@ -19,10 +19,13 @@ use Jasmine\Jasmine\ManifestFaker;
  * @property array       $content
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ *
  * @method static Builder|JasmineUser newModelQuery()
  * @method static Builder|JasmineUser newQuery()
  * @method static Builder|JasmineUser query()
+ *
  * @mixin \Eloquent
+ *
  * @method string jasmineGetPublicUrl()
  */
 abstract class JasminePage extends Model
@@ -53,11 +56,9 @@ abstract class JasminePage extends Model
     }
 
     /**
-     * @param string|null $slug
-     *
      * @return JasminePage|static
      */
-    public static function jLoad(string $slug = null)
+    public static function jLoad(?string $slug = null)
     {
         $slug = $slug ?? Str::slug(static::getPageName());
         $page = static::query()->whereUrl($slug)->firstOrFail();
@@ -68,11 +69,11 @@ abstract class JasminePage extends Model
 
         return $page;
     }
-    
+
     public static function fake(bool $all = false, array $override = []): array
     {
         return ManifestFaker::fake(static::class, $all, $override);
     }
-    
+
     abstract public static function fieldsManifest(): FieldsManifest;
 }

@@ -5,19 +5,18 @@ namespace Jasmine\Jasmine\Registers;
 trait RegistersOauth2Sso
 {
     private array $oauth2_ssos = [];
-    
+
     public function registerOauth2Sso(
-        string        $name,
-        string        $icon,
-        string        $client_id,
-        string        $client_secret,
-        string        $authorize_url,
-        string        $token_url,
-        array         $scopes,
+        string $name,
+        string $icon,
+        string $client_id,
+        string $client_secret,
+        string $authorize_url,
+        string $token_url,
+        array $scopes,
         \Closure|bool $allowCreate,
-        \Closure      $userDataCallback
-    )
-    {
+        \Closure $userDataCallback
+    ) {
         $this->oauth2_ssos[$name] = compact(
             'name',
             'icon',
@@ -30,7 +29,7 @@ trait RegistersOauth2Sso
             'userDataCallback',
         );
     }
-    
+
     public function getOauth2Ssos(?string $name = null): ?array
     {
         return $name ? $this->oauth2_ssos[$name] ?? null : $this->oauth2_ssos;

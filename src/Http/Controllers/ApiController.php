@@ -63,7 +63,6 @@ class ApiController extends Controller
         ];
     }
 
-
     public function globals(): array
     {
         return [
@@ -77,7 +76,6 @@ class ApiController extends Controller
         return Jasmine::getInterfaceLocale(\request()->route('locale'));
     }
 
-
     private function proxyInertia(string $controller, string $action)
     {
         request()->headers->set(InertiaHeader::INERTIA, true);
@@ -88,6 +86,7 @@ class ApiController extends Controller
 
         if ($res instanceof JsonResponse) {
             $data = $res->getOriginalContent()['props'];
+
             return $data;
         }
 
@@ -110,7 +109,6 @@ class ApiController extends Controller
         return $res;
     }
 
-
     public function profile()
     {
         return $this->proxyInertia(AppController::class, 'profile');
@@ -120,7 +118,6 @@ class ApiController extends Controller
     {
         return $this->proxyInertia(AppController::class, 'saveProfile');
     }
-
 
     public function breadList(): array
     {
@@ -156,11 +153,13 @@ class ApiController extends Controller
         return $this->proxyInertia(BreadController::class, 'delete');
     }
 
-
     public function pageList(): array
     {
         $tmp = new class extends JasminePage {
-            public static function fieldsManifest(): FieldsManifest { return new FieldsManifest([]); }
+            public static function fieldsManifest(): FieldsManifest
+            {
+                return new FieldsManifest([]);
+            }
         };
 
         return $tmp::pluck('url')->filter(

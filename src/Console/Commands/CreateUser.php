@@ -54,6 +54,7 @@ class CreateUser extends Command
             $password = $this->secret('Enter password');
             if ($len = (strlen($password) < 6)) {
                 $this->warn('Password must be at lest 6 characters!');
+
                 continue;
             }
             $confirmPassword = $this->secret('Confirm Password');
@@ -81,6 +82,7 @@ class CreateUser extends Command
     public function validateEmail($value): bool
     {
         if (!is_string($value) && !(is_object($value) && method_exists($value, '__toString'))) return false;
+
         return (new EmailValidator)->isValid($value, new RFCValidation);
     }
 }

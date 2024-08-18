@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Jasmine\Jasmine;
-
 
 use Alexusmai\LaravelFileManager\Services\ConfigService\ConfigRepository;
 use Illuminate\Config\Repository;
@@ -26,7 +24,7 @@ class JasmineServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('jasmine', fn() => new Jasmine());
+        $this->app->singleton('jasmine', fn() => new Jasmine);
 
         if ($this->app->runningInConsole()) $this->registerConsoleCommands();
 
@@ -38,7 +36,6 @@ class JasmineServiceProvider extends ServiceProvider
     /**
      * Bootstrap services.
      *
-     * @param Router $router
      *
      * @return void
      */
@@ -122,13 +119,11 @@ class JasmineServiceProvider extends ServiceProvider
         ]);
     }
 
-
     /**
      * Merge the given configuration with the existing configuration.
      *
      * @param string $path
      * @param string $key
-     *
      * @return void
      */
     protected function mergeConfigFrom($path, $key)
@@ -140,9 +135,7 @@ class JasmineServiceProvider extends ServiceProvider
         $repo->set($key, $this->mergeConfig(require $path, $config));
     }
 
-    /**
-     * Merges the configs together and takes multi-dimensional arrays into account.
-     */
+    /** Merges the configs together and takes multi-dimensional arrays into account. */
     protected function mergeConfig(array $original, array $merging): array
     {
         $array = array_merge($original, $merging);

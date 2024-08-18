@@ -2,9 +2,7 @@
 
 namespace Jasmine\Jasmine\Http\Controllers;
 
-use App\Models\Post;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Translatable;
@@ -31,13 +29,11 @@ class BreadRelationshipsController extends Controller
         }
 
         /** @var Model|BreadableInterface|Translatable $breadable */
-
         if ($breadableId) {
             $breadable = call_user_func("$breadableName::find", $breadableId);
         } else {
             $breadable = new $breadableName;
         }
-
 
         /** @var Relation $relation */
         $relation = $breadable->{$data['relation']}();
@@ -48,10 +44,9 @@ class BreadRelationshipsController extends Controller
         }
 
         return [
-            'available' =>
-                array_column($relation->getRelated()
-                                      ->get([$data['related_key_name'], $data['related_title_field']])
-                                      ->toArray(), $data['related_title_field'], $data['related_key_name']),
+            'available' => array_column($relation->getRelated()
+                ->get([$data['related_key_name'], $data['related_title_field']])
+                ->toArray(), $data['related_title_field'], $data['related_key_name']),
             'existing'  => $breadable->exists
                 ? $relation->pluck($data['related_key_name']) : [],
         ];

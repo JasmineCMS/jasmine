@@ -5,15 +5,12 @@ namespace Jasmine\Jasmine\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Jasmine\Jasmine\Bread\Translatable;
 
 class Jasmine
 {
     /**
      * Handle an incoming request.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \Closure                 $next
      *
      * @return mixed
      */
@@ -38,7 +35,6 @@ class Jasmine
 
     /**
      * @param Response $response
-     *
      * @return Response
      */
     private function noIndex($response)

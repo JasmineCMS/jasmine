@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Jasmine\Jasmine\Http\Middleware;
 
 use Illuminate\Auth\Middleware\Authenticate as Middleware;

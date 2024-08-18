@@ -9,15 +9,25 @@ use Illuminate\Support\Str;
 abstract class AbstractField implements Arrayable, Jsonable
 {
     protected string $component;
+
     protected string $name;
+
     protected string $id;
+
     protected string $label;
+
     protected mixed $default = '';
+
     protected string $description;
+
     protected int $repeats = 1;
+
     protected array $validation = [];
+
     protected array $options = [];
+
     protected string $width;
+
     protected string $repeatsWidth;
 
     public function __construct(string $name)
@@ -30,29 +40,36 @@ abstract class AbstractField implements Arrayable, Jsonable
         $this->repeatsWidth = 'col-12';
     }
 
-    public static function define(string $name): static { return new static($name); }
+    public static function define(string $name): static
+    {
+        return new static($name);
+    }
 
     public function setId(string $id): static
     {
         $this->id = $id;
+
         return $this;
     }
 
     public function setLabel(string $label): static
     {
         $this->label = $label;
+
         return $this;
     }
 
     public function setDefault($default): static
     {
         $this->default = $default;
+
         return $this;
     }
 
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -60,35 +77,39 @@ abstract class AbstractField implements Arrayable, Jsonable
     {
         $this->repeats = $repeats;
         if ($repeatsWidth) $this->setRepeatsWidth($repeatsWidth);
+
         return $this;
     }
 
     public function setRepeatsWidth(string $width): static
     {
         $this->repeatsWidth = $width;
+
         return $this;
     }
 
     public function setValidation(array $rules): static
     {
         $this->validation = $rules;
+
         return $this;
     }
 
     public function setOptions(array $options): static
     {
         $this->options = $options;
+
         return $this;
     }
 
     public function setWidth(string $width): static
     {
         $this->width = $width;
+
         return $this;
     }
 
     /**
-     * @return array
      * @throws \ReflectionException
      */
     public function toArray(): array
@@ -106,10 +127,13 @@ abstract class AbstractField implements Arrayable, Jsonable
             'repeats'      => $this->repeats,
             'repeatsWidth' => $this->repeatsWidth,
             'validation'   => count($this->validation) ? $this->validation : ['nullable'],
-            'options'      => $this->options ?: new \stdClass(),
+            'options'      => $this->options ?: new \stdClass,
             'width'        => $this->width,
         ];
     }
 
-    public function toJson($options = 0) { return json_encode($this->toArray(), $options); }
+    public function toJson($options = 0)
+    {
+        return json_encode($this->toArray(), $options);
+    }
 }

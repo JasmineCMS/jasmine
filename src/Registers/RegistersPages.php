@@ -3,7 +3,6 @@
 namespace Jasmine\Jasmine\Registers;
 
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Jasmine\Jasmine\Exceptions\MustExtendJasminePage;
 use Jasmine\Jasmine\Models\JasminePage;
@@ -11,7 +10,6 @@ use Jasmine\Jasmine\Models\JasminePage;
 trait RegistersPages
 {
     private array $pages = [];
-
 
     /**
      * Register a page
