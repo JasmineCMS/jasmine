@@ -8,6 +8,8 @@ trait RegistersSideBarMenuItems
 {
     protected array $sideBarMenuFilters = [];
 
+    protected array $sideBarMenuItems = [];
+
     public function registerSideBarMenuItem(string $id, \Closure $item, ?int $priority = null): void
     {
         $priority ??= 50;

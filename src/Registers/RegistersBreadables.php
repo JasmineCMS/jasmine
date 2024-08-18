@@ -5,6 +5,7 @@ namespace Jasmine\Jasmine\Registers;
 use Illuminate\Support\Facades\Auth;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Exceptions\MustImplementBreadableInterface;
+use Jasmine\Jasmine\Models\JasmineUser;
 
 trait RegistersBreadables
 {
@@ -31,15 +32,17 @@ trait RegistersBreadables
         $key = $breadable::getBreadableKey();
         $this->breadables[$key] = $breadable;
 
+        /** @var JasmineUser $user */
+        $user = Auth::guard(config('jasmine.guard'))->user();
+
         if ($addMenuItem) {
-            $this->registerSideBarMenuItem($breadable, function () use ($breadable, $key) {
+            $this->registerSideBarMenuItem($breadable, function () use ($breadable, $key, $user) {
                 return [
                     'title'    => $breadable::getPluralName(),
                     'href'     => route('jasmine.bread.index', $key),
                     'is-route' => ['r' => 'jasmine.bread.*', 'p' => ['breadableName' => $key]],
                     'icon'     => $breadable::getMenuIcon(),
-                    'hidden'   => !Auth::guard(config('jasmine.guard'))
-                        ->user()?->jCan('models.' . $key . '.browse'),
+                    'hidden'   => !$user->jCan('models.' . $key . '.browse'),
                 ];
             }, $menuPriority);
         }

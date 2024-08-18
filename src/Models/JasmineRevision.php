@@ -4,6 +4,8 @@ namespace Jasmine\Jasmine\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -43,15 +45,15 @@ class JasmineRevision extends Model
         'locale',
         'contents',
     ];
-
+    
     protected $casts = ['contents' => 'object'];
-
-    public function user()
+    
+    public function user(): BelongsTo
     {
         return $this->belongsTo(JasmineUser::class, 'jasmine_user_id');
     }
-
-    public function revisionable()
+    
+    public function revisionable(): MorphTo
     {
         return $this->morphTo();
     }

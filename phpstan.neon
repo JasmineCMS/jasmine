@@ -1,8 +1,11 @@
 includes:
 
 parameters:
-    level: 5
+    level: 2
     ignoreErrors:
+
+    editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
+    editorUrlTitle: 'file:///%%file%%:%%line%%'
 
     paths:
         - config

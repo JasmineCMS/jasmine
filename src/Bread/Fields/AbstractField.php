@@ -6,6 +6,9 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Str;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 abstract class AbstractField implements Arrayable, Jsonable
 {
     protected string $component;

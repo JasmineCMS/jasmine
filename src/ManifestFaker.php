@@ -211,7 +211,7 @@ class ManifestFaker
                 array_filter($field['validation'], fn($r) => str_starts_with($r, 'max:'))
             ))[0] ?? 2147483647;
 
-            return $this->faker->numberBetween((int)$min, (int)$max);
+            return (string)$this->faker->numberBetween((int)$min, (int)$max);
         }
 
         if ($field['name'] === 'slug') return $this->faker->unique()->slug;

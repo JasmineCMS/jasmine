@@ -91,14 +91,16 @@ class JasmineServiceProvider extends ServiceProvider
             'children' => [],
         ], 55);
 
-        $jasmine->registerSideBarSubMenuItem('jasmine', 'users', function () {
+        /** @var JasmineUser $user */
+        $user = Auth::guard(config('jasmine.guard'))->user();
+
+        $jasmine->registerSideBarSubMenuItem('jasmine', 'users', function () use ($user) {
             return [
                 'title'    => 'Users',
                 'href'     => route('jasmine.bread.index', JasmineUser::getBreadableKey()),
                 'is-route' => ['r' => 'jasmine.bread.*', 'p' => ['breadableName' => JasmineUser::getBreadableKey()]],
                 'icon'     => JasmineUser::getMenuIcon(),
-                'hidden'   => !Auth::guard(config('jasmine.guard'))
-                    ->user()?->jCan('models.jasmine-users.browse'),
+                'hidden'   => !$user->jCan('models.jasmine-users.browse'),
             ];
         });
 

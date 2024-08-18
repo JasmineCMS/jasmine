@@ -456,10 +456,11 @@ class BreadController extends Controller
         /** @var BreadableInterface|Model $breadableClass */
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
 
+        /** @var JasmineUser $user */
+        $user = Auth::guard(config('jasmine.auth.guard'))->user();
+        
         // Check permission
-        if (
-            !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('models.' . $bKey . '.edit')
-        ) abort(401);
+        if (!$user->jCan('models.' . $bKey . '.edit')) abort(401);
 
         $data = request()->validate([
             'order'   => 'required|array',
@@ -467,7 +468,7 @@ class BreadController extends Controller
         ]);
 
         foreach ($data['order'] as $id => $order) {
-            /** @var Model|Breadable|SortableTrait $m */
+            /** @var Model|Breadable|SortableTrait|null $m */
             $m = $breadableClass::find($id);
             if (!$m) continue;
 
