@@ -178,8 +178,8 @@ class ManifestFaker
             'type' => $type,
             'url'  => match ($type) {
                 'youtube' => 'https://www.youtube.com/watch?v=YE7VzlLtp-4',
-                'vimeo' => 'https://vimeo.com/1084537',
-                'url' => 'https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_h264.mov',
+                'vimeo'   => 'https://vimeo.com/1084537',
+                'url'     => 'https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_h264.mov',
             },
         ];
     }
@@ -197,7 +197,10 @@ class ManifestFaker
         if ($field['type'] === 'color') return $this->colorField($field);
         if ($field['type'] === 'checkbox') return $this->switchField($field);
 
-        if (in_array('numeric', $field['validation'] ?? [])) {
+        if (
+            in_array('numeric', $field['validation'] ?? [])
+            || in_array('integer', $field['validation'] ?? [])
+        ) {
             $min = array_values(array_map(
                 fn($v) => intval(explode(':', $v)[1] ?? '0'),
                 array_filter($field['validation'], fn($r) => str_starts_with($r, 'min:'))
