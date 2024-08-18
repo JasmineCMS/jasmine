@@ -7,10 +7,13 @@
     "watch-poll": "mix watch -- --watch-options-poll=1000",
     "hot": "mix watch --hot",
     "prod": "mix --production",
-    "production": "mix --production"
+    "production": "mix --production",
+    "analyse": "eslint resources/mixes --fix",
+    "format": "prettier resources/mixes --write"
   },
   "devDependencies": {
     "@chenfengyuan/vue-qrcode": "^2.0.0",
+    "@eslint/js": "^9.9.0",
     "@fawmi/vue-google-maps": "^0.9.79",
     "@fortawesome/fontawesome-free": "^6.2.0",
     "@headlessui/vue": "^1.7.19",
@@ -21,8 +24,13 @@
     "bootstrap": "^5.2.2",
     "bootstrap-icons": "^1.9.1",
     "dayjs": "^1.11.10",
+    "eslint": "^9.9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-vue": "^9.27.0",
+    "globals": "^15.9.0",
     "laravel-file-manager": "^3.0.3",
     "laravel-mix": "^6.0.49",
+    "prettier": "^3.3.3",
     "resolve-url-loader": "^5.0.0",
     "sass": "^1.55.0",
     "sass-loader": "^13.1.0",

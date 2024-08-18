@@ -109,9 +109,7 @@ abstract class AbstractField implements Arrayable, Jsonable
         return $this;
     }
 
-    /**
-     * @throws \ReflectionException
-     */
+    /** @throws \ReflectionException */
     public function toArray(): array
     {
         if ($this->repeats > 1) $this->width = 'col-12';

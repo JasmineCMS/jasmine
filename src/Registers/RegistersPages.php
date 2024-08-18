@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Jasmine\Jasmine\Exceptions\MustExtendJasminePage;
 use Jasmine\Jasmine\Models\JasminePage;
+use Jasmine\Jasmine\Models\JasmineUser;
 
 trait RegistersPages
 {
@@ -14,7 +15,6 @@ trait RegistersPages
     /**
      * Register a page
      *
-     * @param string|JasminePage $page
      *
      * @throws MustExtendJasminePage
      */
@@ -28,21 +28,22 @@ trait RegistersPages
 
         $this->pages[$slug] = $page;
 
+        /** @var JasmineUser|null $user */
+        $user = Auth::guard(config('jasmine.guard'))->user();
+
         if ($addMenuItem) {
-            $this->registerSideBarSubMenuItem('pages', $slug, function () use ($page, $slug) {
+            $this->registerSideBarSubMenuItem('pages', $slug, function () use ($page, $slug, $user) {
                 return [
                     'title'    => $page::getPageName(),
                     'href'     => route('jasmine.page.edit', $slug),
                     'is-route' => ['r' => 'jasmine.page.edit', 'p' => ['jasminePage' => $slug]],
-                    'hidden'   => !Auth::guard(config('jasmine.guard'))
-                        ->user()?->jCan('pages.' . $slug . '.read'),
+                    'hidden'   => !$user?->jCan('pages.' . $slug . '.read'),
                 ];
             });
         }
 
         foreach (['read', 'edit'] as $p) $this->registerPermission(
             'pages.' . $slug . '.' . $p,
-            ucfirst($p) . ' ' . $page::getPageName()
         );
     }
 

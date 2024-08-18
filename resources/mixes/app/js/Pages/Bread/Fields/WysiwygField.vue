@@ -1,6 +1,6 @@
 <template>
   <div :class="{'j-is-invalid': invalid}">
-    <vue-tinymce :init="config" v-model="val"/>
+    <vue-tinymce :init="config" v-model="val" />
   </div>
 </template>
 
@@ -12,13 +12,15 @@ export default {
   extends: JasmineBaseField,
   data() {
     return {
-      opts: Object.assign({
-        height: 500,
-        content_css: [],
-        content_style: '',
-        config: {},
-      }, this.options),
-
+      opts: Object.assign(
+        {
+          height: 500,
+          content_css: [],
+          content_style: '',
+          config: {},
+        },
+        this.options,
+      ),
     };
   },
 
@@ -33,8 +35,14 @@ export default {
         //language: 'he_IL',
         directionality: this.isLocaleRtl ? 'rtl' : 'ltr',
         file_picker_callback(callback, value, meta) {
-          let x = window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName('body')[0].clientWidth;
-          let y = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
+          let x =
+            window.innerWidth ||
+            document.documentElement.clientWidth ||
+            document.getElementsByTagName('body')[0].clientWidth;
+          let y =
+            window.innerHeight ||
+            document.documentElement.clientHeight ||
+            document.getElementsByTagName('body')[0].clientHeight;
 
           let params = {};
           switch (meta.filetype) {
@@ -66,7 +74,7 @@ export default {
           };
 
           window.addEventListener('fm-chosen', onSelect);
-          tinymce.activeEditor.windowManager.openUrl({
+          window.tinymce.activeEditor.windowManager.openUrl({
             url: vm.route('jasmine.fm.standalone', params),
             title: 'File Manager',
             width: x * 0.8,
@@ -97,6 +105,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

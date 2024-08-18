@@ -35,7 +35,7 @@ class AppController extends Controller
             $info['laravel'] = app()->version();
             $info['jasmine'] = InstalledVersions::getVersion('jasminecms/jasmine');
             $info['db'] = match (DB::getConfig('driver')) {
-                'sqlite' => 'sqlite ' . DB::select('SELECT SQLITE_VERSION() AS v')[0]?->v ?? 'N\A',
+                'sqlite' => 'sqlite ' . (DB::select('SELECT SQLITE_VERSION() AS v')[0]?->v ?? 'N\A'),
                 'mariadb',
                 'mysql',
                 'pgsql'  => DB::select('SELECT VERSION() AS v')[0]?->v ?? 'N\A',
@@ -72,6 +72,7 @@ class AppController extends Controller
 
     public function profile()
     {
+        /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
 
         return inertia('Profile', [
@@ -103,6 +104,7 @@ class AppController extends Controller
             'name' => ['required', 'string', 'min:2', 'max:255'],
         ]);
 
+        /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
 
         $user->name = $data['name'];
@@ -128,6 +130,7 @@ class AppController extends Controller
             'new_password' => ['required', 'nullable', 'confirmed', 'string', 'min:10'],
         ]);
 
+        /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
 
         $user->password = bcrypt($data['new_password']);
@@ -152,6 +155,7 @@ class AppController extends Controller
             'enabled'  => ['required', 'boolean'],
         ]);
 
+        /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
 
         $google2fa = new Google2FA;

@@ -51,11 +51,11 @@ trait RegistersRoutes
 
     public function routes(): void
     {
-        require __DIR__ . '/../../routes.php';
+        require __DIR__ . '/../../routes/web.php';
     }
 
     public function apiRoutes(): void
     {
-        require __DIR__ . '/../../api.php';
+        require __DIR__ . '/../../routes/api.php';
     }
 }

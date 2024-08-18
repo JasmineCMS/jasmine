@@ -55,9 +55,7 @@ abstract class JasminePage extends Model
         return $name;
     }
 
-    /**
-     * @return JasminePage|static
-     */
+    /** @return JasminePage|static */
     public static function jLoad(?string $slug = null)
     {
         $slug = $slug ?? Str::slug(static::getPageName());

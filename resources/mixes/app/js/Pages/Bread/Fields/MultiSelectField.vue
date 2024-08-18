@@ -1,13 +1,15 @@
 <template>
   <Multiselect
-      ref="ms"
-      :id="id" :name="name" v-model="val"
-      :required="validation.indexOf('required') > -1"
-      class="form-control"
-      :class="{'is-invalid': invalid}"
-      v-bind="conf.opts">
+    ref="ms"
+    :id="id"
+    :name="name"
+    v-model="val"
+    :required="validation.indexOf('required') > -1"
+    class="form-control"
+    :class="{'is-invalid': invalid}"
+    v-bind="conf.opts">
     <template v-for="(slot, sk) in conf.slots" :key="sk" v-slot:[sk]="slotProps">
-      <component :is="slot" :props="slotProps"/>
+      <component :is="slot" :props="slotProps" />
     </template>
   </Multiselect>
 </template>
@@ -24,9 +26,12 @@ export default {
   components: {Multiselect},
   data() {
     return {
-      opts: Object.assign({
-        options: [],
-      }, this.options),
+      opts: Object.assign(
+        {
+          options: [],
+        },
+        this.options,
+      ),
     };
   },
 
@@ -51,6 +56,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

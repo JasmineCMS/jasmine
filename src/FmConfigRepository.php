@@ -111,9 +111,7 @@ class FmConfigRepository implements ConfigRepository
         return config('file-manager.allowFileTypes');
     }
 
-    /**
-     * Show / Hide system files and folders
-     */
+    /** Show / Hide system files and folders */
     final public function getHiddenFiles(): bool
     {
         return config('file-manager.hiddenFiles');

@@ -9,12 +9,12 @@
   align-items: center;
   cursor: pointer;
   user-select: none;
-  font-size: .8em;
+  font-size: 0.8em;
   font-weight: 300;
 }
 
 .vue-drp-input:before {
-  content: "\f073";
+  content: '\f073';
   font-family: 'Font Awesome 5 Free';
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
@@ -25,7 +25,7 @@
   text-rendering: auto;
   line-height: 1;
   font-size: smaller;
-  margin-inline-end: .5em;
+  margin-inline-end: 0.5em;
 }
 
 .vue-drp-calendar {
@@ -91,14 +91,16 @@
   color: #06f;
 }
 
-.vue-drp-prev, .vue-drp-next {
+.vue-drp-prev,
+.vue-drp-next {
   cursor: pointer;
   user-select: none;
   font-size: 2.5em;
   line-height: 0.4em;
 }
 
-.vue-drp-prev:hover, .vue-drp-next:hover {
+.vue-drp-prev:hover,
+.vue-drp-next:hover {
   opacity: 0.8;
 }
 
@@ -200,94 +202,112 @@
 }
 
 .vue-drp-clear {
-  margin-top: .5em;
+  margin-top: 0.5em;
   cursor: pointer;
   text-align: center;
-  padding: .2em .2em 0;
+  padding: 0.2em 0.2em 0;
   font-weight: 300;
 }
 </style>
 
 <template>
   <div class="vue-date-range-picker">
-    <div class="vue-drp-input" :class="{'chosen': dateRangeStart && dateRangeEnd}"
-         @click="toggleCalendar" v-text="rangeString"/>
+    <div
+      class="vue-drp-input"
+      :class="{chosen: dateRangeStart && dateRangeEnd}"
+      @click="toggleCalendar"
+      v-text="rangeString" />
 
     <div class="vue-drp-calendar" v-if="open">
-
       <div class="vue-drp-close" @click="toggleCalendar"></div>
 
       <div class="vue-drp-months-view">
-
-        <div class="vue-drp-title">
-          Choose Dates
-        </div>
+        <div class="vue-drp-title">Choose Dates</div>
 
         <div class="vue-drp-months">
           <div class="vue-drp-month">
             <div class="vue-drp-month-title">
               <div class="vue-drp-prev" @click="goPrevMonth"></div>
               <span>
-                            {{ locale.monthes[active.start.month] }}
-                            {{ active.start.year }}
-                        </span>
+                {{ locale.monthes[active.start.month] }}
+                {{ active.start.year }}
+              </span>
             </div>
 
             <div class="vue-drp-weekdays">
-              <div v-for="wdi in 7" v-text="locale.weekdays[wdi-1]"></div>
+              <div v-for="wdi in 7" :key="wdi" v-text="locale.weekdays[wdi - 1]"></div>
             </div>
 
-            <div class="vue-drp-week" v-for="wi in 6">
-              <div class="vue-drp-day" v-for="di in 7"
-                   :class="{
-                             'vue-drp-selectable': isSelectable(wi, di, startMonthDay, endMonthDate),
-                             'vue-drp-selected': isInRange(wi, di),
-                             }"
-                   @click="select(wi, di)"
-                   v-text="getDayCell(wi, di, startMonthDay, endMonthDate)"></div>
+            <div class="vue-drp-week" v-for="wi in 6" :key="wi">
+              <div
+                class="vue-drp-day"
+                v-for="di in 7"
+                :key="di"
+                :class="{
+                  'vue-drp-selectable': isSelectable(wi, di, startMonthDay, endMonthDate),
+                  'vue-drp-selected': isInRange(wi, di),
+                }"
+                @click="select(wi, di)"
+                v-text="getDayCell(wi, di, startMonthDay, endMonthDate)"></div>
             </div>
           </div>
 
           <div class="vue-drp-month">
             <div class="vue-drp-month-title">
-                        <span>
-                            {{ locale.monthes[nextActiveMonth] }}
-                            {{ active.end.year }}
-                        </span>
+              <span>
+                {{ locale.monthes[nextActiveMonth] }}
+                {{ active.end.year }}
+              </span>
               <div class="vue-drp-next" @click="goNextMonth"></div>
             </div>
 
             <div class="vue-drp-weekdays">
-              <div v-for="wdi in 7" v-text="locale.weekdays[wdi-1]"></div>
+              <div v-for="wdi in 7" :key="wdi" v-text="locale.weekdays[wdi - 1]"></div>
             </div>
 
-            <div class="vue-drp-week" v-for="wi in 6">
-              <div class="vue-drp-day" v-for="di in 7"
-                   :class="{
-                             'vue-drp-selectable': isSelectable(wi, di, startNextMonthDay, endNextMonthDate),
-                             'vue-drp-selected': isInRange(wi, di, true),
-                             }"
-                   @click="select(wi, di, true)"
-                   v-text="getDayCell(wi, di, startNextMonthDay, endNextMonthDate)"></div>
+            <div class="vue-drp-week" v-for="wi in 6" :key="wi">
+              <div
+                class="vue-drp-day"
+                v-for="di in 7"
+                :key="di"
+                :class="{
+                  'vue-drp-selectable': isSelectable(wi, di, startNextMonthDay, endNextMonthDate),
+                  'vue-drp-selected': isInRange(wi, di, true),
+                }"
+                @click="select(wi, di, true)"
+                v-text="getDayCell(wi, di, startNextMonthDay, endNextMonthDate)"></div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="vue-drp-presets">
-        <div class="vue-drp-preset" v-for="preset in presets"
-             :class="{'vue-drp-selected-preset': (selectedPreset === preset.label)}"
-             v-text="preset.label" @click="setPreset(preset)"></div>
+        <div
+          class="vue-drp-preset"
+          v-for="(preset, pri) in presets"
+          :key="pri"
+          :class="{'vue-drp-selected-preset': selectedPreset === preset.label}"
+          v-text="preset.label"
+          @click="setPreset(preset)"></div>
 
-        <div class="vue-drp-apply" tabindex="1" role="button" :disabled="dateRangeEnd === null ? true : null"
-             @click="apply">Apply
+        <div
+          class="vue-drp-apply"
+          tabindex="1"
+          role="button"
+          :disabled="dateRangeEnd === null ? true : null"
+          @click="apply">
+          Apply
         </div>
 
-        <div class="vue-drp-clear" tabindex="1" role="button" :disabled="!dateRangeEnd ? true : undefined"
-             @click="clear">Clear
+        <div
+          class="vue-drp-clear"
+          tabindex="1"
+          role="button"
+          :disabled="!dateRangeEnd ? true : undefined"
+          @click="clear">
+          Clear
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -382,12 +402,10 @@ export default {
 
       dateRangeStartRaw: null,
       dateRangeEndRaw: null,
-
     };
   },
 
   computed: {
-
     /**
      * Assure date is at the beginning of the selected day
      */
@@ -469,7 +487,6 @@ export default {
       return new Date(this.active.end.year, this.nextActiveMonth, 0).getDate();
     },
 
-
     /**
      * Get first weekday of next month
      * 0 sunday , 6 saturday
@@ -479,7 +496,6 @@ export default {
     startNextMonthDay() {
       return new Date(this.active.end.year, this.nextActiveMonth, 1).getDay();
     },
-
 
     /**
      * Get last day of next month
@@ -492,7 +508,6 @@ export default {
   },
 
   methods: {
-
     /**
      * Get the position relative to month
      *
@@ -503,7 +518,7 @@ export default {
      * @return {number}
      */
     getDayIndexInMonth(wi, di, startMonthDay) {
-      let date = (7 * (wi - 1)) + di;
+      let date = 7 * (wi - 1) + di;
       return date - startMonthDay;
     },
 
@@ -557,8 +572,7 @@ export default {
 
       let dayInMonth = this.getDayIndexInMonth(wi, di, this[startMonthDay]);
 
-
-      return dayInMonth > 0 ? dayjs(`${year}-${(month + 1)}-${dayInMonth}`) : false;
+      return dayInMonth > 0 ? dayjs(`${year}-${month + 1}-${dayInMonth}`) : false;
     },
 
     /**
@@ -602,8 +616,10 @@ export default {
       }
 
       /** Else assure in range */
-      return (date.isSame(this.dateRangeStart) || date.isAfter(this.dateRangeStart))
-          && (date.isSame(this.dateRangeEnd) || date.isBefore(this.dateRangeEnd));
+      return (
+        (date.isSame(this.dateRangeStart) || date.isAfter(this.dateRangeStart)) &&
+        (date.isSame(this.dateRangeEnd) || date.isBefore(this.dateRangeEnd))
+      );
     },
 
     /**
@@ -614,7 +630,6 @@ export default {
      * @param {boolean} next use start of end
      */
     select(wi, di, next) {
-
       let date = this.calcDate(wi, di, next);
 
       if (!date) {
@@ -649,11 +664,7 @@ export default {
     setRange(dateRange) {
       if (dateRange) {
         /** If is not a dayjs, load into a dayjs */
-        if (
-            typeof dateRange.start !== 'object'
-            || typeof dateRange.start.$d === 'undefined'
-        ) {
-
+        if (typeof dateRange.start !== 'object' || typeof dateRange.start.$d === 'undefined') {
           /** If is a moment object extract js Date */
           if (dateRange.start._isAMomentObject) {
             dateRange.start = dateRange.start._d;
@@ -662,11 +673,7 @@ export default {
           dateRange.start = dayjs(dateRange.start);
         }
 
-        if (
-            typeof dateRange.end !== 'object'
-            || typeof dateRange.end.$d === 'undefined'
-        ) {
-
+        if (typeof dateRange.end !== 'object' || typeof dateRange.end.$d === 'undefined') {
           /** If is a moment object extract js Date */
           if (dateRange.end._isAMomentObject) {
             dateRange.end = dateRange.end._d;
@@ -692,7 +699,6 @@ export default {
      * Open and close the calendar
      */
     toggleCalendar() {
-
       /** If calendar was closed without setting a full range, reset */
       if (this.dateRangeEnd === null) {
         this.dateRangeStart = null;
@@ -705,7 +711,6 @@ export default {
      * Apply the selected range
      */
     apply() {
-
       /** If a full range is not selected, return */
       if (this.dateRangeEnd === null) {
         return;
@@ -732,7 +737,6 @@ export default {
   },
 
   watch: {
-
     /**
      * if next active month is January, set the end year to the next one
      */
@@ -744,7 +748,6 @@ export default {
   },
 
   created() {
-
     /** If the first month is December, set the end year to the next one */
     if (this.active.start.month === 11) {
       this.active.end.year++;

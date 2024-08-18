@@ -15,18 +15,20 @@ use Inertia\Support\Header as InertiaHeader;
 use Jasmine\Jasmine\Bread\Fields\FieldsManifest;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Models\JasminePage;
+use Jasmine\Jasmine\Models\JasmineUser;
 
 class ApiController extends Controller
 {
     public function info()
     {
         // Check permission
+        /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
         if (!$user->jCan('api.system.info')) abort(401);
 
         preg_match(
             '/^(?<commit>\S+)\s+branch\s\'(?<branch>.*)\'\sof\s(?<remote>.*)$/m',
-            @file_get_contents(base_path('.git/FETCH_HEAD')) ?? '',
+            @file_get_contents(base_path('.git/FETCH_HEAD')) ?: '',
             $git
         );
 
@@ -36,7 +38,7 @@ class ApiController extends Controller
             'laravel'  => app()->version(),
             'jasmine'  => InstalledVersions::getVersion('jasminecms/jasmine'),
             'db'       => match (DB::getConfig('driver')) {
-                'sqlite' => 'sqlite ' . DB::select('SELECT SQLITE_VERSION() AS v')[0]?->v ?? 'N\A',
+                'sqlite' => 'sqlite ' . (DB::select('SELECT SQLITE_VERSION() AS v')[0]?->v ?? 'N\A'),
                 'mariadb',
                 'mysql',
                 'pgsql'  => DB::select('SELECT VERSION() AS v')[0]?->v ?? 'N\A',
@@ -78,7 +80,7 @@ class ApiController extends Controller
 
     private function proxyInertia(string $controller, string $action)
     {
-        request()->headers->set(InertiaHeader::INERTIA, true);
+        request()->headers->set(InertiaHeader::INERTIA, 'true');
 
         $res = app()->make($controller)->{$action}();
 
@@ -121,10 +123,12 @@ class ApiController extends Controller
 
     public function breadList(): array
     {
+        /** @var JasmineUser $user */
+        $user = Auth::guard(config('jasmine.auth.guard'))->user();
+
         return array_filter(
             array_keys(Jasmine::getBreadables()),
-            fn($key) => Auth::guard(config('jasmine.auth.guard'))
-                ->user()->jCan('models.' . $key . '.browse')
+            fn($key) => $user->jCan('models.' . $key . '.browse')
         );
     }
 
@@ -155,6 +159,9 @@ class ApiController extends Controller
 
     public function pageList(): array
     {
+        /** @var JasmineUser $user */
+        $user = Auth::guard(config('jasmine.auth.guard'))->user();
+
         $tmp = new class extends JasminePage {
             public static function fieldsManifest(): FieldsManifest
             {
@@ -163,8 +170,7 @@ class ApiController extends Controller
         };
 
         return $tmp::pluck('url')->filter(
-            fn($slug) => Auth::guard(config('jasmine.auth.guard'))
-                ->user()->jCan('pages.' . $slug . '.read')
+            fn($slug) => $user->jCan('pages.' . $slug . '.read')
         )->toArray();
     }
 

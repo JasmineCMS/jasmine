@@ -1,0 +1,14 @@
+includes:
+
+parameters:
+    level: 5
+    ignoreErrors:
+
+    paths:
+        - config
+        - database
+        - routes
+        - src
+    tmpDir: dev/phpstan
+    checkOctaneCompatibility: true
+    checkModelProperties: true

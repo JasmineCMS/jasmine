@@ -1,0 +1,5 @@
+# Ignore artifacts:
+public
+vendor
+node_modules
+composer.lock

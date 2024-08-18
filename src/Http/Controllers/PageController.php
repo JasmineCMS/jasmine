@@ -11,6 +11,7 @@ use Jasmine\Jasmine\Bread\Translatable;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Models\JasminePage;
 use Jasmine\Jasmine\Models\JasmineRevision;
+use Jasmine\Jasmine\Models\JasmineUser;
 
 class PageController extends Controller
 {
@@ -23,6 +24,7 @@ class PageController extends Controller
         $page = $page::firstOrCreate(['name' => $slug], ['url' => $slug, 'content' => []]);
 
         // Check permission
+        /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
         if (!$user->jCan('pages.' . $slug . '.read')) abort(401);
 
@@ -82,10 +84,11 @@ class PageController extends Controller
         /** @var JasminePage $page */
         $page = $page::whereName($slug)->first();
 
+        /** @var JasmineUser $user */
+        $user = Auth::guard(config('jasmine.auth.guard'))->user();
+
         // Check permission
-        if (
-            !Auth::guard(config('jasmine.auth.guard'))->user()->jCan('pages.' . $slug . '.edit')
-        ) abort(401);
+        if (!$user->jCan('pages.' . $slug . '.edit')) abort(401);
 
         $rules = [];
         foreach ($page::fieldsManifest()->getFields() as $f) {

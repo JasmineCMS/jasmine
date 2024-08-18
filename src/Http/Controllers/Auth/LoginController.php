@@ -119,6 +119,7 @@ class LoginController extends Controller
 
     public function otp(Request $request)
     {
+        /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
 
         $google2fa = new Google2FA;

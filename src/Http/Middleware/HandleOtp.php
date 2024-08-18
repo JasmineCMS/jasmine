@@ -5,6 +5,7 @@ namespace Jasmine\Jasmine\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Jasmine\Jasmine\Models\JasmineUser;
 
 class HandleOtp
 {
@@ -16,6 +17,7 @@ class HandleOtp
      */
     public function handle(Request $request, Closure $next)
     {
+        /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
 
         if ($user->otp_secret) {

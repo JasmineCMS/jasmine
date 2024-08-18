@@ -1,7 +1,7 @@
-@import "variables";
+@import 'variables';
 
-@import "partials/datatable";
-@import "partials/multiselect";
+@import 'partials/datatable';
+@import 'partials/multiselect';
 
 .card {
   --bs-card-border-width: 0;
@@ -42,7 +42,6 @@
     > .nav-link.collapsed {
       background: #ffffff0d;
     }
-
 
     .sb-sidenav-menu-nested.nav {
       background: #ffffff0d;

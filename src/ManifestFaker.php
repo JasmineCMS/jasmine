@@ -40,7 +40,7 @@ class ManifestFaker
     {
         if (is_string($model)) $model = new $model;
 
-        return (new static($model, $all, $override))->build();
+        return (new self($model, $all, $override))->build();
     }
 
     public function build(): array

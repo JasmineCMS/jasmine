@@ -61,7 +61,7 @@ class CreateUser extends Command
             if ($password !== $confirmPassword) {
                 $this->warn('Passwords don\'t match!');
             }
-        } while ($len || ($password !== $confirmPassword));
+        } while ($len || ($password !== ($confirmPassword ?? '')));
         // create user
         /** @var JasmineUser $user */
         $user = JasmineUser::create([
@@ -69,12 +69,9 @@ class CreateUser extends Command
             'email'    => $email,
             'password' => bcrypt($password),
         ]);
-        if ($user) {
-            $this->info('User created successfully');
-            dump($user->toArray());
-        } else {
-            $this->error('User was not created');
-        }
+
+        $this->info('User created successfully');
+        dump($user->toArray());
 
         return 0;
     }

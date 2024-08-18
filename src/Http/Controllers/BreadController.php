@@ -19,6 +19,7 @@ use Jasmine\Jasmine\Bread\SortableTrait;
 use Jasmine\Jasmine\Bread\Translatable;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Models\JasmineRevision;
+use Jasmine\Jasmine\Models\JasmineUser;
 
 class BreadController extends Controller
 {
@@ -29,6 +30,7 @@ class BreadController extends Controller
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
 
         // Check permission
+        /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
         if (!$user->jCan('models.' . $bKey . '.browse')) abort(401);
 
@@ -286,6 +288,7 @@ class BreadController extends Controller
         $breadableId = \request()->route()->parameter('breadableId');
 
         // Check permission
+        /** @var JasmineUser $user */
         $user = Auth::guard(config('jasmine.auth.guard'))->user();
         if (!$user->jCan('models.' . $bKey . '.' . ($breadableId ? 'read' : 'add'))) abort(401);
 

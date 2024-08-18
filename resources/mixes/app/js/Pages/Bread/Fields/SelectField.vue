@@ -1,10 +1,14 @@
 <template>
-  <select class="form-select form-select-sm" :class="{'is-invalid': invalid}"
-          :multiple="opts.multiple"
-          :readonly="opts.readonly"
-          :required="validation.indexOf('required') > -1"
-          :id="id" :name="name" v-model="val">
-    <option v-for="(option, v) in opts.options" :value="v">
+  <select
+    class="form-select form-select-sm"
+    :class="{'is-invalid': invalid}"
+    :multiple="opts.multiple"
+    :readonly="opts.readonly"
+    :required="validation.indexOf('required') > -1"
+    :id="id"
+    :name="name"
+    v-model="val">
+    <option v-for="(option, v) in opts.options" :key="v" :value="v">
       {{ option }}
     </option>
   </select>
@@ -18,14 +22,15 @@ export default {
   extends: JasmineBaseField,
   data() {
     return {
-      opts: Object.assign({
-        options: [],
-      }, this.options),
+      opts: Object.assign(
+        {
+          options: [],
+        },
+        this.options,
+      ),
     };
   },
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

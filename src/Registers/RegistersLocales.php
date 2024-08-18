@@ -11,9 +11,7 @@ trait RegistersLocales
         return $this->locales;
     }
 
-    /**
-     * Set available locales, overwrites existing
-     */
+    /** Set available locales, overwrites existing */
     public function registerLocales(array $locales): void
     {
         $this->locales = $locales;

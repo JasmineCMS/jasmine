@@ -1,10 +1,10 @@
 <template>
-  <Head :title="$t('File Manager')"/>
+  <Head :title="$t('File Manager')" />
 
   <Layout>
     <div class="h-100 d-flex flex-column flex-grow-1">
       <div class="flex-grow-1">
-        <file-manager :settings="settings"/>
+        <file-manager :settings="settings" />
       </div>
     </div>
   </Layout>
@@ -28,6 +28,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

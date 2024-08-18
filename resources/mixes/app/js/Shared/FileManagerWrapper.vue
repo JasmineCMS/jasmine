@@ -1,9 +1,8 @@
 <template>
-  <file-manager ref="fm" :settings="settings"/>
+  <file-manager ref="fm" :settings="settings" />
 </template>
 
 <script>
-
 export default {
   name: 'FileManagerWrapper',
   computed: {
@@ -21,6 +20,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

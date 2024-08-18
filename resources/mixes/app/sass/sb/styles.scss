@@ -3,18 +3,18 @@
 //
 
 // Import Custom SCSS
-@import "global";
+@import 'global';
 
 // Layout
-@import "layout/dashboard-default";
-@import "layout/dashboard-fixed";
+@import 'layout/dashboard-default';
+@import 'layout/dashboard-fixed';
 
 // Navigation
-@import "navigation/nav";
-@import "navigation/topnav";
-@import "navigation/sidenav/sidenav";
-@import "navigation/sidenav/sidenav-dark";
-@import "navigation/sidenav/sidenav-light";
+@import 'navigation/nav';
+@import 'navigation/topnav';
+@import 'navigation/sidenav/sidenav';
+@import 'navigation/sidenav/sidenav-dark';
+@import 'navigation/sidenav/sidenav-light';
 
 // Plugins
 //@import "plugins/simple-datatables";

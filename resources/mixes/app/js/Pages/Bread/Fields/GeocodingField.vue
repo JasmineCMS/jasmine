@@ -1,25 +1,23 @@
 <template>
   <div>
     <GMapAutocomplete
-        class="form-control form-control-sm"
-        :class="{'is-invalid': invalid}"
-        @place_changed="setLocation"
-        :types="opts.types || []"
-        :value="val.address"
-        ref="gmapAutocomplete"
-    >
+      class="form-control form-control-sm"
+      :class="{'is-invalid': invalid}"
+      @place_changed="setLocation"
+      :types="opts.types || []"
+      :value="val.address"
+      ref="gmapAutocomplete">
     </GMapAutocomplete>
 
     <div class="input-group input-group-sm my-2">
-      <span class="input-group-text" v-text="$t('Lat')"/>
-      <input class="form-control form-control-sm" type="text" v-model="val.lat">
-      <span class="input-group-text" v-text="$t('Lng')"/>
-      <input class="form-control form-control-sm" type="text" v-model="val.lng">
+      <span class="input-group-text" v-text="$t('Lat')" />
+      <input class="form-control form-control-sm" type="text" v-model="val.lat" />
+      <span class="input-group-text" v-text="$t('Lng')" />
+      <input class="form-control form-control-sm" type="text" v-model="val.lng" />
     </div>
 
-    <GMapMap :zoom="zoom" :center="{lat:val.lat || 0, lng:val.lng || 0}"
-             class="j-location-field-map">
-      <GMapMarker v-if="val.lat && val.lng" :position="{lat:val.lat, lng:val.lng}" draggable @dragend="onMove"/>
+    <GMapMap :zoom="zoom" :center="{lat: val.lat || 0, lng: val.lng || 0}" class="j-location-field-map">
+      <GMapMarker v-if="val.lat && val.lng" :position="{lat: val.lat, lng: val.lng}" draggable @dragend="onMove" />
     </GMapMap>
   </div>
 </template>

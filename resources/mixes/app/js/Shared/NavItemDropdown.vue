@@ -1,12 +1,25 @@
 <template>
   <component :is="as" class="dropdown">
-    <a class="nav-link dropdown-toggle h-100" :class="{show: open}" :id="id" href="#" role="button" ref="btn"
-       data-bs-toggle="dropdown" @click.prevent="open = !open" @keydown.esc="open = false"
-       :aria-expanded="open ? 'true' : 'false'">
-      <slot/>
+    <a
+      class="nav-link dropdown-toggle h-100"
+      :class="{show: open}"
+      :id="id"
+      href="#"
+      role="button"
+      ref="btn"
+      data-bs-toggle="dropdown"
+      @click.prevent="open = !open"
+      @keydown.esc="open = false"
+      :aria-expanded="open ? 'true' : 'false'">
+      <slot />
     </a>
-    <ul class="dropdown-menu" :style="menuStyle" :class="[{show: open}, menuClass]" :aria-labelledby="id" data-bs-popper>
-      <slot name="menu"/>
+    <ul
+      class="dropdown-menu"
+      :style="menuStyle"
+      :class="[{show: open}, menuClass]"
+      :aria-labelledby="id"
+      data-bs-popper>
+      <slot name="menu" />
     </ul>
   </component>
 </template>
@@ -49,6 +62,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -1,10 +1,15 @@
 <template>
   <div class="form-check form-switch">
-    <input class="form-check-input" :class="{'is-invalid': invalid}"
-           type="checkbox" role="switch" :id="id"
-           :disabled="opts.disabled"
-           :name="name" v-model="val"
-           :required="validation.indexOf('required') > -1">
+    <input
+      class="form-check-input"
+      :class="{'is-invalid': invalid}"
+      type="checkbox"
+      role="switch"
+      :id="id"
+      :disabled="opts.disabled"
+      :name="name"
+      v-model="val"
+      :required="validation.indexOf('required') > -1" />
   </div>
 </template>
 
@@ -16,9 +21,12 @@ export default {
   extends: JasmineBaseField,
   data() {
     return {
-      opts: Object.assign({
-        options: [],
-      }, this.options),
+      opts: Object.assign(
+        {
+          options: [],
+        },
+        this.options,
+      ),
     };
   },
 
@@ -28,6 +36,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

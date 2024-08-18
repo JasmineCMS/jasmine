@@ -1,3 +1,5 @@
+/*eslint-env node*/
+
 const mix = require('laravel-mix');
 
 process.env.section = process.env.npm_config_mix || 'app';

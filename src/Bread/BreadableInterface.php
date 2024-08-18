@@ -17,9 +17,7 @@ interface BreadableInterface
 
     public static function browseableColumns(): array;
 
-    /**
-     * @param Model|Breadable $ent
-     */
+    /*** @param Model|Breadable $ent */
     public static function fieldsManifest(): FieldsManifest;
 
     public function getTitle(): string;

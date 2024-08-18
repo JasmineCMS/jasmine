@@ -12,9 +12,7 @@ class FieldsManifest implements Arrayable, Jsonable
     /** @var array|Collection */
     private $columns;
 
-    /**
-     * FieldsManifest constructor.
-     */
+    /** FieldsManifest constructor. */
     public function __construct(array $columns)
     {
         $this->columns = collect($columns);

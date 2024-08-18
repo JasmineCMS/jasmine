@@ -1,14 +1,12 @@
 <template>
-  <Head :title="$t('Dashboard')"/>
+  <Head :title="$t('Dashboard')" />
 
   <Layout>
     Welcome to JasmineCMS
 
     <div>
-      <template v-for="(card,id) in cards" :key="id">
-        <component
-            :is="loadSfc(id, card['vue-component'])"
-            v-bind="card['vue-component']?.props || {}"/>
+      <template v-for="(card, id) in cards" :key="id">
+        <component :is="loadSfc(id, card['vue-component'])" v-bind="card['vue-component']?.props || {}" />
       </template>
     </div>
   </Layout>
@@ -29,9 +27,9 @@ export default {
 
       return defineAsyncComponent({
         loader() {
-          return SfcLoader.loadModule(`c-${id}.vue`, {
-            moduleCache: {vue: Vue},
-            getFile: (url) => component.sfc,
+          return window.SfcLoader.loadModule(`c-${id}.vue`, {
+            moduleCache: {vue: window.Vue},
+            getFile: url => component.sfc,
             addStyle(css) {
               const styleEl = document.createElement('style');
               styleEl.innerHTML = css;
@@ -45,6 +43,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

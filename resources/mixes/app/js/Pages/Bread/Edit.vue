@@ -1,95 +1,119 @@
 <template>
-  <Head :title="entId ? $t('Edit') + ' ' + title + revTitle : $t('New')"/>
+  <Head :title="entId ? $t('Edit') + ' ' + title + revTitle : $t('New')" />
 
   <Layout>
     <template #breadcrumbs>
       <li class="breadcrumb-item">
-        <inertia-link :href="route('jasmine.bread.index', {breadableName:b.key})" v-text="$t(b.plural)"/>
+        <inertia-link :href="route('jasmine.bread.index', {breadableName: b.key})">
+          {{ $t(b.plural) }}
+        </inertia-link>
       </li>
     </template>
 
     <template #pageActions>
       <div class="d-flex align-items-center p-2">
-        <a v-if="public_url" target="_blank" :href="public_url"
-           class="btn btn-sm btn-link d-flex align-items-center" style="gap: .5rem">
-          <i class="bi bi-link" style="font-size: 1.5rem;"></i>
+        <a
+          v-if="public_url"
+          target="_blank"
+          :href="public_url"
+          class="btn btn-sm btn-link d-flex align-items-center"
+          style="gap: 0.5rem">
+          <i class="bi bi-link" style="font-size: 1.5rem"></i>
           {{ $t('View on site') }}
         </a>
         <div class="mx-3"></div>
         <div v-if="locale" class="btn-group btn-group-sm">
-          <inertia-link v-for="_l in $globals.locales" href="" :data="{_locale:_l}" v-text="_l"
-                        class="btn btn-outline-primary text-uppercase" :class="{active:_l === locale}"/>
+          <inertia-link
+            v-for="_l in $globals.locales"
+            :key="_l"
+            href=""
+            :data="{_locale: _l}"
+            class="btn btn-outline-primary text-uppercase"
+            :class="{active: _l === locale}">
+            {{ _l }}
+          </inertia-link>
         </div>
-        <div class="mx-3"/>
+        <div class="mx-3" />
         <div class="btn-group btn-group-sm">
-          <a :href="exportBread()"
-             :download="b.singular+'-'+title+'-'+fileableDate()+'.jasmine.json'" class="btn btn-outline-primary"
-             :title="$t('Export')">
+          <a
+            :href="exportBread()"
+            :download="b.singular + '-' + title + '-' + fileableDate() + '.jasmine.json'"
+            class="btn btn-outline-primary"
+            :title="$t('Export')">
             <i class="bi bi-file-earmark-arrow-down"></i>
           </a>
           <button type="button" class="btn btn-outline-primary" :title="$t('Import')" @click="$refs.importI.click()">
             <i class="bi bi-file-earmark-arrow-up"></i>
-            <input type="file" class="sr-only" ref="importI" @input="importBread" accept=".jasmine.json">
+            <input type="file" class="sr-only" ref="importI" @input="importBread" accept=".jasmine.json" />
           </button>
         </div>
         <div class="mx-3" v-if="revisions.length"></div>
-        <nav-item-dropdown v-if="revisions.length"
-                           as="div" id="revisionsDd"
-                           class="btn btn-sm btn-outline-primary dropdown"
-                           menu-class="bg-light px-2 rounded-3 overflow-auto" menu-style="height: 65vh">
+        <nav-item-dropdown
+          v-if="revisions.length"
+          as="div"
+          id="revisionsDd"
+          class="btn btn-sm btn-outline-primary dropdown"
+          menu-class="bg-light px-2 rounded-3 overflow-auto"
+          menu-style="height: 65vh">
           <i class="bi bi-clock-history"></i>
           {{ $t('Revisions') }}
           <template #menu>
             <li class="mb-2 rounded-3 overflow-hidden">
               <InertiaLink
-                  v-if="loadedRev" :href="currentHref" :data="{rev:null}"
-                  style="gap:.75rem"
-                  class="dropdown-item px-2 text-primary fw-semibold d-flex align-items-center">
+                v-if="loadedRev"
+                :href="currentHref"
+                :data="{rev: null}"
+                style="gap: 0.75rem"
+                class="dropdown-item px-2 text-primary fw-semibold d-flex align-items-center">
                 <i class="bi" :class="isRtl ? 'bi-arrow-left' : 'bi-arrow-right'"></i>
-                <span v-text="$t('Back to current')"/>
+                <span v-text="$t('Back to current')" />
               </InertiaLink>
             </li>
 
             <li v-for="r in revisions" :key="r.created_at" class="bg-white mb-2 rounded-3 overflow-hidden">
-              <InertiaLink class="dropdown-item px-2 d-flex align-items-center" :href="currentHref" style="gap:.75rem"
-                           :data="{rev:r.created_at.split('.')[0].replace(/[T:]/g, '-'), _locale:r.locale}">
+              <InertiaLink
+                class="dropdown-item px-2 d-flex align-items-center"
+                :href="currentHref"
+                style="gap: 0.75rem"
+                :data="{rev: r.created_at.split('.')[0].replace(/[T:]/g, '-'), _locale: r.locale}">
                 <div>
-                  <img :src="r.user?.avatar_url" :alt="r.user?.name"
-                       class="rounded-circle" style="height: 28px">
+                  <img :src="r.user?.avatar_url" :alt="r.user?.name" class="rounded-circle" style="height: 28px" />
                 </div>
-                <div style="font-size: 0.85rem;">
+                <div style="font-size: 0.85rem">
                   <div>
                     <time :datetime="r.created_at" class="fs-6">
-                      <span v-text="r.created_at_h.split(' ')[0]" class="text-primary fw-semibold"/>
+                      <span v-text="r.created_at_h.split(' ')[0]" class="text-primary fw-semibold" />
                       &nbsp;
-                      <span v-text="r.created_at_h.split(' ')[1]"/>
+                      <span v-text="r.created_at_h.split(' ')[1]" />
                     </time>
                     &nbsp;
-                    <span v-text="r.locale" class="text-uppercase badge text-bg-secondary rounded-pill"/>
+                    <span v-text="r.locale" class="text-uppercase badge text-bg-secondary rounded-pill" />
                   </div>
-                  <div :title="r.user.email" class="text-muted">
-                    {{ $t('By') }} {{ r.user?.name }}
-                  </div>
+                  <div :title="r.user.email" class="text-muted">{{ $t('By') }} {{ r.user?.name }}</div>
                 </div>
               </InertiaLink>
             </li>
           </template>
         </nav-item-dropdown>
-        <div class="mx-3"/>
+        <div class="mx-3" />
 
         <button
-            v-if="$globals.env !== 'production' && b.key === 'page' && (can.indexOf('a') > -1 || can.indexOf('e') > -1)"
-            type="button" @click="fake" class="btn btn-sm btn-info px-4">
+          v-if="$globals.env !== 'production' && b.key === 'page' && (can.indexOf('a') > -1 || can.indexOf('e') > -1)"
+          type="button"
+          @click="fake"
+          class="btn btn-sm btn-info px-4">
           {{ $t('Fake') }}
         </button>
-        <div class="mx-2"/>
+        <div class="mx-2" />
 
         <button
-            v-if="can.indexOf('a') > -1 || can.indexOf('e') > -1"
-            @click="$refs.form.reportValidity() && form.post('')"
-            type="button" class="btn btn-sm px-5" :disabled="form.processing"
-            :class="{'btn-primary': form.isDirty, 'btn-secondary': !form.isDirty}">
-          <span v-if="form.processing" role="status" aria-hidden="true" class="spinner-border spinner-border-sm"/>
+          v-if="can.indexOf('a') > -1 || can.indexOf('e') > -1"
+          @click="$refs.form.reportValidity() && form.post('')"
+          type="button"
+          class="btn btn-sm px-5"
+          :disabled="form.processing"
+          :class="{'btn-primary': form.isDirty, 'btn-secondary': !form.isDirty}">
+          <span v-if="form.processing" role="status" aria-hidden="true" class="spinner-border spinner-border-sm" />
           {{ $t('Save') }}
         </button>
       </div>
@@ -97,97 +121,119 @@
 
     <form ref="form" @submit.prevent="form.post('')">
       <div class="bread-edit row" :class="{'writing-rtl': isLocaleRtl}">
-
         <!-- Loop columns -->
         <div v-for="(column, classId) in b.manifest" :key="classId" :class="classId">
-
           <!-- Loop groups -->
           <div v-for="(fields, gTitle) in column" :key="gTitle" class="card mb-4">
             <div class="card-body">
-              <h4 v-if="gTitle[0] !== '_'" class="mb-2 h5" v-text="gTitle"/>
+              <h4 v-if="gTitle[0] !== '_'" class="mb-2 h5" v-text="gTitle" />
               <div class="row">
                 <!-- Loop fields -->
                 <div v-for="(field, fi) in fields" :key="fi" class="field p-1 pt-2 form-group" :class="field.width">
-
                   <!-- Repeatable field -->
-                  <template v-if="field.repeats >  1">
+                  <template v-if="field.repeats > 1">
                     <draggable
-                        v-model="form.v[field.name]"
-                        ghost-class="ghost"
-                        :handle="'.dnd-handler_' + field.id"
-                        class="row"
-                        item-key="id"
-                    >
+                      v-model="form.v[field.name]"
+                      ghost-class="ghost"
+                      :handle="'.dnd-handler_' + field.id"
+                      class="row"
+                      item-key="id">
                       <template #item="{element, index}">
                         <div class="d-flex" :class="field.repeatsWidth">
                           <div class="d-flex flex-column mt-1">
-                            <button type="button" class="btn btn-sm"
-                                    @click="removeRepeatedField(field.name, index)"
-                                    :title="$t('Remove')+' '+ field.label + ' ('+(index+1)+')'">
-                              <i class="bi bi-x-circle fs-6"/>
+                            <button
+                              type="button"
+                              class="btn btn-sm"
+                              @click="removeRepeatedField(field.name, index)"
+                              :title="$t('Remove') + ' ' + field.label + ' (' + (index + 1) + ')'">
+                              <i class="bi bi-x-circle fs-6" />
                             </button>
-                            <button :class="['btn btn-sm', 'dnd-handler_' + field.id]"
-                                    type="button" :title="$t('Reorder') +' '+ field.label">
-                              <i class="bi bi-arrows-expand fs-6"/>
+                            <button
+                              :class="['btn btn-sm', 'dnd-handler_' + field.id]"
+                              type="button"
+                              :title="$t('Reorder') + ' ' + field.label">
+                              <i class="bi bi-arrows-expand fs-6" />
                             </button>
                           </div>
                           <div class="form-group flex-fill my-2">
-                            <label :for="field.id+index" class="form-label"
-                                   @click="collapsed['_'+field.id+'_'+index] = !collapsed['_'+field.id+'_'+index]">
-                              <span class="fw-semibold" v-text="field.label"/> {{ index + 1 }}
+                            <label
+                              :for="field.id + index"
+                              class="form-label"
+                              @click="
+                                collapsed['_' + field.id + '_' + index] = !collapsed['_' + field.id + '_' + index]
+                              ">
+                              <span class="fw-semibold" v-text="field.label" /> {{ index + 1 }}
 
                               <button type="button" class="btn btn-sm">
-                                <i class="bi bi-arrow-down-short d-inline-block"
-                                   :class="{'uncollapsed-arrow':!collapsed['_'+field.id+'_'+index]}"/>
+                                <i
+                                  class="bi bi-arrow-down-short d-inline-block"
+                                  :class="{'uncollapsed-arrow': !collapsed['_' + field.id + '_' + index]}" />
                               </button>
                             </label>
 
                             <CollapseTransition>
                               <component
-                                  v-show="!collapsed['_'+field.id+'_'+index]"
-                                  :is="field.component" :id="field.id+index"
-                                  :name="field.name + '['+index+']'"
-                                  :invalid="!!form.errors[field.name]" v-model="form.v[field.name][index]"
-                                  :label="field.label" :options="field.options"
-                                  :validation="field.validation"
-                                  :locale="locale" :is-locale-rtl="isLocaleRtl"
-                              />
+                                v-show="!collapsed['_' + field.id + '_' + index]"
+                                :is="field.component"
+                                :id="field.id + index"
+                                :name="field.name + '[' + index + ']'"
+                                :invalid="!!form.errors[field.name]"
+                                v-model="form.v[field.name][index]"
+                                :label="field.label"
+                                :options="field.options"
+                                :validation="field.validation"
+                                :locale="locale"
+                                :is-locale-rtl="isLocaleRtl" />
                             </CollapseTransition>
 
-                            <small v-if="field.description" :id="field.id+index+'Help'"
-                                   class="form-text text-muted"
-                                   v-text="field.description"/>
+                            <small
+                              v-if="field.description"
+                              :id="field.id + index + 'Help'"
+                              class="form-text text-muted"
+                              v-text="field.description" />
                           </div>
                         </div>
                       </template>
                     </draggable>
                     <div class="mb-5">
-                      <button style="--bs-btn-disabled-border-color:transparent"
-                              class="btn text-primary fw-semibold d-flex align-items-center" @click="repeatField(field)"
-                              :disabled="form.v[field.name].length >= field.repeats"
-                              type="button" :title="$t('Add') +' '+ field.label">
-                        <i class="bi bi-plus-circle-fill fs-6"/>
+                      <button
+                        style="--bs-btn-disabled-border-color: transparent"
+                        class="btn text-primary fw-semibold d-flex align-items-center"
+                        @click="repeatField(field)"
+                        :disabled="form.v[field.name].length >= field.repeats"
+                        type="button"
+                        :title="$t('Add') + ' ' + field.label">
+                        <i class="bi bi-plus-circle-fill fs-6" />
                         <span class="px-1"></span>
-                        <span v-text="$t('Add') +' '+ field.label"/>
+                        <span v-text="$t('Add') + ' ' + field.label" />
                       </button>
                     </div>
                   </template>
 
                   <!-- Single field -->
                   <template v-else>
-                    <label class="form-label fw-semibold" :for="field.id" v-text="field.label"/>
+                    <label class="form-label fw-semibold" :for="field.id" v-text="field.label" />
                     <component
-                        :is="field.component" :id="field.id" :name="field.name"
-                        :invalid="!!form.errors[field.name]" v-model="form.v[field.name]"
-                        :label="field.label" :options="field.options" :validation="field.validation"
-                        :locale="locale" :is-locale-rtl="isLocaleRtl"
-                    />
-                    <small v-if="field.description" :id="field.id+ 'Help'"
-                           class="form-text text-muted"
-                           v-text="field.description"/>
+                      :is="field.component"
+                      :id="field.id"
+                      :name="field.name"
+                      :invalid="!!form.errors[field.name]"
+                      v-model="form.v[field.name]"
+                      :label="field.label"
+                      :options="field.options"
+                      :validation="field.validation"
+                      :locale="locale"
+                      :is-locale-rtl="isLocaleRtl" />
+                    <small
+                      v-if="field.description"
+                      :id="field.id + 'Help'"
+                      class="form-text text-muted"
+                      v-text="field.description" />
                     <div v-if="form.errors[field.name]" class="invalid-feedback" role="alert">
                       <strong
-                          v-text="Array.isArray(form.errors[field.name]) ? form.errors[field.name][0] : form.errors[field.name]"/>
+                        v-text="
+                          Array.isArray(form.errors[field.name]) ? form.errors[field.name][0] : form.errors[field.name]
+                        " />
                     </div>
                   </template>
                 </div>
@@ -196,17 +242,14 @@
             </div>
           </div>
           <!-- /Loop groups -->
-
         </div>
         <!-- /Loop columns -->
-
       </div>
     </form>
   </Layout>
 </template>
 
 <script>
-
 import CollapseTransition from '@ivanv/vue-collapse-transition/src/CollapseTransition.vue';
 import Swal from '../../inc/Swal';
 import NavItemDropdown from '../../Shared/NavItemDropdown.vue';
@@ -223,7 +266,7 @@ export default {
     locale: {type: String},
     public_url: {type: String},
     fm_path: {type: String, default: ''},
-    revisions: {type: Array, default: []},
+    revisions: {type: Array, default: () => []},
     loadedRev: {type: String},
   },
 
@@ -275,15 +318,12 @@ export default {
 
       reader.onload = () => {
         let data = JSON.parse(reader.result);
-        Object.keys(data).forEach(k => vm.form.v[k] = data[k]);
+        Object.keys(data).forEach(k => (vm.form.v[k] = data[k]));
       };
     },
 
     fileableDate() {
-      return new Date().toISOString()
-          .replace('T', '_')
-          .replace(/:/g, '-')
-          .substring(0, 19);
+      return new Date().toISOString().replace('T', '_').replace(/:/g, '-').substring(0, 19);
     },
 
     async fake() {
@@ -297,9 +337,13 @@ export default {
 
       if (!isConfirmed) return;
 
-      this.$inertia.post(this.route('jasmine.page.fake', {jasminePage: this.b.slug}), {}, {
-        preserveState: false,
-      });
+      this.$inertia.post(
+        this.route('jasmine.page.fake', {jasminePage: this.b.slug}),
+        {},
+        {
+          preserveState: false,
+        },
+      );
     },
   },
 
@@ -331,7 +375,7 @@ export default {
 
 <style scoped>
 .uncollapsed-arrow {
-  transition: transform .3s ease-in-out;
+  transition: transform 0.3s ease-in-out;
 }
 
 .uncollapsed-arrow {
@@ -341,5 +385,4 @@ export default {
 [dir='rtl'] .uncollapsed-arrow {
   transform: rotate(90deg);
 }
-
 </style>

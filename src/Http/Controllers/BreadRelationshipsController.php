@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Translatable;
+use Jasmine\Jasmine\Facades\Jasmine;
 
 class BreadRelationshipsController extends Controller
 {
     public function getRelationData()
     {
         $breadableKey = \request()->route('breadableName');
-        $breadableName = \Jasmine::getBreadables()[$breadableKey] ?? abort(404);
+        $breadableName = Jasmine::getBreadables()[$breadableKey] ?? abort(404);
 
         $breadableId = \request()->route()->parameter('breadableId');
 
@@ -24,7 +25,7 @@ class BreadRelationshipsController extends Controller
 
         $localed = false;
         if (in_array(Translatable::class, class_uses($breadableName))) {
-            app()->setLocale(request('_locale', \Jasmine::getLocales()[0] ?? 'en'));
+            app()->setLocale(request('_locale', Jasmine::getLocales()[0] ?? 'en'));
             $localed = true;
         }
 
@@ -39,7 +40,7 @@ class BreadRelationshipsController extends Controller
         $relation = $breadable->{$data['relation']}();
 
         if (!$localed && in_array(Translatable::class, class_uses($relation->getModel()))) {
-            app()->setLocale(request('_locale', \Jasmine::getLocales()[0] ?? 'en'));
+            app()->setLocale(request('_locale', Jasmine::getLocales()[0] ?? 'en'));
             $localed = true;
         }
 

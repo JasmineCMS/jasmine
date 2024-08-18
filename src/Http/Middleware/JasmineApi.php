@@ -20,7 +20,7 @@ class JasmineApi
     {
         if (RateLimiter::tooManyAttempts('jasmine.api.auth.' . $request->ip(), 5)) abort(429);
 
-        /** @var JasmineUserApiToken $token */
+        /** @var JasmineUserApiToken|null $token */
         $token = JasmineUserApiToken::firstWhere('token', $request->bearerToken());
 
         if (!$token || ($token->expires_at && $token->expires_at < now())) {
