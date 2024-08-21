@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
+use Jasmine\Jasmine\Bread\Translatable;
+use Jasmine\Jasmine\Bread\Translations;
 
 /**
  * @property Generator $faker
@@ -16,15 +18,18 @@ class ManifestFaker
 {
     /** @var Generator[] */
     private array $fakers = [];
+    private bool $translatable;
 
     public function __construct(private Model $model, private bool $all = false, private array $override = [])
     {
+        $this->translatable = in_array(Translatable::class, class_uses($this->model));
+
         $map = [
             'en' => 'en_US',
             'he' => 'he_IL',
         ];
 
-        foreach (config('app.locales') as $locale) {
+        foreach (config('app.locales', [config('app.locale')]) as $locale) {
             $this->fakers[$locale] = Factory::create($map[$locale] ?? $locale);
         }
     }
@@ -89,14 +94,39 @@ class ManifestFaker
             if (!$this->all && !in_array('required', $field['validation']) && $this->faker->boolean) {
                 continue;
             } else if (method_exists(self::class, lcfirst($field['type']))) {
-                if (($field['repeats'] ?? 1) > 1) {
-                    $data[$field['name']] = [];
-                    $fill = $this->faker->numberBetween(2, $field['repeats']);
-                    for ($i = 0; $i < $fill; $i++) {
-                        $data[$field['name']][] = call_user_func([self::class, lcfirst($field['type'])], $field);
+
+                $x = function () use ($field) {
+                    if (($field['repeats'] ?? 1) > 1) {
+                        $res = [];
+                        $fill = $this->faker->numberBetween(2, $field['repeats']);
+                        for ($i = 0; $i < $fill; $i++) {
+                            $res[] = call_user_func([self::class, lcfirst($field['type'])], $field);
+                        }
+                    } else {
+                        $res = call_user_func([self::class, lcfirst($field['type'])], $field);
                     }
+
+                    return $res;
+                };
+
+                if (
+                    !$nested && $this->translatable
+                    && in_array($field['name'], $this->model->getTranslatableAttributes())
+                ) {
+                    $appLocale = app()->getLocale();
+
+                    $translations = new Translations();
+
+                    foreach (config('app.locales') as $locale) {
+                        app()->setLocale($locale);
+                        $translations[$locale] = $x();
+                    }
+
+                    $data[$field['name']] = $translations;
+
+                    app()->setLocale($appLocale);
                 } else {
-                    $data[$field['name']] = call_user_func([self::class, lcfirst($field['type'])], $field);
+                    $data[$field['name']] = $x();
                 }
             }
         }

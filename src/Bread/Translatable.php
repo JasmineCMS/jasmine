@@ -23,7 +23,7 @@ trait Translatable
         return $this;
     }
 
-    public function getLocale(): string { return $this->_locale ?? config('app.locale', 'en'); }
+    public function getLocale(): string { return $this->_locale ?? app()->getLocale(); }
 
     /**
      * Convert the model instance to an array.
@@ -48,11 +48,11 @@ trait Translatable
             return parent::setAttribute($key, $value);
         }
 
-        if (is_array($value)) {
-            $this->attributes[$key] = Json::encode(
-                array_merge(Json::decode($this->attributes[$key] ?? '{}', true), [
-                    $this->getLocale() => $value,
-                ]));
+        if (is_array($value) || $value instanceof Translations) {
+            $this->attributes[$key] = Json::encode(array_merge(
+                Json::decode($this->attributes[$key] ?? '{}', true),
+                $value instanceof Translations ? $value->toArray() : [$this->getLocale() => $value]
+            ));
             return $this;
         } else {
             // If the attribute is translatable and not already translated, set a
