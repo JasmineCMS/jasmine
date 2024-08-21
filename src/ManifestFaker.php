@@ -10,6 +10,7 @@ use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
 use Jasmine\Jasmine\Bread\Translatable;
 use Jasmine\Jasmine\Bread\Translations;
+use Jasmine\Jasmine\Models\JasminePage;
 
 /**
  * @property Generator $faker
@@ -111,6 +112,7 @@ class ManifestFaker
 
                 if (
                     !$nested && $this->translatable
+                    && !($this->model instanceof JasminePage)
                     && in_array($field['name'], $this->model->getTranslatableAttributes())
                 ) {
                     $appLocale = app()->getLocale();
