@@ -57,6 +57,12 @@ class JasmineUser extends Authenticatable implements BreadableInterface
     use HasFactory;
     use Notifiable, Breadable;
 
+    protected static function newFactory() : JasmineUserFactory
+    {
+        return JasmineUserFactory::new();
+    }
+
+
     protected static string $factory = JasmineUserFactory::class;
     
     protected $fillable = [
