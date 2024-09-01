@@ -119,7 +119,7 @@ class ManifestFaker
 
                     $translations = new Translations();
 
-                    foreach (config('app.locales') as $locale) {
+                    foreach (config('app.locales', [config('app.locale')]) as $locale) {
                         app()->setLocale($locale);
                         $translations[$locale] = $x();
                     }
