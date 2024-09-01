@@ -50,14 +50,14 @@ class ApiController extends Controller
             ],
             'npm'      => Cache::remember('jasmine.info.npm', 60,
                 fn() => [
-                    'package.json'      => json_decode(file_get_contents(base_path('package.json'))),
-                    'package-lock.json' => json_decode(file_get_contents(base_path('package-lock.json'))),
+                    'package.json'      => @json_decode(@file_get_contents(base_path('package.json'))),
+                    'package-lock.json' => @json_decode(@file_get_contents(base_path('package-lock.json'))),
                 ]
             ),
             'composer' => Cache::remember('jasmine.info.composer', 60,
                 fn() => [
-                    'composer.json' => json_decode(file_get_contents(base_path('composer.json'))),
-                    'composer.lock' => json_decode(file_get_contents(base_path('composer.lock'))),
+                    'composer.json' => @json_decode(@file_get_contents(base_path('composer.json'))),
+                    'composer.lock' => @json_decode(@file_get_contents(base_path('composer.lock'))),
                 ]
             ),
         ];
