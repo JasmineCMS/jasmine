@@ -4,6 +4,7 @@ namespace Jasmine\Jasmine;
 
 use Faker\Factory;
 use Faker\Generator;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Jasmine\Jasmine\Bread\BreadableInterface;
@@ -178,7 +179,17 @@ class ManifestFaker
         return $this->faker->randomElement(array_keys($field['options']['options']));
     }
 
-    // TODO multiselect field
+    public function multiSelectField(array $field): array|string|null
+    {
+        $options = $field['options']['options'] ?? [];
+        if ($options instanceof Arrayable) $options = $options->toArray();
+
+        if ($field['options']['mode'] === 'single') {
+            return $this->faker->randomElement(array_column($options, 'value'));
+        }
+
+        return $this->faker->randomElements(array_column($options, 'value'), null);
+    }
 
     public function geocodingField(array $field): array
     {
