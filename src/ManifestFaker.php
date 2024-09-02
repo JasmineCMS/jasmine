@@ -255,6 +255,7 @@ class ManifestFaker
             // check options
             if ($min === 0) $min = $field['options']['min'] ?? 0;
 
+            // check validation
             $max = array_values(array_map(
                 fn($v) => intval(explode(':', $v)[1] ?? '2147483647'),
                 array_filter($field['validation'], fn($r) => str_starts_with($r, 'max:'))
