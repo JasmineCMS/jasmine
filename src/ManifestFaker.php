@@ -241,18 +241,27 @@ class ManifestFaker
         if ($field['type'] === 'checkbox') return $this->switchField($field);
 
         if (
-            in_array('numeric', $field['validation'] ?? [])
+            ($field['options']['type'] ?? null) === 'number'
+            || in_array('numeric', $field['validation'] ?? [])
             || in_array('integer', $field['validation'] ?? [])
         ) {
+
+            // check validation
             $min = array_values(array_map(
                 fn($v) => intval(explode(':', $v)[1] ?? '0'),
                 array_filter($field['validation'], fn($r) => str_starts_with($r, 'min:'))
             ))[0] ?? 0;
 
+            // check options
+            if ($min === 0) $min = $field['options']['min'] ?? 0;
+
             $max = array_values(array_map(
                 fn($v) => intval(explode(':', $v)[1] ?? '2147483647'),
                 array_filter($field['validation'], fn($r) => str_starts_with($r, 'max:'))
             ))[0] ?? 2147483647;
+
+            // check options
+            if ($max === 2147483647) $max = $field['options']['max'] ?? 0;
 
             return $this->faker->numberBetween((int)$min, (int)$max);
         }
