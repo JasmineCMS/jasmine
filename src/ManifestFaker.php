@@ -67,13 +67,13 @@ class ManifestFaker
 
             if (!count($keys)) $keys = array_keys(Arr::dot($res));
 
+
             $k = str_replace('*', '\d+', $k);
             $k = str_replace('.', '\.', $k);
 
             foreach (preg_grep('/^' . $k . '$/', $keys) as $nk) {
                 $ov = Arr::get($res, $nk);
-                $v = $v instanceof \Closure ? $v($ov, $this) : $v;
-                Arr::set($res, $nk, $v);
+                Arr::set($res, $nk, $v instanceof \Closure ? $v($ov, $this) : $v);
             }
         }
 
