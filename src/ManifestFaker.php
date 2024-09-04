@@ -65,8 +65,7 @@ class ManifestFaker
 
             foreach (preg_grep('/^' . $k . '$/', $keys) as $nk) {
                 $ov = Arr::get($res, $nk);
-                $v = $v instanceof \Closure ? $v($ov, $this) : $v;
-                Arr::set($res, $nk, $v);
+                Arr::set($res, $nk, $v instanceof \Closure ? $v($ov, $this) : $v);
             }
         }
 
