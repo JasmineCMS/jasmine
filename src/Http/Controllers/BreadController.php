@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -132,8 +133,9 @@ class BreadController extends Controller
             $key = null;
             if ($rb instanceof HasMany) $key = $rb->getForeignKeyName();
             if ($rb instanceof BelongsTo) $key = $rb->getOwnerKeyName();
-            
-            if (!in_array($key, $cols)) array_unshift($cols, $key);
+            if ($rb instanceof HasOneThrough) $key = $rb->getSecondLocalKeyName();
+
+            if ($key && !in_array($key, $cols)) array_unshift($cols, $key);
             if (in_array('*', $cols)) $cols = ['*'];
             $q->with([$relation => fn($rq) => $rq->select($cols)]);
         }
