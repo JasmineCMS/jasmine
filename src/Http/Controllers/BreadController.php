@@ -264,7 +264,8 @@ class BreadController extends Controller
 
                     // localize relations
                     foreach ($relations as $r => $rf) {
-                        if ($locale && in_array(Translatable::class, class_uses($m->{$r}))) {
+                        $ri = $m->{$r};
+                        if ($ri && $locale && in_array(Translatable::class, class_uses($ri))) {
                             $m->{$r}->setLocale($locale);
                         }
                     }
