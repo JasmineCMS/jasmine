@@ -32,7 +32,7 @@ class ManifestFaker
         ];
 
         foreach (config('app.locales', [config('app.locale')]) as $locale) {
-            $this->fakers[$locale] = Factory::create($map[$locale] ?? $locale);
+            $this->fakers[$locale] = fake($map[$locale] ?? $locale);
         }
     }
 
