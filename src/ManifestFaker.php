@@ -176,6 +176,8 @@ class ManifestFaker
             return $this->faker->randomElements(array_keys($field['options']['options']), null);
         }
 
+        if(!count($field['options']['options'] ?? [])) return null;
+
         return $this->faker->randomElement(array_keys($field['options']['options']));
     }
 
@@ -183,6 +185,8 @@ class ManifestFaker
     {
         $options = $field['options']['options'] ?? [];
         if ($options instanceof Arrayable) $options = $options->toArray();
+
+        if(!count($options)) return null;
 
         if ($field['options']['mode'] === 'single') {
             return $this->faker->randomElement(array_column($options, 'value'));
