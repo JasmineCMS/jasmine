@@ -211,12 +211,12 @@ class ManifestFaker
         return $this->faker->hexColor;
     }
 
-    public function dateField(array $field): string
+    public function dateField(array $field, string $format = 'Y-m-d'): string
     {
         return $this->faker->dateTimeBetween(
             $field['options']['min'] ?? '-1 year',
             $field['options']['max'] ?? 'now',
-        )->format('Y-m-d');
+        )->format($format);
     }
 
     public function videoField(array $field): array
@@ -242,9 +242,12 @@ class ManifestFaker
     {
         $field['options'] = (array)$field['options'];
 
-        if (($field['options']['type'] ?? null) === 'date') return $this->dateField($field);
-        if (($field['options']['type'] ?? null) === 'color') return $this->colorField($field);
-        if (($field['options']['type'] ?? null) === 'checkbox') return $this->switchField($field);
+        if($type = ($field['options']['type'] ?? null)) {
+            if ($type === 'date') return $this->dateField($field);
+            if ($type === 'datetime-local') return $this->dateField($field, 'Y-m-d H:i:s');
+            if ($type === 'color') return $this->colorField($field);
+            if ($type === 'checkbox') return $this->switchField($field);
+        }
 
         if (
             ($field['options']['type'] ?? null) === 'number'
