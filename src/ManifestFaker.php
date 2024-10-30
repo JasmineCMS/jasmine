@@ -242,9 +242,9 @@ class ManifestFaker
     {
         $field['options'] = (array)$field['options'];
 
-        if ($field['options']['type'] === 'date') return $this->dateField($field);
-        if ($field['options']['type'] === 'color') return $this->colorField($field);
-        if ($field['options']['type'] === 'checkbox') return $this->switchField($field);
+        if (($field['options']['type'] ?? null) === 'date') return $this->dateField($field);
+        if (($field['options']['type'] ?? null) === 'color') return $this->colorField($field);
+        if (($field['options']['type'] ?? null) === 'checkbox') return $this->switchField($field);
 
         if (
             ($field['options']['type'] ?? null) === 'number'
