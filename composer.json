@@ -14,7 +14,7 @@
     "laravel/framework": "^11.0",
     "laravel/ui": "^4.0",
     "spatie/laravel-translatable": "^6.7",
-    "inertiajs/inertia-laravel": "^1.0",
+    "inertiajs/inertia-laravel": "^2.0",
     "tightenco/ziggy": "^1.5",
     "composer-runtime-api": "^2.2",
     "pragmarx/google2fa": "^8.0",
