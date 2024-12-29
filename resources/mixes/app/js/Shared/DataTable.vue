@@ -232,7 +232,7 @@ export default {
 
         Object.keys(q.filters).forEach(k => Array.isArray(q.filters[k]) && (q.filters[k] = q.filters[k].join(',')));
 
-        this.$inertia.get(this.$inertia.page.url, q, {preserveState: true, replace: true});
+        this.$inertia.get(this.$page.url, q, {preserveState: true, replace: true});
       },
     },
   },
