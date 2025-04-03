@@ -57,7 +57,7 @@
     <div id="sidebar">
       <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
         <div class="sb-sidenav-menu">
-          <div class="nav">
+          <div class="nav mb-5">
             <template v-for="(i,k) in $globals.sb_menu || {}" :key="k">
               <template v-if="i.hidden"/>
               <template v-else-if="i.children && len(i.children, true)">
