@@ -10,7 +10,7 @@
   "require": {
     "php": "^8.2",
     "ext-json": "*",
-    "alexusmai/laravel-file-manager": "^3.1",
+    "alexusmai/laravel-file-manager": "^3.1.1",
     "laravel/framework": "^11.20|^12.0",
     "laravel/ui": "^4.0",
     "spatie/laravel-translatable": "^6.7",
