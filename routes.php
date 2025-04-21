@@ -73,7 +73,9 @@ Route::middleware([JasmineMiddleware::class])->name('jasmine.')->group(function 
             
                  Route::get('/{breadableId}/edit', [Bread::class, 'edit'])->name('edit');
                  Route::post('/{breadableId}/edit', [Bread::class, 'save']);
-            
+
+                 Route::post('/{breadableId}/translate', [Bread::class, 'translate'])->name('translate');;
+
                  Route::delete('/{breadableId}', [Bread::class, 'delete'])->name('delete');
             
                  Route::get('/relations', [BreadRelationships::class, 'getRelationData']);
@@ -84,7 +86,8 @@ Route::middleware([JasmineMiddleware::class])->name('jasmine.')->group(function 
              Route::get('/page/{jasminePage}', [Page::class, 'edit'])->name('page.edit');
              Route::post('/page/{jasminePage}', [Page::class, 'save']);
              Route::post('/page/{jasminePage}/fake', [Page::class, 'fake'])->name('page.fake');
-             
+             Route::post('/page/{jasminePage}/translate', [Page::class, 'translate'])->name('page.translate');
+
              Route::group([], Jasmine::getAuthenticatedRouteGroups());
          });
     

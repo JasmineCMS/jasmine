@@ -13,6 +13,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Jasmine\Jasmine\Bread\Breadable;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
@@ -23,8 +25,7 @@ use Jasmine\Jasmine\Models\JasmineRevision;
 
 class BreadController extends Controller
 {
-    public function index()
-    {
+    public function index() {
         $bKey = \request()->route('breadableName');
         /** @var BreadableInterface|Model $breadableClass */
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
@@ -182,7 +183,7 @@ class BreadController extends Controller
                     if (!is_array($v)) return;
 
                     $filterable = array_column(array_filter($columns,
-                        fn($x) => $x['filtering'] ?? null
+                        fn($x) => $x['filtering'] ?? null,
                     ), 'data');
 
                     foreach (array_filter($v) as $ff => $fv) {
@@ -290,8 +291,7 @@ class BreadController extends Controller
         ]);
     }
 
-    public function edit()
-    {
+    public function edit() {
         $bKey = \request()->route('breadableName');
         /** @var BreadableInterface|Model $breadableClass */
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
@@ -329,22 +329,23 @@ class BreadController extends Controller
         }
 
         return inertia('Bread/Edit', [
-            'can'        => $permissions,
-            'b'          => [
+            'can'                 => $permissions,
+            'translationServices' => Jasmine::listTranslationServices(),
+            'b'                   => [
                 'key'      => $bKey,
                 'singular' => $breadableClass::getSingularName(),
                 'plural'   => $breadableClass::getPluralName(),
                 'manifest' => $breadableClass::fieldsManifest($ent),
                 'fields'   => $breadableClass::fieldsManifest($ent)->getFields(),
             ],
-            'entId'      => $breadableId,
-            'ent'        => $data,
-            'title'      => $ent->exists ? $ent->getTitle() : null,
-            'fm_path'    => $breadableClass::getPluralName() . '/' . $ent->getKey(),
-            'locale'     => $locale,
-            'public_url' => $ent->exists ? method_exists($ent, 'jasmineGetPublicUrl') ? $ent->jasmineGetPublicUrl() : null : null,
-            'loadedRev'  => isset($rev) ? $rev->created_at : null,
-            'revisions'  => JasmineRevision
+            'entId'               => $breadableId,
+            'ent'                 => $data,
+            'title'               => $ent->exists ? $ent->getTitle() : null,
+            'fm_path'             => $breadableClass::getPluralName() . '/' . $ent->getKey(),
+            'locale'              => $locale,
+            'public_url'          => $ent->exists ? method_exists($ent, 'jasmineGetPublicUrl') ? $ent->jasmineGetPublicUrl() : null : null,
+            'loadedRev'           => isset($rev) ? $rev->created_at : null,
+            'revisions'           => JasmineRevision
                 ::whereRevisionableType($ent::class)
                 ->whereRevisionableId($ent->getKey())
                 ->latest()
@@ -358,8 +359,7 @@ class BreadController extends Controller
         ]);
     }
 
-    public function save()
-    {
+    public function save() {
         $bKey = \request()->route('breadableName');
         /** @var BreadableInterface|Model $breadableClass */
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
@@ -438,8 +438,7 @@ class BreadController extends Controller
         ]);
     }
 
-    public function delete()
-    {
+    public function delete() {
         $bKey = \request()->route('breadableName');
         $breadableId = \request()->route()->parameter('breadableId');
         /** @var BreadableInterface|Model $breadableClass */
@@ -461,8 +460,7 @@ class BreadController extends Controller
         return redirect()->back();
     }
 
-    public function reorder()
-    {
+    public function reorder() {
         $bKey = \request()->route('breadableName');
         /** @var BreadableInterface|Model $breadableClass */
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
@@ -489,8 +487,7 @@ class BreadController extends Controller
         return redirect()->back();
     }
 
-    private static function fireEvent(string $event, Model $m, ?array $data = null): ?array
-    {
+    private static function fireEvent(string $event, Model $m, ?array $data = null): ?array {
         switch ($event) {
             case 'retrievedForIndex':
                 foreach (class_uses_recursive($m) as $trait) {
@@ -537,8 +534,7 @@ class BreadController extends Controller
         return null;
     }
 
-    private function recordRevision(Model|BreadableInterface $m, array $old)
-    {
+    private function recordRevision(Model|BreadableInterface $m, array $old) {
         $max = property_exists($m, 'jasmine_revisions')
             ? $m->jasmine_revisions
             : config('jasmine.revisions', 100);
@@ -559,8 +555,7 @@ class BreadController extends Controller
         ]);
     }
 
-    public function fake()
-    {
+    public function fake() {
         $data = request()->validate(['count' => ['required', 'integer', 'min:1', 'max:100']]);
         $bKey = \request()->route('breadableName');
         /** @var BreadableInterface|Breadable|Model $breadableClass */
@@ -578,5 +573,58 @@ class BreadController extends Controller
             'title'             => 'Saved!',
             'showConfirmButton' => false,
         ]);
+    }
+
+    public function translate() {
+        $bKey = \request()->route('breadableName');
+        /** @var BreadableInterface|Model $breadableClass */
+        $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
+        $breadableId = \request()->route()->parameter('breadableId');
+
+        /** @var BreadableInterface|Model $ent */
+        $ent = $breadableId
+            ? $breadableClass::find($breadableId)
+            : new $breadableClass();
+
+        // Check permission
+        if (
+            !Auth::guard(config('jasmine.auth.guard'))
+                ->user()
+                ->jCan('models.' . $bKey . '.' . ($ent->exists ? 'edit' : 'add'))
+        ) abort(401);
+
+
+        if (!class_uses($ent, Translatable::class)) abort(404);
+
+        /** @var Model|Translatable $ent */
+
+        $data = request()->validate([
+            'service' => ['required', 'string', Rule::in(array_keys(Jasmine::getTranslationService()))],
+            'source'  => ['required', 'string', Rule::in(Jasmine::getLocales())],
+            'target'  => ['required', 'string', Rule::in(Jasmine::getLocales())],
+        ]);
+
+        if ($data['source'] === $data['target']) throw ValidationException::withMessages([
+            'target' => __('source and target must be different'),
+        ]);
+
+        $service = Jasmine::getTranslationService($data['service']);
+
+        $manifest = collect($breadableClass::fieldsManifest($ent)->getFields())
+            ->keyBy(fn(AbstractField $i) => $i->toArray()['name']);
+
+        $fields = [];
+        foreach ($ent->getTranslatableAttributes() as $attr) $fields[$attr] = [
+            'value' => $ent->getTranslation($attr, $data['source']),
+            'field' => $manifest[$attr] ?? null,
+        ];
+
+        $res = $service($data['source'], $data['target'], $fields);
+
+        foreach ($res as $attr => $v) $ent->setTranslation($attr, $data['target'], $v);
+
+        $ent->save();
+
+        return redirect()->back();
     }
 }

@@ -20,6 +20,35 @@
           <inertia-link v-for="_l in $globals.locales" href="" :data="{_locale:_l}" v-text="_l"
                         class="btn btn-outline-primary text-uppercase" :class="{active:_l === locale}"/>
         </div>
+
+        <template v-if="entId && locale && Object.keys(translationServices).length">
+          <div class="mx-1"></div>
+          <nav-item-dropdown
+              v-if="Object.keys(translationServices).length > 1"
+              as="div" id="translationDd"
+              class="btn btn-sm btn-outline-primary dropdown"
+              menu-class="bg-light px-2 rounded-3 overflow-auto">
+            <i class="bi bi-translate"/>
+            {{ $t('Translate') }}
+            <template #menu>
+              <li v-for="(name, ts) in translationServices" :key="ts" class="bg-white mb-2 rounded-3 overflow-hidden">
+                <button type="button" @click="confirmTranslate(ts, name)" class="dropdown-item px-2">
+                  {{ name }}
+                </button>
+              </li>
+            </template>
+          </nav-item-dropdown>
+
+          <template v-else>
+            <button
+                v-for="(name, ts) in translationServices" type="button" @click="confirmTranslate(ts, name)"
+                class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-translate"/>
+              {{ $t('Translate') }}
+            </button>
+          </template>
+        </template>
+
         <div class="mx-3"/>
         <div class="btn-group btn-group-sm">
           <a :href="exportBread()"
@@ -33,10 +62,11 @@
           </button>
         </div>
         <div class="mx-3" v-if="revisions.length"></div>
-        <nav-item-dropdown v-if="revisions.length"
-                           as="div" id="revisionsDd"
-                           class="btn btn-sm btn-outline-primary dropdown"
-                           menu-class="bg-light px-2 rounded-3 overflow-auto" menu-style="height: 65vh">
+        <nav-item-dropdown
+            v-if="revisions.length"
+            as="div" id="revisionsDd"
+            class="btn btn-sm btn-outline-primary dropdown"
+            menu-class="bg-light px-2 rounded-3 overflow-auto" menu-style="height: 65vh">
           <i class="bi bi-clock-history"></i>
           {{ $t('Revisions') }}
           <template #menu>
@@ -210,12 +240,14 @@
 import CollapseTransition from '@ivanv/vue-collapse-transition/src/CollapseTransition.vue';
 import Swal from '../../inc/Swal';
 import NavItemDropdown from '../../Shared/NavItemDropdown.vue';
+import {Link as InertiaLink} from "@inertiajs/vue3";
 
 export default {
   name: 'BreadEdit',
-  components: {NavItemDropdown, CollapseTransition},
+  components: {InertiaLink, NavItemDropdown, CollapseTransition},
   props: {
     can: {type: Array, required: true},
+    translationServices: {type: Object, required: true},
     b: {type: Object, required: true},
     entId: {type: [String, Number]},
     ent: {type: Object, required: true},
@@ -300,6 +332,31 @@ export default {
       this.$inertia.post(this.route('jasmine.page.fake', {jasminePage: this.b.slug}), {}, {
         preserveState: false,
       });
+    },
+
+    async confirmTranslate(service, name) {
+      let {isConfirmed, value} = await Swal.fire({
+        title: this.$t('Translation confirmation'),
+        html: [
+          this.$t('Translate using') + ` <strong>${name}</strong>`,
+          this.$t('All existing translatable data in the target language will be lost.'),
+          '<strong>' + this.$t('Source language') + '</strong>',
+        ].join('<br>'),
+        input: 'select',
+        inputOptions: Object.fromEntries(this.$globals?.locales?.filter(i => i !== this.locale).map(i => [i, i])),
+        showCancelButton: true,
+        showConfirmButton: true,
+      });
+
+      if (!isConfirmed) return;
+
+      this.$inertia.post(
+          this.b.key === 'page'
+              ? this.route('jasmine.page.translate', {jasminePage: this.b.slug})
+              : this.route('jasmine.bread.translate', {breadableName: this.b.key, breadableId: this.entId}),
+          {service, source: value, target: this.locale}, {
+            onSuccess: () => document.location.reload(),
+          });
     },
   },
 

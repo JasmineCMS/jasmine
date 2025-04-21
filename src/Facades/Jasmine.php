@@ -45,5 +45,9 @@ use Illuminate\Support\Facades\Facade;
  *
  * @method static string registerDashboardCard(array $config, ?string $id = null)
  * @method static array|null getDashboardCards(?string $name = null)
+ *
+ * @method static void registerTranslationService(string $id, \Closure $closure)
+ * @method static array|\Closure|null getTranslationService(?string $id = null)
+ * @method static array listTranslationServices()
  */
 class Jasmine extends Facade { protected static function getFacadeAccessor(): string { return 'jasmine'; } }

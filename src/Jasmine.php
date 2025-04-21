@@ -12,6 +12,7 @@ use Jasmine\Jasmine\Registers\RegistersPages;
 use Jasmine\Jasmine\Registers\RegistersPermissions;
 use Jasmine\Jasmine\Registers\RegistersRoutes;
 use Jasmine\Jasmine\Registers\RegistersSideBarMenuItems;
+use Jasmine\Jasmine\Registers\RegistersTranslationServices;
 
 class Jasmine
 {
@@ -24,5 +25,6 @@ class Jasmine
         RegistersSideBarMenuItems,
         RegistersCustomAssets,
         RegistersDashboardCards,
-        RegistersOauth2Sso;
+        RegistersOauth2Sso,
+        RegistersTranslationServices;
 }

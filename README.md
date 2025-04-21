@@ -165,3 +165,47 @@ Jasmine::registerOauth2Sso(
     },
 );
 ```
+
+##### Translation services
+
+You can register translation services to automatically translate pages and breadables 
+
+Here is an example using the [prism-php/prism](https://prismphp.com) library
+
+```php
+        Jasmine::registerTranslationService('ai', function (string $source, string $target, array $values) {
+            $data = array_combine(array_keys($values), array_column($values, 'value'));
+
+            $lc2Label = function (string $lc) {
+                return match ($lc) {
+                    'en' => 'English',
+                    'he' => 'Hebrew',
+                    default => $lc,
+                };
+            };
+
+            $fromLang = $lc2Label($source);
+            $toLang = $lc2Label($target);
+
+            $req = Prism::text()
+                ->using(Provider::Gemini, 'gemini-2.0-flash')
+                ->withMaxTokens(32768)
+                ->withSystemPrompt(implode(' ', [
+                    'You are a professional translator,',
+                    'you try to use a gender neutral language when possible,',
+                    'you have a good understanding of JSON objects',
+                    'no notes, comments, explanations or other information, just JSON',
+                ]))
+                ->withMessages([
+                    new UserMessage("Translate my JSON object from $fromLang to $toLang, translate all values only (not keys), leave any urls untouched"),
+                    new UserMessage(json_encode($data, JSON_UNESCAPED_UNICODE)),
+                ]);
+
+            $res = $req->asText();
+
+            preg_match('#\{(?:[^{}]|(?R))*\}#s', $res->text, $matches);
+            $translated = json_decode($matches[0] ?? '{}', true);
+
+            return $translated;
+        });
+```
