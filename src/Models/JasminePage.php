@@ -57,7 +57,7 @@ abstract class JasminePage extends Model
      *
      * @return JasminePage|static
      */
-    public static function jLoad(string $slug = null)
+    public static function jLoad(?string $slug = null)
     {
         $slug = $slug ?? Str::slug(static::getPageName());
         $page = static::query()->whereUrl($slug)->firstOrFail();
