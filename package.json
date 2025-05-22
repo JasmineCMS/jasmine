@@ -36,7 +36,6 @@
     "vue-loader": "^17.0",
     "vue3-sfc-loader": "^0.8.4",
     "vuedraggable": "^4.1.0",
-    "vuex": "^4.1.0",
-    "ziggy-js": "^1.5.0"
+    "vuex": "^4.1.0"
   }
 }

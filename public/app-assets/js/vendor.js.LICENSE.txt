@@ -2,14 +2,14 @@
  * @license MIT */
 
 /*!
-  * shared v9.13.1
-  * (c) 2024 kazuya kawaguchi
+  * shared v9.14.4
+  * (c) 2025 kazuya kawaguchi
   * Released under the MIT License.
   */
 
 /*!
-  * vue-i18n v9.13.1
-  * (c) 2024 kazuya kawaguchi
+  * vue-i18n v9.14.4
+  * (c) 2025 kazuya kawaguchi
   * Released under the MIT License.
   */
 

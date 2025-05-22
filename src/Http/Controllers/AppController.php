@@ -13,7 +13,7 @@ use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Models\JasmineUser;
 use Jasmine\Jasmine\Models\JasmineUserApiToken;
 use PragmaRX\Google2FA\Google2FA;
-use Tightenco\Ziggy\Ziggy;
+use Tighten\Ziggy\Ziggy;
 
 class AppController extends Controller
 {

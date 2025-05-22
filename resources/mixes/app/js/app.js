@@ -2,7 +2,7 @@ import {createStore} from 'vuex';
 import * as Vue from 'vue';
 import * as SfcLoader from 'vue3-sfc-loader/dist/vue3-sfc-loader.esm';
 import {createInertiaApp, Head, Link} from '@inertiajs/vue3'
-import {ZiggyVue} from 'ziggy-js/dist/vue';
+import {ZiggyVue} from '../../../../vendor/tightenco/ziggy/src/js/index';
 import FileManager from 'laravel-file-manager';
 import {createI18n} from 'vue-i18n';
 import VueTinymce from '@tinymce/tinymce-vue';
