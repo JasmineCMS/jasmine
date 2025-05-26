@@ -24,7 +24,7 @@ class RelationshipField extends AbstractField
     
     public function getRelationship() { return $this->relationship; }
     
-    public function setRelationship(Relation $relationship, string $related_title_field = null)
+    public function setRelationship(Relation $relationship, ?string $related_title_field = null)
     {
         $this->relationship = [
             'many_to_many'        => $relationship instanceof BelongsToMany,
