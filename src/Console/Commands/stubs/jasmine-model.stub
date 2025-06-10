@@ -22,9 +22,11 @@ class {{ class }} extends Model implements BreadableInterface
         // TODO
     ];
 
-    protected $casts = [
-        // TODO
-    ];
+    protected function casts(): array {
+        return [
+            // TODO
+        ];
+    }
 
     public static function browseableColumns(): array
     {

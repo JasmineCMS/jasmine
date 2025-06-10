@@ -561,7 +561,10 @@ class BreadController extends Controller
         /** @var BreadableInterface|Breadable|Model $breadableClass */
         $breadableClass = Jasmine::getBreadables()[$bKey] ?? abort(404);
 
+        $locale = app()->getLocale();
+        app()->setLocale(config('app.locale', $locale));
         $breadableClass::factory($data['count'])->create();
+        app()->setLocale($locale);
 
         return redirect()->back()->withSwal([
             'toast'             => true,
