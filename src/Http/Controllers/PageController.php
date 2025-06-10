@@ -195,13 +195,12 @@ class PageController extends Controller
         if (!$pageClass = Jasmine::getPage($slug)) abort(404);
         /** @var JasminePage $pageClass */
 
-        /** @var JasminePage $page */
-        $page = $pageClass::where('url', $slug)->first();
-
         $orgLocale = app()->getLocale();
         $locale = request('_locale', Jasmine::getLocales()[0] ?? $orgLocale);
         app()->setLocale($locale);
 
+        /** @var JasminePage $page */
+        $page = $pageClass::where('url', $slug)->first();
         $page->update(['content' => $page::fake(true)]);
 
         app()->setLocale($orgLocale);
