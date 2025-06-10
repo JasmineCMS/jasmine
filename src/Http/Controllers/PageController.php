@@ -197,7 +197,14 @@ class PageController extends Controller
 
         /** @var JasminePage $page */
         $page = $pageClass::where('url', $slug)->first();
+
+        $orgLocale = app()->getLocale();
+        $locale = request('_locale', Jasmine::getLocales()[0] ?? $orgLocale);
+        app()->setLocale($locale);
+
         $page->update(['content' => $page::fake(true)]);
+
+        app()->setLocale($orgLocale);
 
         return redirect()->back()->withSwal([
             'toast'             => true,
