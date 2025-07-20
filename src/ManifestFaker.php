@@ -22,8 +22,7 @@ class ManifestFaker
     private array $fakers = [];
     private bool $translatable;
 
-    public function __construct(private Model $model, private bool $all = false, private array $override = [])
-    {
+    public function __construct(private Model $model, private bool $all = false, private array $override = []) {
         $this->translatable = in_array(Translatable::class, class_uses($this->model));
 
         $map = [
@@ -36,22 +35,19 @@ class ManifestFaker
         }
     }
 
-    public function __get(string $var)
-    {
+    public function __get(string $var) {
         if ($var === 'faker') return $this->fakers[app()->getLocale()];
 
         throw new \BadMethodCallException('Undefined property via __get()');
     }
 
-    public static function fake(Model|BreadableInterface|string $model, bool $all = false, array $override = []): array
-    {
+    public static function fake(Model|BreadableInterface|string $model, bool $all = false, array $override = []): array {
         if (is_string($model)) $model = new $model;
 
         return (new static($model, $all, $override))->build();
     }
 
-    public function build(): array
-    {
+    public function build(): array {
         $res = $this->fakeFields($this->model->fieldsManifest($this->model)->getFields());
 
         $keys = [];
@@ -85,8 +81,7 @@ class ManifestFaker
      *
      * @throws \ReflectionException
      */
-    public function fakeFields(array $fields, bool $nested = false): array
-    {
+    public function fakeFields(array $fields, bool $nested = false): array {
         $data = [];
         foreach ($fields as $field) {
             $field = is_array($field) ? $field : $field->toArray();
@@ -100,7 +95,7 @@ class ManifestFaker
                 $x = function () use ($field) {
                     if (($field['repeats'] ?? 1) > 1) {
                         $res = [];
-                        $fill = $this->faker->numberBetween(2, $field['repeats']);
+                        $fill = $this->faker->numberBetween(2, min($field['repeats'], 100));
                         for ($i = 0; $i < $fill; $i++) {
                             $res[] = call_user_func([self::class, lcfirst($field['type'])], $field);
                         }
@@ -137,18 +132,15 @@ class ManifestFaker
         return $data;
     }
 
-    public function groupedField(array $field): array
-    {
+    public function groupedField(array $field): array {
         return $this->fakeFields($field['options']['fields'] ?? [], true);
     }
 
-    public function switchField(array $field): bool
-    {
+    public function switchField(array $field): bool {
         return $this->faker->boolean;
     }
 
-    public function imageField(array $field): array
-    {
+    public function imageField(array $field): array {
         if ($field['options']['flexible']) {
             $w = $this->faker->numberBetween(
                 (0.9 * ($field['options']['w'] ?? 0)) ?: 100,
@@ -170,10 +162,9 @@ class ManifestFaker
         ];
     }
 
-    public function selectField(array $field): array|string|null
-    {
+    public function selectField(array $field): array|string|null {
         if ($field['options']['multiple'] ?? null) {
-            if(!count($field['options']['options'] ?? [])) return [];
+            if (!count($field['options']['options'] ?? [])) return [];
 
             return $this->faker->randomElements(array_keys($field['options']['options']), null);
         }
@@ -181,24 +172,22 @@ class ManifestFaker
         return $this->faker->randomElement(array_keys($field['options']['options']));
     }
 
-    public function multiSelectField(array $field): array|string|null
-    {
+    public function multiSelectField(array $field): array|string|null {
         $options = $field['options']['options'] ?? [];
         if ($options instanceof Arrayable) $options = $options->toArray();
 
         if ($field['options']['mode'] === 'single') {
-            if(!count($options)) return null;
+            if (!count($options)) return null;
 
             return $this->faker->randomElement(array_column($options, 'value'));
         }
 
-        if(!count($options)) return [];
+        if (!count($options)) return [];
 
         return $this->faker->randomElements(array_column($options, 'value'), null);
     }
 
-    public function geocodingField(array $field): array
-    {
+    public function geocodingField(array $field): array {
         return [
             'lat'     => $this->faker->latitude,
             'lng'     => $this->faker->longitude,
@@ -206,43 +195,38 @@ class ManifestFaker
         ];
     }
 
-    public function colorField(array $field): string
-    {
+    public function colorField(array $field): string {
         return $this->faker->hexColor;
     }
 
-    public function dateField(array $field, string $format = 'Y-m-d'): string
-    {
+    public function dateField(array $field, string $format = 'Y-m-d'): string {
         return $this->faker->dateTimeBetween(
             $field['options']['min'] ?? '-1 year',
             $field['options']['max'] ?? 'now',
         )->format($format);
     }
 
-    public function videoField(array $field): array
-    {
+    public function videoField(array $field): array {
         $type = $this->faker->randomElement(['youtube', 'vimeo', 'url']);
 
         return [
             'type' => $type,
             'url'  => match ($type) {
                 'youtube' => 'https://www.youtube.com/watch?v=YE7VzlLtp-4',
-                'vimeo'   => 'https://vimeo.com/1084537',
-                'url'     => 'https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_h264.mov',
+                'vimeo' => 'https://vimeo.com/1084537',
+                'url' => 'https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_h264.mov',
             },
         ];
     }
 
-    public function fileField(array $field): string
-    {
+    public function fileField(array $field): string {
         return 'https://pdfobject.com/pdf/sample.pdf';
     }
 
-    public function inputField(array $field): string
-    {
+    public function inputField(array $field): string {
         $field['options'] = (array)$field['options'];
 
-        if($type = ($field['options']['type'] ?? null)) {
+        if ($type = ($field['options']['type'] ?? null)) {
             if ($type === 'date') return $this->dateField($field);
             if ($type === 'datetime-local') return $this->dateField($field, 'Y-m-d H:i:s');
             if ($type === 'color') return $this->colorField($field);
@@ -258,7 +242,7 @@ class ManifestFaker
             // check validation
             $min = array_values(array_map(
                 fn($v) => intval(explode(':', $v)[1] ?? '0'),
-                array_filter($field['validation'], fn($r) => str_starts_with($r, 'min:'))
+                array_filter($field['validation'], fn($r) => str_starts_with($r, 'min:')),
             ))[0] ?? 0;
 
             // check options
@@ -267,7 +251,7 @@ class ManifestFaker
             // check validation
             $max = array_values(array_map(
                 fn($v) => intval(explode(':', $v)[1] ?? '2147483647'),
-                array_filter($field['validation'], fn($r) => str_starts_with($r, 'max:'))
+                array_filter($field['validation'], fn($r) => str_starts_with($r, 'max:')),
             ))[0] ?? 2147483647;
 
             // check options
@@ -307,14 +291,13 @@ class ManifestFaker
 */
         $max = array_values(array_map(
             fn($v) => intval(explode(':', $v)[1] ?? '50'),
-            array_filter($field['validation'], fn($r) => str_starts_with($r, 'max:'))
+            array_filter($field['validation'], fn($r) => str_starts_with($r, 'max:')),
         ))[0] ?? (int)($field['options']['maxlength'] ?? 50);
 
         return $this->faker->text($max);
     }
 
-    public function textareaField(array $field): string
-    {
+    public function textareaField(array $field): string {
         $field['options'] = (array)$field['options'];
 
         $res = [];
@@ -325,8 +308,7 @@ class ManifestFaker
         return implode(PHP_EOL, $res);
     }
 
-    public function wysiwygField(array $field): string
-    {
+    public function wysiwygField(array $field): string {
         return '<p>' . implode('</p>' . PHP_EOL . '<p>', $this->faker->paragraphs()) . '</p>';
     }
 }
