@@ -23,6 +23,7 @@
 
   <table class="table table-striped table-responsive-md">
     <thead>
+    <slot name="thead_start"/>
     <tr>
       <th v-for="(col, k) in cols" @click="colAction(col)" :class="[thClass(col)]" :aria-sort="ariaSort(col)">
         <div v-if="col.filtering === 'date'" style="font-weight: normal;">
@@ -51,6 +52,7 @@
         <slot :name="'h_' + (col.id || col.data)" :col="col" :q="q"><span v-text="col.label"/></slot>
       </th>
     </tr>
+    <slot name="thead_end"/>
     </thead>
     <draggable
         tag="tbody"
