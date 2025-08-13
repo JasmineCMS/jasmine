@@ -228,7 +228,7 @@
             <div class="vue-drp-month-title">
               <div class="vue-drp-prev" @click="goPrevMonth"></div>
               <span>
-                            {{ locale.monthes[active.start.month] }}
+                            {{ locale.months[active.start.month] }}
                             {{ active.start.year }}
                         </span>
             </div>
@@ -251,7 +251,7 @@
           <div class="vue-drp-month">
             <div class="vue-drp-month-title">
                         <span>
-                            {{ locale.monthes[nextActiveMonth] }}
+                            {{ locale.months[nextActiveMonth] }}
                             {{ active.end.year }}
                         </span>
               <div class="vue-drp-next" @click="goNextMonth"></div>
@@ -342,28 +342,32 @@ export default {
     },
 
     value: {type: Array},
+
+    locale: {
+      type: Object, default() {
+        return {
+          months: [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+          ],
+          weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        };
+      }
+    },
   },
 
   data() {
     return {
-      locale: {
-        monthes: [
-          'January',
-          'February',
-          'March',
-          'April',
-          'May',
-          'June',
-          'July',
-          'August',
-          'September',
-          'October',
-          'November',
-          'December',
-        ],
-        weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-      },
-
       open: false,
 
       selectedPreset: '',
