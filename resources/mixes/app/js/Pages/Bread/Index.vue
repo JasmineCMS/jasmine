@@ -5,11 +5,7 @@
 
     <template #pageActions>
       <div class="d-flex align-items-center p-2">
-        <div v-if="locale" class="btn-group btn-group-sm">
-          <inertia-link
-              v-for="_l in $globals.locales" href="" :data="{_locale:_l}" v-text="_l"
-              class="btn btn-outline-primary text-uppercase" :class="{active:_l === locale}"/>
-        </div>
+        <LocaleLinks :locale="locale"/>
       </div>
     </template>
 
@@ -86,9 +82,11 @@
 
 <script>
 import Swal from '../../inc/Swal';
+import LocaleLinks from '../../Shared/LocaleLinks.vue';
 
 export default {
   name: 'BreadIndex',
+  components: {LocaleLinks},
   props: {
     can: {type: Array, required: true},
     b: {type: Object, required: true},

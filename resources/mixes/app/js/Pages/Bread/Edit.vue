@@ -4,7 +4,8 @@
   <Layout>
     <template #breadcrumbs>
       <li class="breadcrumb-item">
-        <inertia-link :href="route('jasmine.bread.index', {breadableName:b.key})" v-text="$t(b.plural)"/>
+        <span v-if="b.key === 'page'" v-text="$t(b.plural)"/>
+        <inertia-link v-else :href="route('jasmine.bread.index', {breadableName:b.key})" v-text="$t(b.plural)"/>
       </li>
     </template>
 
@@ -15,14 +16,10 @@
           <i class="bi bi-link" style="font-size: 1.5rem;"></i>
           {{ $t('View on site') }}
         </a>
-        <div class="mx-3"></div>
-        <div v-if="locale" class="btn-group btn-group-sm">
-          <inertia-link v-for="_l in $globals.locales" href="" :data="{_locale:_l}" v-text="_l"
-                        class="btn btn-outline-primary text-uppercase" :class="{active:_l === locale}"/>
-        </div>
-
+        <div class="mx-3"/>
+        <LocaleLinks :locale="locale"/>
         <template v-if="entId && locale && Object.keys(translationServices).length">
-          <div class="mx-1"></div>
+          <div class="mx-1"/>
           <nav-item-dropdown
               v-if="Object.keys(translationServices).length > 1"
               as="div" id="translationDd"
@@ -61,7 +58,7 @@
             <input type="file" class="sr-only" ref="importI" @input="importBread" accept=".jasmine.json">
           </button>
         </div>
-        <div class="mx-3" v-if="revisions.length"></div>
+        <div class="mx-3" v-if="revisions.length"/>
         <nav-item-dropdown
             v-if="revisions.length"
             as="div" id="revisionsDd"
@@ -240,11 +237,12 @@
 import CollapseTransition from '@ivanv/vue-collapse-transition/src/CollapseTransition.vue';
 import Swal from '../../inc/Swal';
 import NavItemDropdown from '../../Shared/NavItemDropdown.vue';
-import {Link as InertiaLink} from "@inertiajs/vue3";
+import {Link as InertiaLink} from '@inertiajs/vue3';
+import LocaleLinks from '../../Shared/LocaleLinks.vue';
 
 export default {
   name: 'BreadEdit',
-  components: {InertiaLink, NavItemDropdown, CollapseTransition},
+  components: {LocaleLinks, InertiaLink, NavItemDropdown, CollapseTransition},
   props: {
     can: {type: Array, required: true},
     translationServices: {type: Object, required: true},

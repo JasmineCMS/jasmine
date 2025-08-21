@@ -89,7 +89,6 @@ export default {
       }
 
       if (val.indexOf('vimeo') > -1) {
-        debugger
         m = val.match(/(?:http|https)?:?\/?\/?(?:www\.|player\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|video\/|)(?<id>\d+)(?:|\/\?)/);
         if (m) {
           this.val.type = 'vimeo';
