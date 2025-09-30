@@ -22,12 +22,16 @@ export default {
   props: {
     cards: {type: [Array, Object], required: true},
   },
-
+  data() {
+    return {
+      _sfcCache: {},
+    };
+  },
   methods: {
     loadSfc(id, component) {
-      let vm = this;
+      if (this._sfcCache[id]) return this._sfcCache[id];
 
-      return defineAsyncComponent({
+      return this._sfcCache[id] = defineAsyncComponent({
         loader() {
           return SfcLoader.loadModule(`c-${id}.vue`, {
             moduleCache: {vue: Vue},
