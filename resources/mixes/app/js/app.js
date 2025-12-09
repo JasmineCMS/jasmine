@@ -1,7 +1,7 @@
 import {createStore} from 'vuex';
 import * as Vue from 'vue';
 import * as SfcLoader from 'vue3-sfc-loader/dist/vue3-sfc-loader.esm';
-import {createInertiaApp, Head, Link} from '@inertiajs/vue3'
+import {createInertiaApp, Head, Link} from '@inertiajs/vue3';
 import {ZiggyVue} from '../../../../vendor/tightenco/ziggy/src/js/index';
 import FileManager from 'laravel-file-manager';
 import {createI18n} from 'vue-i18n';
@@ -27,6 +27,7 @@ import GeocodingField from './Pages/Bread/Fields/GeocodingField';
 import ImageField from './Pages/Bread/Fields/ImageField';
 import RelationshipField from './Pages/Bread/Fields/RelationshipField';
 import MultiSelectField from './Pages/Bread/Fields/MultiSelectField.vue';
+import JsonField from './Pages/Bread/Fields/JsonField.vue';
 
 window.JasmineBaseField = JasmineBaseField;
 window.Swal = Swal;
@@ -126,7 +127,8 @@ require('./inc/tinymce');
                 .component('GeocodingField', GeocodingField)
                 .component('ImageField', ImageField)
                 .component('RelationshipField', RelationshipField)
-                .component('MultiSelectField', MultiSelectField);
+                .component('MultiSelectField', MultiSelectField)
+                .component('JsonField', JsonField);
 
             app.config.globalProperties.$globals = globals;
             app.config.globalProperties.$fixed = window[fixed];
