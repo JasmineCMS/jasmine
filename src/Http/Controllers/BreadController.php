@@ -281,10 +281,15 @@ class BreadController extends Controller
                     $d = static::fireEvent('retrievedForIndex', $m);
 
                     foreach ($columns as $col => $v) if (isset($v['render'])) {
-                        $col = is_array($v) ? $v['data'] : $col;
-                        $field = $col;
-                        if (str_contains($col, '.')) $field = explode('.', $col)[0];
-                        $d[$col] = $v['render']($m->{$field}, $m);
+                        $rawKey = is_array($v) ? $v['data'] : $col;
+                        $outputKey = explode(',', $rawKey)[0];
+                        $value = null;
+                        if (str_contains($outputKey, '.')) {
+                            [$relation, $attribute] = explode('.', $outputKey);
+                            $relModel = $m->{$relation};
+                            $value = $relModel ? $relModel->{$attribute} : null;
+                        } else $value = $m->{$outputKey};
+                        $d[$outputKey] = $v['render']($value, $m);
                     }
 
                     $d['jasmine_title'] = $m->getTitle();
