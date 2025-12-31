@@ -73,7 +73,7 @@ class BreadController extends Controller
 
         foreach ($breadableClass::browseableColumns() as $k => $v) {
             if (is_array($v)) $columns[$k] = $v;
-            else if ($v instanceof \Closure) $columns[$k] = ['data' => $k, 'render' => $v];
+            elseif ($v instanceof \Closure) $columns[$k] = ['data' => $k, 'render' => $v];
             else $columns[$v] = ['data' => $v];
         }
 
@@ -174,7 +174,7 @@ class BreadController extends Controller
             'can'       => $permissions,
             'locale'    => $locale,
             'columns'   => array_map(function ($c) {
-                $c = Arr::except($c, ['render']);
+                $c = Arr::except($c, ['render', 'search_logic']);
                 $c['data'] = explode(',', $c['data'])[0];
                 return $c;
             }, array_values($columns)),
@@ -207,14 +207,23 @@ class BreadController extends Controller
                 ->when(request('q'), function (Builder $q, $v) use ($columns, $relations) {
                     return $q->where(function (Builder $q) use ($v, $columns, $relations) {
                         $relations_used = [];
-                        foreach (array_unique(array_map(fn($c) => $c['data'],
-                            array_filter($columns, fn($c) => $c['searchable'] ?? true),
-                        )) as $c) {
+                        $searchable_cols = collect($columns)
+                            ->filter(fn($c) => $c['searchable'] ?? true)
+                            ->unique('data')->all();
+                        foreach ($searchable_cols as $col_def) {
+                            $c = $col_def['data'];
+
+                            if (is_callable($col_def['search_logic'] ?? null)) {
+                                $col_def['search_logic']($q, $v);
+                                continue;
+                            }
+
                             if (str_contains($c, '.')) {
                                 [$relation, $relation_cols] = explode('.', $c);
                                 if (in_array($relation, $relations_used)) continue;
                                 $relations_used[] = $relation;
                                 $relation = Str::camel($relation);
+
                                 $q->orWhereHas($relation, function ($rq) use ($relation, $relations, $v) {
                                     $rq->where(function ($rq) use ($relations, $relation, $v) {
                                         foreach ($relations[$relation] as $rc) {
@@ -222,9 +231,7 @@ class BreadController extends Controller
                                         }
                                     });
                                 });
-                            } else {
-                                $q->orWhereRaw("LOWER(`$c`)" . ' LIKE ?', ['%' . strtolower($v) . '%']);
-                            }
+                            } else $q->orWhereRaw("LOWER(`$c`)" . ' LIKE ?', ['%' . strtolower($v) . '%']);
                         }
                     });
                 })
@@ -404,7 +411,7 @@ class BreadController extends Controller
             if ($field['options']['many_to_many']) {
                 $many_to_many_fields[$field['name']] = ['field' => $field, 'value' => $data[$field['name']] ?? []];
                 unset($data[$field['name']]);
-            } else if ($field['options']['parent_key_name']) {
+            } elseif ($field['options']['parent_key_name']) {
                 $data[$field['options']['parent_key_name']] = $data[$field['name']];
                 unset($data[$field['name']]);
             }
