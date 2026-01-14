@@ -17,9 +17,12 @@
       <input class="form-control form-control-sm" type="text" v-model="val.lng">
     </div>
 
-    <GMapMap :zoom="zoom" :center="{lat:val.lat || 0, lng:val.lng || 0}"
-             class="j-location-field-map">
-      <GMapMarker v-if="val.lat && val.lng" :position="{lat:val.lat, lng:val.lng}" draggable @dragend="onMove"/>
+    <GMapMap :zoom="zoom" :center="{lat:val.lat || 0, lng:val.lng || 0}" class="j-location-field-map">
+      <GMapMarker
+          v-if="val.lat && val.lng"
+          :position="{lat: parseFloat(val.lat), lng: parseFloat(val.lng)}"
+          draggable @dragend="onMove"
+      />
     </GMapMap>
   </div>
 </template>
@@ -43,6 +46,7 @@ export default {
       if (!window.google) {
         let s = document.createElement('script');
         s.src = url;
+        s.async = true;
         s.onload = this.initMap;
         document.body.appendChild(s);
       } else {
