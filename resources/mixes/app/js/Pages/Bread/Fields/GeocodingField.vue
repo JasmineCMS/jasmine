@@ -17,7 +17,10 @@
       <input class="form-control form-control-sm" type="text" v-model="val.lng">
     </div>
 
-    <GMapMap :zoom="zoom" :center="{lat:val.lat || 0, lng:val.lng || 0}" class="j-location-field-map">
+    <GMapMap
+        :zoom="zoom" :center="{lat: parseFloat(val.lat || 0), lng: parseFloat(val.lng || 0)}"
+        class="j-location-field-map"
+    >
       <GMapMarker
           v-if="val.lat && val.lng"
           :position="{lat: parseFloat(val.lat), lng: parseFloat(val.lng)}"
