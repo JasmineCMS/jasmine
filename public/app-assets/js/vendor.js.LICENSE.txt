@@ -8,12 +8,6 @@
   */
 
 /*!
-  * vue-i18n v9.14.5
-  * (c) 2025 kazuya kawaguchi
-  * Released under the MIT License.
-  */
-
-/*!
  * Cropper.js v1.6.2
  * https://fengyuanchen.github.io/cropperjs
  *
@@ -107,6 +101,18 @@
  * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
  * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
  */
+
+/**
+* @vue/compiler-core v3.5.18
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/
+
+/**
+* @vue/compiler-dom v3.5.18
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/
 
 /**
 * @vue/runtime-core v3.5.18

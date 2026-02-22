@@ -134,7 +134,8 @@
               <h4 v-if="gTitle[0] !== '_'" class="mb-2 h5" v-text="gTitle"/>
               <div class="row">
                 <!-- Loop fields -->
-                <div v-for="(field, fi) in fields" :key="fi" class="field p-1 pt-2 form-group" :class="field.width">
+                <div v-for="(field, fi) in fields" :key="fieldKey(field)" class="field p-1 pt-2 form-group"
+                     :class="field.width">
 
                   <!-- Repeatable field -->
                   <template v-if="field.repeats >  1">
@@ -258,31 +259,46 @@ export default {
   },
 
   data() {
-    let data = {};
-
-    this.b.fields.forEach(f => {
-      data[f.name] = f.repeats > 1 ? [] : JSON.parse(JSON.stringify({v: f.default})).v;
-
-      if (this.entId && typeof this.ent[f.name] !== 'undefined') {
-        data[f.name] = JSON.parse(JSON.stringify({v: this.ent[f.name]})).v;
-
-        if (!data[f.name] && typeof f.default === 'object') data[f.name] = JSON.parse(JSON.stringify({v: f.default})).v;
-
-        if (f.repeats > 1 && !(data[f.name] instanceof Array)) data[f.name] = [];
-        if (f.repeats > 1 && data[f.name].length) {
-          data[f.name].forEach((v, k) => v === null && (data[f.name][k] = ''));
-        }
-      }
-    });
-
     return {
       collapsed: {},
-      form: this.$inertia.form({v: data}),
+      form: this.$inertia.form({v: this.getFormData()}),
       currentHref: document.location.href,
     };
   },
 
   methods: {
+    getFormData() {
+      let data = {};
+
+      this.b.fields.forEach(f => {
+        data[f.name] = f.repeats > 1 ? [] : JSON.parse(JSON.stringify({v: f.default})).v;
+
+        if (this.entId && typeof this.ent[f.name] !== 'undefined') {
+          data[f.name] = JSON.parse(JSON.stringify({v: this.ent[f.name]})).v;
+
+          if (!data[f.name] && typeof f.default === 'object') data[f.name] = JSON.parse(JSON.stringify({v: f.default})).v;
+
+          if (f.repeats > 1 && !(data[f.name] instanceof Array)) data[f.name] = [];
+          if (f.repeats > 1 && data[f.name].length) {
+            data[f.name].forEach((v, k) => v === null && (data[f.name][k] = ''));
+          }
+        }
+      });
+
+      return data;
+    },
+
+    fieldKey(field) {
+      const checksum = (s) => {
+        let chk = 0x12345678;
+        const len = s.length;
+        for (let i = 0; i < len; i++) chk += (s.charCodeAt(i) * (i + 1));
+        return (chk & 0xffffffff).toString(16);
+      };
+
+      return `${field.name}_${field.id}_${checksum(JSON.stringify(field))}`;
+    },
+
     repeatField(f) {
       this.form.v[f.name].push(JSON.parse(JSON.stringify({v: f.default})).v);
     },
@@ -380,6 +396,22 @@ export default {
     return {
       fm_path: this.fm_path,
     };
+  },
+
+  watch: {
+    ent: {
+      deep: true, handler() {
+        this.form.defaults({v: this.getFormData()});
+        this.form.reset();
+      }
+    },
+
+    'b.manifest': {
+      deep: true, handler() {
+        this.form.defaults({v: this.getFormData()});
+        this.form.reset();
+      }
+    }
   },
 };
 </script>
