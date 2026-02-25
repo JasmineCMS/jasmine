@@ -82,6 +82,7 @@ export default {
       let slots = {};
       Object.keys(vm.opts.slots || {}).forEach(k => {
         slots[k] = {
+          props: ['props'],
           template: vm.opts.slots[k],
           data() {
             return vm.opts.slots[k].data || {};
