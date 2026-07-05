@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '3*'
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress --ignore-platform-reqs
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install and build
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      # Lightweight, human-readable provenance stamped into the assets.
+      - name: Stamp build info
+        run: |
+          cat > public/build/BUILD_INFO.json <<EOF
+          {
+            "commit": "${GITHUB_SHA}",
+            "tag": "${GITHUB_REF_NAME}",
+            "built_at": "$(date -u +%FT%TZ)",
+            "run": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          }
+          EOF
+
+      # Cryptographic, verifiable provenance tying these files to this
+      # commit + workflow run. Consumers can check with `gh attestation verify`.
+      - name: Generate provenance attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: 'public/build/**'
+
+      - name: Commit assets and move tag onto the build commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f public/build
+          git commit -m "Build assets for ${GITHUB_REF_NAME}"
+          git tag -f "${GITHUB_REF_NAME}"
+          git push --force origin "refs/tags/${GITHUB_REF_NAME}"
+
+      # Refreshes Packagist so the dist points at the build commit's SHA.
+      # Add PACKAGIST_USERNAME and PACKAGIST_TOKEN as repo secrets.
+      - name: Notify Packagist
+        env:
+          U: ${{ secrets.PACKAGIST_USERNAME }}
+          T: ${{ secrets.PACKAGIST_TOKEN }}
+        run: |
+          curl -sf -X POST -H 'content-type:application/json' \
+            "https://packagist.org/api/update-package?username=${U}&apiToken=${T}" \
+            -d "{\"repository\":{\"url\":\"https://github.com/${GITHUB_REPOSITORY}\"}}"

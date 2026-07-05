@@ -1,0 +1,1 @@
+import{U as e,j as t}from"./vue.runtime.esm-bundler-CDOS7UwO.js";var n=Symbol(`Context`),r=(e=>(e[e.Open=1]=`Open`,e[e.Closed=2]=`Closed`,e[e.Closing=4]=`Closing`,e[e.Opening=8]=`Opening`,e))(r||{});function i(){return a()!==null}function a(){return t(n,null)}function o(t){e(n,t)}export{o as i,a as n,i as r,r as t};

@@ -1,0 +1,23 @@
+{
+  "Users": "משתמשים",
+  "id": "מזהה",
+  "name": "שם",
+  "email": "דוא\"ל",
+  "admin": "מנהל",
+  "permissions": "הרשאות",
+  "updated_at": "עודכן בתאריך",
+  "created_at": "נוצר בתאריך",
+  "actions": "פעולות",
+  "jasmine-users": {
+    "Jasmine Users": "משתמשי Jasmine",
+    "Jasmine User": "משתמש Jasmine",
+    "Details": "פרטים",
+    "Access": "גישה",
+    "models": "מודלים",
+    "browse": "עיון",
+    "read": "קריאה",
+    "edit": "עריכה",
+    "add": "יצירה",
+    "delete": "מחיקה"
+  }
+}

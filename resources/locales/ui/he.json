@@ -1,0 +1,403 @@
+{
+  "auth": {
+    "login": "התחברות",
+    "email": "כתובת אימייל",
+    "password": "סיסמה",
+    "confirm_password": "אימות סיסמה",
+    "hide_password": "הסתר סיסמה",
+    "show_password": "הצג סיסמה",
+    "remember_me": "זכור אותי",
+    "forgot_password": "שכחת סיסמה?",
+    "signing_in": "מתחבר",
+    "or_continue_with": "או המשך עם",
+    "reset_password": "איפוס סיסמה",
+    "back_to_login": "חזרה להתחברות",
+    "processing": "מעבד",
+    "send": "שלח",
+    "webauthn_unsupported": "WebAuthn אינו נתמך בדפדפן זה",
+    "security_key_failed": "אימות מפתח האבטחה נכשל",
+    "two_factor_title": "אימות דו-שלבי",
+    "two_factor_subtitle": "הזן את קוד האימות כדי להמשיך",
+    "waiting_for_key": "ממתין למפתח…",
+    "use_security_key": "השתמש במפתח אבטחה",
+    "or": "או",
+    "authentication_code": "קוד אימות",
+    "verify": "אמת",
+    "cancel_and_sign_out": "ביטול והתנתקות"
+  },
+  "layout": {
+    "close_menu": "סגור תפריט",
+    "expand_sidebar": "הרחב סרגל צד",
+    "collapse_sidebar": "כווץ סרגל צד",
+    "open_menu": "פתח תפריט",
+    "search_placeholder": "חיפוש…",
+    "search_no_results": "לא נמצאו תוצאות",
+    "search_hint": "יש להקליד לפחות שני תווים כדי לחפש",
+    "change_language": "שנה שפה",
+    "profile_settings": "הגדרות פרופיל",
+    "sign_out": "התנתק",
+    "breadcrumb": "פירורי לחם",
+    "home": "דף הבית",
+    "pages": "עמודים"
+  },
+  "DataTable": {
+    "search_items": "חיפוש {items}...",
+    "filters": "מסננים",
+    "remove_chip_filter": "הסר מסנן {label}",
+    "clear_filters": "נקה הכל",
+    "filter_item": "סנן {item}",
+    "no_results_found": "לא נמצאו תוצאות.",
+    "showing": "מציג {from} עד {to} מתוך {total}",
+    "per_page": "{n} / עמוד",
+    "pagination": "עימוד",
+    "previous": "הקודם",
+    "next": "הבא"
+  },
+  "FieldDispatcher": {
+    "add": "הוסף",
+    "remove": "הסר פריט {n}"
+  },
+  "DatePicker": {
+    "today": "היום",
+    "this_month": "החודש",
+    "last_month": "החודש שעבר",
+    "last_30_days": "30 הימים האחרונים",
+    "this_year": "השנה",
+    "last_year": "השנה שעברה"
+  },
+  "FileManager": {
+    "title": "מנהל הקבצים",
+    "vlfm": {
+      "btn": {
+        "about": "אודות",
+        "back": "חזור",
+        "cancel": "ביטול",
+        "clear": "נקה",
+        "copy": "העתק",
+        "cut": "גזור",
+        "delete": "מחק",
+        "edit": "ערוך",
+        "forward": "קדימה",
+        "folder": "תיקייה חדשה",
+        "file": "קובץ חדש",
+        "fullScreen": "מסך מלא",
+        "grid": "רשת",
+        "paste": "הדבק",
+        "refresh": "רענן",
+        "submit": "שלח",
+        "table": "טבלה",
+        "upload": "העלה",
+        "uploadSelect": "בחר קבצים",
+        "hidden": " קבצים נסתרים"
+      },
+      "clipboard": {
+        "actionType": "סוג",
+        "copy": "העתק",
+        "cut": "גזור",
+        "none": "לא נבחר דבר",
+        "title": "לוח"
+      },
+      "contextMenu": {
+        "copy": "העתק",
+        "cut": "גזור",
+        "delete": "מחק",
+        "download": "הורד",
+        "info": "נבחרו:",
+        "open": "פתח",
+        "paste": "הדבק",
+        "properties": "מאפיינים",
+        "rename": "שנה שם",
+        "select": "בחר",
+        "view": "הצג",
+        "zip": "דחס",
+        "unzip": "חלץ",
+        "edit": "ערוך",
+        "audioPlay": "נגן",
+        "videoPlay": "נגן"
+      },
+      "info": {
+        "directories": "תיקיות:",
+        "files": "קבצים:",
+        "selected": "נבחרו:",
+        "selectedSize": "גודל קבצים נבחרים:",
+        "size": "גודל קבצים:"
+      },
+      "manager": {
+        "table": {
+          "date": "תאריך",
+          "folder": "תיקייה",
+          "name": "שם",
+          "size": "גודל",
+          "type": "סוג"
+        }
+      },
+      "modal": {
+        "about": {
+          "developer": "מפתח",
+          "name": "מנהל הקבצים של Laravel",
+          "title": "אודות",
+          "version": "גרסה"
+        },
+        "delete": {
+          "noSelected": "לא נבחר דבר!",
+          "title": "מחיקה"
+        },
+        "newFile": {
+          "fieldName": "שם קובץ",
+          "fieldFeedback": "הקובץ קיים!",
+          "title": "צור קובץ חדש"
+        },
+        "newFolder": {
+          "fieldName": "שם תיקייה",
+          "fieldFeedback": "התיקייה קיימת!",
+          "title": "צור תיקייה חדשה"
+        },
+        "preview": {
+          "title": "תצוגה מקדימה"
+        },
+        "properties": {
+          "disk": "כונן",
+          "modified": "שונה",
+          "name": "שם",
+          "path": "נתיב",
+          "size": "גודל",
+          "title": "מאפיינים",
+          "type": "סוג",
+          "url": "כתובת URL",
+          "access": "גישה",
+          "access_0": "הגישה נדחתה",
+          "access_1": "קריאה בלבד",
+          "access_2": "קריאה וכתיבה"
+        },
+        "rename": {
+          "directoryExist": "התיקייה קיימת",
+          "fieldName": "הזן שם חדש",
+          "fieldFeedback": "שם לא חוקי",
+          "fileExist": "הקובץ קיים",
+          "title": "שנה שם"
+        },
+        "status": {
+          "noErrors": "אין שגיאות!",
+          "title": "סטטוס"
+        },
+        "upload": {
+          "ifExist": "אם הקובץ קיים:",
+          "noSelected": "לא נבחרו קבצים!",
+          "overwrite": "דרוס!",
+          "selected": "נבחרו:",
+          "size": "גודל:",
+          "skip": "דלג",
+          "title": "העלאת קבצים"
+        },
+        "editor": {
+          "title": "עורך"
+        },
+        "audioPlayer": {
+          "title": "נגן אודיו"
+        },
+        "videoPlayer": {
+          "title": "נגן וידאו"
+        },
+        "zip": {
+          "title": "צור ארכיון",
+          "fieldName": "שם הארכיון",
+          "fieldFeedback": "הארכיון קיים!"
+        },
+        "unzip": {
+          "title": "חלץ ארכיון",
+          "fieldName": "שם תיקייה",
+          "fieldRadioName": "חלץ אל:",
+          "fieldRadio1": "לתיקייה הנוכחית",
+          "fieldRadio2": "לתיקייה חדשה",
+          "fieldFeedback": "התיקייה קיימת!",
+          "warning": "שימו לב! אם השמות זהים, הקבצים יידרסו!"
+        },
+        "cropper": {
+          "title": "חיתוך",
+          "apply": "החל",
+          "reset": "אפס",
+          "save": "שמור"
+        }
+      },
+      "notifications": {
+        "cutToClipboard": "נגזר ללוח!",
+        "copyToClipboard": "הועתק ללוח!"
+      },
+      "response": {
+        "noConfig": "קובץ הגדרות לא נמצא!",
+        "notFound": "לא נמצא!",
+        "diskNotFound": "הכונן לא נמצא!",
+        "pathNotFound": "הנתיב לא נמצא!",
+        "diskSelected": "הכונן נבחר!",
+        "fileExist": "הקובץ כבר קיים!",
+        "fileCreated": "הקובץ נוצר!",
+        "fileUpdated": "הקובץ עודכן!",
+        "fileNotFound": "הקובץ לא נמצא!",
+        "dirExist": "התיקייה כבר קיימת!",
+        "dirCreated": "התיקייה נוצרה!",
+        "dirNotFound": "התיקייה לא נמצאה",
+        "uploaded": "כל הקבצים הועלו!",
+        "notAllUploaded": "חלק מהקבצים לא הועלו!",
+        "delNotFound": "חלק מהפריטים לא נמצאו!",
+        "deleted": "נמחק!",
+        "renamed": "שם שונה!",
+        "copied": "הועתק בהצלחה!",
+        "zipError": "שגיאה ביצירת הארכיון!",
+        "aclError": "הגישה נדחתה!"
+      }
+    }
+  },
+  "Dashboard": {
+    "title": "לוח בקרה"
+  },
+  "Profile": {
+    "add_security_key": "הוסף מפתח אבטחה",
+    "added": "נוסף",
+    "api_tokens": "אסימוני API",
+    "are_you_sure": "האם אתה בטוח?",
+    "are_you_sure_you_want_to_delete": "האם אתה בטוח שברצונך למחוק את {i}",
+    "change_password": "שינוי סיסמה",
+    "confirm_new_password": "אימות סיסמה חדשה",
+    "create": "צור",
+    "create_new_token": "צור אסימון חדש",
+    "created": "נוצר",
+    "current_password": "סיסמה נוכחית",
+    "delete": "מחק",
+    "details": "פרטים",
+    "eg_yubikey_macbook": "לדוגמה YubiKey, MacBook",
+    "email_address": "כתובת אימייל",
+    "enter_generated_code": "הזן את הקוד שנוצר",
+    "name": "שם",
+    "never": "אף פעם",
+    "new_password": "סיסמה חדשה",
+    "no_security_keys_yet": "אין עדיין מפתחות אבטחה",
+    "no_tokens_yet": "אין עדיין אסימונים",
+    "password": "סיסמה",
+    "please_scan_qr_with_otp_app": "אנא סרוק את קוד ה-QR באמצעות אפליקציית ה-OTP",
+    "profile": "פרופיל",
+    "require_two_factor_authentication": "דרוש אימות דו-שלבי",
+    "security_key_already_registered": "מפתח אבטחה זה כבר רשום",
+    "security_key_failed": "לא ניתן היה לרשום את מפתח האבטחה",
+    "security_key_name": "שם מפתח האבטחה",
+    "security_keys": "מפתחות אבטחה",
+    "submit": "שלח",
+    "token": "אסימון",
+    "two_factor_authentication": "אימות דו-שלבי",
+    "update": "עדכן",
+    "used": "שימוש אחרון",
+    "waiting_for_key": "ממתין למפתח…",
+    "webauthn_unsupported": "WebAuthn אינו נתמך בדפדפן זה"
+  },
+  "BreadIndex": {
+    "confirm": "אישור",
+    "content_locale": "שפת התוכן",
+    "fake": "נתוני דמה",
+    "fake_how_many": "כמה?",
+    "new_item": "{item} חדש",
+    "reorder": "סידור",
+    "done": "סיום"
+  },
+  "BreadEdit": {
+    "new": "חדש",
+    "save": "שמירה",
+    "are_you_sure": "האם אתה בטוח?",
+    "unsaved_changes_warning": "יש לך שינויים שלא נשמרו, אם תמשיך הם יאבדו.",
+    "import_failed": "הייבוא נכשל",
+    "import_failed_invalid_json": "לא ניתן היה לקרוא את הקובץ כ-JSON תקין.",
+    "restore_version_title": "לשחזר גרסה זו?",
+    "restore_version_text": "התוכן של גרסה זו יהפוך לגרסה החיה הנוכחית (ותירשם גרסה חדשה).",
+    "view": "צפייה",
+    "content_locale": "שפת התוכן",
+    "history": "היסטוריה",
+    "current_version": "גרסה נוכחית",
+    "live": "חי",
+    "unknown_user": "משתמש לא ידוע",
+    "export": "ייצוא",
+    "import": "ייבוא",
+    "viewing_historical": "צופה בגרסה היסטורית",
+    "back_to_current": "חזרה לגרסה הנוכחית",
+    "restore": "שחזר"
+  },
+  "FileField": {
+    "Browse": "עיון"
+  },
+  "GeocodingField": {
+    "name-address": "שם / כתובת",
+    "Lat": "קו רוחב",
+    "Lng": "קו אורך"
+  },
+  "ImageField": {
+    "Alt": "טקסט חלופי",
+    "Browse": "עיון",
+    "Cancel": "ביטול",
+    "Crop": "חתוך תמונה",
+    "ImageFailedToLoad": "טעינת התמונה נכשלה",
+    "Loading": "טוען",
+    "Remove": "הסר",
+    "Save": "שמור",
+    "UploadFailed": "ההעלאה נכשלה"
+  },
+  "MultiSelectField": {
+    "Select all": "בחר הכל",
+    "Deselect all": "בטל בחירת הכל",
+    "No results found": "לא נמצאו תוצאות",
+    "n options selected": "{n} אפשרויות נבחרו",
+    "all": "הכל",
+    "none": "ללא",
+    "Remove": "הסר",
+    "Clear": "נקה",
+    "Toggle options": "הצג/הסתר אפשרויות"
+  },
+  "VideoField": {
+    "Browse": "עיון"
+  },
+  "WysiwygField": {
+    "invalidUrl": "כתובת URL לא תקינה",
+    "fileManager": "מנהל הקבצים",
+    "blockFormat": "עיצוב בלוק",
+    "fontFamily": "גופן",
+    "fontSize": "גודל גופן",
+    "default": "ברירת מחדל",
+    "textColor": "צבע טקסט",
+    "noColor": "ללא צבע",
+    "custom": "מותאם אישית",
+    "backgroundColor": "צבע רקע",
+    "bold": "מודגש",
+    "italic": "נטוי",
+    "strike": "קו חוצה",
+    "alignLeft": "יישור לשמאל",
+    "alignCenter": "יישור למרכז",
+    "alignRight": "יישור לימין",
+    "justify": "יישור לשני הצדדים",
+    "bulletList": "רשימת תבליטים",
+    "orderedList": "רשימה ממוספרת",
+    "insertEditLink": "הוסף/ערוך קישור",
+    "url": "כתובת URL",
+    "urlPlaceholder": "https://example.com",
+    "openInNewTab": "פתח בכרטיסייה חדשה",
+    "removeLink": "הסר קישור",
+    "remove": "הסר",
+    "cancel": "ביטול",
+    "apply": "החל",
+    "insertImage": "הוסף תמונה",
+    "imageProperties": "מאפייני תמונה",
+    "altText": "טקסט חלופי",
+    "width": "רוחב",
+    "height": "גובה",
+    "auto": "אוטומטי",
+    "lockAspectRatio": "נעל יחס גובה-רוחב",
+    "resetSize": "אפס גודל",
+    "blockquote": "ציטוט",
+    "horizontalRule": "קו מפריד",
+    "viewSource": "הצג קוד מקור",
+    "undo": "בטל",
+    "redo": "בצע שוב",
+    "editingRawHtml": "עריכת HTML גולמי",
+    "backToEditor": "חזרה לעורך"
+  },
+  "menu": {
+    "Dashboard": "לוח הבקרה",
+    "File Manager": "מנהל הקבצים",
+    "Pages": "עמודים"
+  }
+}

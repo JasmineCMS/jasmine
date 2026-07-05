@@ -1,0 +1,1 @@
+import{n as e}from"./rolldown-runtime-CpWojdLp.js";import{Q as t}from"./vue.runtime.esm-bundler-CDOS7UwO.js";import{s as n}from"./app-Dkt8zQC6.js";import{t as r}from"./Swal-BD4918X6.js";var i=e({useFlashSwal:()=>a});function a(){t(()=>n().props._swal,e=>e&&r.fire(e),{immediate:!0})}export{i as n,a as t};

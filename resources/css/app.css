@@ -1,0 +1,90 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@fortawesome/fontawesome-free/css/all.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+@import '@fontsource-variable/google-sans';
+@import '@fontsource-variable/jetbrains-mono';
+
+@plugin "@tailwindcss/forms";
+
+@source "../views";
+@source "../js";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* ---- Brand: blue (primary / active) ---- */
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #d9e6ff;
+  --color-brand-200: #bcd4ff;
+  --color-brand-300: #8eb8fe;
+  --color-brand-400: #6ba6fe;
+  --color-brand-500: #4e90fe;
+  --color-brand-600: #2f76ec;
+  --color-brand-700: #2360cf;
+  --color-brand-800: #234fa3;
+  --color-brand-900: #234781;
+  --color-brand-950: #182c50;
+
+  /* ---- Brand: magenta (secondary accent) ---- */
+  --color-magenta-50: #fdeaf6;
+  --color-magenta-100: #fbd3ec;
+  --color-magenta-200: #f8abd9;
+  --color-magenta-300: #f37bc2;
+  --color-magenta-400: #e85aae;
+  --color-magenta-500: #da46ae;
+  --color-magenta-600: #c4339a;
+  --color-magenta-700: #a3247e;
+  --color-magenta-800: #861f68;
+  --color-magenta-900: #6f1e58;
+  --color-magenta-950: #450a33;
+
+  /* ---- Dark sidebar surface ---- */
+  --color-ink-900: #1a1813;
+  --color-ink-950: #131210;
+
+  /* ---- Warm neutrals ----
+     Both `slate` and `gray` point at one warm ramp so the existing markup
+     (which mixes the two) is unified and warmed with no class changes.
+     Delete this block to restore Tailwind's stock cool grays. */
+  --color-slate-50: #f6f4ee;
+  --color-gray-50: #f6f4ee;
+  --color-slate-100: #efece3;
+  --color-gray-100: #efece3;
+  --color-slate-200: #e6e1d6;
+  --color-gray-200: #e6e1d6;
+  --color-slate-300: #d4cebf;
+  --color-gray-300: #d4cebf;
+  --color-slate-400: #b3ac9b;
+  --color-gray-400: #b3ac9b;
+  --color-slate-500: #8d8676;
+  --color-gray-500: #8d8676;
+  --color-slate-600: #6a655a;
+  --color-gray-600: #6a655a;
+  --color-slate-700: #4d4942;
+  --color-gray-700: #4d4942;
+  --color-slate-800: #34312b;
+  --color-gray-800: #34312b;
+  --color-slate-900: #211f1a;
+  --color-gray-900: #211f1a;
+  --color-slate-950: #15140f;
+  --color-gray-950: #15140f;
+
+  /* ---- Type ---- */
+  --font-sans: 'Google Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Google Sans Variable', Georgia, serif;
+  --font-mono: 'JetBrains Mono Variable', 'Google Sans Variable', ui-monospace, monospace;
+}
+
+@layer base {
+  /* Smooth the new typeface */
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Tabular figures for ids, counts, dates */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}

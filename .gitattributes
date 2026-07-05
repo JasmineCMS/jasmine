@@ -1,0 +1,31 @@
+* text=auto eol=lf
+
+*.blade.php diff=html
+*.css diff=css
+*.html diff=html
+*.md diff=markdown
+*.php diff=php
+
+# Keep compiled assets byte-identical through `git archive` (the Composer
+# dist) so the build-provenance attestation still verifies against the
+# files consumers actually receive. Adjust the path if your Vite
+# build.outDir isn't public/build.
+/public/build/** -text
+
+# --- stripped from the Composer dist (dev / build-only) ---
+/.github                export-ignore
+CHANGELOG.md            export-ignore
+/laravel                export-ignore
+/tests                  export-ignore
+/script_post_update.php export-ignore
+/phpunit.xml            export-ignore
+/phpstan.neon           export-ignore
+/pint.json              export-ignore
+/tsconfig.json          export-ignore
+/tsconfig.app.json      export-ignore
+/tsconfig.node.json     export-ignore
+/vite.config.ts         export-ignore
+/package.json           export-ignore
+/pnpm-lock.yaml         export-ignore
+/.gitignore             export-ignore
+/.gitattributes         export-ignore

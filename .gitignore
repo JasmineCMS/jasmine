@@ -1,0 +1,7 @@
+/.idea
+/node_modules
+/vendor
+/public/hot
+composer.lock
+npm-debug.log
+yarn-error.log

@@ -1,0 +1,1 @@
+import{n as e}from"./rolldown-runtime-CpWojdLp.js";var t=e({getCookie:()=>n});function n(e){let t=document?.cookie.match(RegExp(`(^|;\\s*)(`+e+`)=([^;]*)`));return t?decodeURIComponent(t[3]):null}export{t as n,n as t};

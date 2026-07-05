@@ -1,0 +1,254 @@
+<?php
+
+namespace Jasmine\Jasmine\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Jasmine\Jasmine\Models\JasmineUser;
+use Jasmine\Jasmine\Models\JasmineUserApiToken;
+use Jasmine\Jasmine\Models\JasmineWebauthnCredential;
+use Jasmine\Jasmine\WebAuthn\WebAuthnService;
+use ParagonIE\ConstantTime\Base64UrlSafe;
+use PragmaRX\Google2FA\Google2FA;
+use Webauthn\Exception\AuthenticatorResponseVerificationException;
+use Webauthn\PublicKeyCredentialCreationOptions;
+
+class ProfileController extends Controller
+{
+    public function show(Request $request) {
+        /** @var JasmineUser $user */
+        $user = AuthController::guard()->user();
+
+        return Inertia::render('Profile', [
+            'user'     => [
+                'name'  => $user->name,
+                'email' => $user->email,
+            ],
+            'otp'      => [
+                'enabled' => (bool)$user->otp_secret,
+                ...session('otp_profile', ['secret' => null, 'url' => null]),
+            ],
+            'webauthn' => [
+                'credentials' => $user->webauthnCredentials()->orderByDesc('id')->get()
+                    ->map(fn(JasmineWebauthnCredential $c) => [
+                        'id'           => $c->id,
+                        'name'         => $c->name,
+                        'created_at'   => $c->created_at,
+                        'last_used_at' => $c->last_used_at,
+                    ]),
+            ],
+            'tokens'   => $user->apiTokens()->orderByDesc('id')->get()
+                ->map(fn(JasmineUserApiToken $t) => $t->makeVisible(['token'])),
+        ]);
+    }
+
+    public function save(Request $request) {
+        $data = $request->validate([
+            '_sec' => ['required', Rule::in([
+                'details', 'password', 'otp', 'deleteWebauthn',
+                'createToken', 'updateToken', 'deleteToken',
+            ])],
+        ]);
+
+        return $this->{'save' . ucfirst($data['_sec'])}();
+    }
+
+    private function saveDetails() {
+        $data = request()->validate(['name' => ['required', 'string', 'min:2', 'max:255']]);
+
+        $user = $this->user();
+        $user->name = $data['name'];
+        $user->save();
+
+        return back()->with('swal', $this->savedToast());
+    }
+
+    private function savePassword() {
+        $data = request()->validate([
+            'password'     => ['required', 'string', 'current_password:' . config('jasmine.auth.guard')],
+            'new_password' => ['required', 'confirmed', 'string', 'min:10'],
+        ]);
+
+        $user = $this->user();
+        $user->password = bcrypt($data['new_password']);
+        $user->save();
+
+        return back()->with('swal', $this->savedToast());
+    }
+
+    private function saveOtp() {
+        $data = request()->validate([
+            'password' => ['required', 'string', 'current_password:' . config('jasmine.auth.guard')],
+            'enabled'  => ['required', 'boolean'],
+        ]);
+
+        $user = $this->user();
+        $google2fa = new Google2FA;
+
+        // Setup: generate secret
+        if (!$user->otp_secret && $data['enabled'] && !request('secret')) {
+            $secret = $google2fa->generateSecretKey();
+            session()->put('jasmine.2fa_secret', $secret);
+
+            session()->flash('otp_profile', [
+                'secret' => $secret,
+                'url'    => $google2fa->getQRCodeUrl(
+                    config('app.name') . ' - Jasmine',
+                    $user->email, $secret,
+                ),
+            ]);
+
+            return back();
+        }
+
+        // Setup: verify secret
+        if (!$user->otp_secret && $data['enabled'] && request('secret')) {
+            session()->flash('otp_profile', [
+                'secret' => request('secret'),
+                'url'    => $google2fa->getQRCodeUrl(
+                    config('app.name') . ' - Jasmine',
+                    $user->email, request('secret'),
+                ),
+            ]);
+
+            request()->validate(['code' => [
+                'required', 'digits:6',
+                fn($a, $v, $f) => !$google2fa->verifyKey(session('jasmine.2fa_secret', ''), $v)
+                    && $f('The ' . $a . ' is invalid.'),
+            ]]);
+
+            $user->otp_secret = request('secret');
+            $user->save();
+            session(['jasmine.2fa_confirmed' => true]);
+
+            return back()->with('swal', $this->savedToast('Two-factor authentication enabled'));
+        }
+
+        // Show QR for existing secret
+        if ($user->otp_secret && $data['enabled']) {
+            session()->flash('otp_profile', [
+                'secret' => $user->otp_secret,
+                'url'    => $google2fa->getQRCodeUrl(
+                    config('app.name') . ' - Jasmine',
+                    $user->email, $user->otp_secret,
+                ),
+            ]);
+
+            return back();
+        }
+
+        // Disable
+        if ($user->otp_secret && !$data['enabled']) {
+            $user->otp_secret = null;
+            $user->otp_remember_token = null;
+            $user->save();
+            session(['jasmine.2fa_confirmed' => false]);
+
+            return back()->with('swal', $this->savedToast('Two-factor authentication disabled'));
+        }
+
+        return back();
+    }
+
+    public function webauthnOptions(Request $request, WebAuthnService $webauthn) {
+        $options = $webauthn->creationOptions($this->user());
+        $json = $webauthn->serializeOptions($options);
+
+        $request->session()->put('jasmine.webauthn_registration', $json);
+
+        return response()->json(json_decode($json, true));
+    }
+
+    public function webauthnRegister(Request $request, WebAuthnService $webauthn) {
+        $data = $request->validate([
+            'password'   => ['required', 'string', 'current_password:' . config('jasmine.auth.guard')],
+            'name'       => ['required', 'string', 'min:1', 'max:255'],
+            'credential' => ['required', 'array'],
+        ]);
+
+        $optionsJson = $request->session()->pull('jasmine.webauthn_registration');
+        if (!$optionsJson) throw ValidationException::withMessages([
+            'credential' => 'Registration expired, please try again.',
+        ]);
+
+        $options = $webauthn->serializer()->deserialize(
+            $optionsJson, PublicKeyCredentialCreationOptions::class, 'json',
+        );
+
+        try {
+            $source = $webauthn->verifyRegistration(json_encode($data['credential']), $options);
+        } catch (AuthenticatorResponseVerificationException $e) {
+            throw ValidationException::withMessages(['credential' => $e->getMessage()]);
+        } catch (\Throwable) {
+            throw ValidationException::withMessages(['credential' => 'Could not verify the security key.']);
+        }
+
+        $this->user()->webauthnCredentials()->create([
+            'name'          => $data['name'],
+            'credential_id' => Base64UrlSafe::encodeUnpadded($source->publicKeyCredentialId),
+            'source'        => json_decode($webauthn->serializer()->serialize($source, 'json'), true),
+        ]);
+
+        // Possession just proven this session — treat the gate as satisfied, mirroring saveOtp().
+        session(['jasmine.2fa_confirmed' => true]);
+
+        return back()->with('swal', $this->savedToast('Security key added'));
+    }
+
+    private function saveDeleteWebauthn() {
+        $data = request()->validate(['id' => ['required', 'integer', 'min:1']]);
+        $this->user()->webauthnCredentials()->findOrFail($data['id'])->delete();
+
+        return back()->with('swal', $this->savedToast('Security key removed'));
+    }
+
+    private function saveCreateToken() {
+        $data = request()->validate(['name' => ['required', 'string', 'min:2', 'max:255']]);
+
+        $this->user()->apiTokens()->create([...$data, 'token' => Str::random(33)]);
+
+        return back()->with('swal', $this->savedToast('Token created'));
+    }
+
+    private function saveUpdateToken() {
+        $data = request()->validate([
+            'id'   => ['required', 'integer', 'min:1'],
+            'name' => ['required', 'string', 'min:2', 'max:255'],
+        ]);
+
+        $this->user()->apiTokens()->findOrFail($data['id'])->update(['name' => $data['name']]);
+
+        return back()->with('swal', $this->savedToast('Token updated'));
+    }
+
+    private function saveDeleteToken() {
+        $data = request()->validate(['id' => ['required', 'integer', 'min:1']]);
+
+        $this->user()->apiTokens()->findOrFail($data['id'])->delete();
+
+        return back()->with('swal', $this->savedToast('Token revoked'));
+    }
+
+    private function user(): JasmineUser {
+        /** @var JasmineUser $user */
+        $user = AuthController::guard()->user();
+
+        return $user;
+    }
+
+    private function savedToast(string $title = 'Saved!'): array {
+        return [
+            'toast'             => true,
+            'position'          => 'top-right',
+            'timer'             => 2000,
+            'timerProgressBar'  => true,
+            'backdrop'          => null,
+            'icon'              => 'success',
+            'title'             => $title,
+            'showConfirmButton' => false,
+        ];
+    }
+}

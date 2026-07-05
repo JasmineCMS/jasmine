@@ -1,0 +1,101 @@
+{
+  "name": "jasminecms/jasmine",
+  "description": "A Laravel based CMS.",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Mordi Sacks"
+    }
+  ],
+  "require": {
+    "php": "^8.4",
+    "illuminate/support": "^13.4",
+    "inertiajs/inertia-laravel": "^3.0",
+    "tightenco/ziggy": "^2.6",
+    "composer-runtime-api": "^2.2",
+    "pragmarx/google2fa": "^9.0",
+    "spatie/eloquent-sortable": "^5.0",
+    "spatie/laravel-translatable": "^6.14",
+    "mordisacks/faker-php-hebrew": "^1.0",
+    "alexusmai/laravel-file-manager": "^3.3",
+    "web-auth/webauthn-lib": "^5.3",
+    "dedoc/scramble": "^0.13.30",
+    "symfony/filesystem": "*"
+  },
+  "require-dev": {
+    "larastan/larastan": "^3.9",
+    "laravel/framework": "^13.5",
+    "laravel/tinker": "^3.0",
+    "laravel/pail": "^1.2",
+    "laravel/pint": "^1.29",
+    "pestphp/pest": "^4.5",
+    "fakerphp/faker": "^1.23",
+    "mockery/mockery": "^1.6",
+    "nunomaduro/collision": "^8.6",
+    "pestphp/pest-plugin-laravel": "^4.1",
+    "itsgoingd/clockwork": "^5.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "Jasmine\\Jasmine\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/",
+      "Jasmine\\Jasmine\\Database\\Factories\\": "database/factories/",
+      "App\\": "laravel/app/",
+      "Database\\Factories\\": "laravel/database/factories/",
+      "Database\\Seeders\\": "laravel/database/seeders/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Jasmine\\Jasmine\\JasmineServiceProvider"
+      ],
+      "aliases": {
+        "Jasmine": "Jasmine\\Jasmine\\Facades\\Jasmine"
+      }
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+      "@putenv COMPOSER_VENDOR_DIR=./vendor",
+      "@php laravel/artisan package:discover --ansi",
+      "@php script_post_update.php"
+    ],
+    "lint": [
+      "@php vendor/bin/pint --ansi",
+      "@php vendor/bin/phpstan analyse --verbose --ansi"
+    ],
+    "test": [
+      "@php vendor/bin/pest --coverage --min=80"
+    ],
+    "tinker": [
+      "@putenv COMPOSER_VENDOR_DIR=./vendor",
+      "@php laravel/artisan tinker"
+    ],
+    "dev": [
+      "@putenv COMPOSER_VENDOR_DIR=./vendor",
+      "Composer\\Config::disableProcessTimeout",
+      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php laravel/artisan serve\" \"php laravel/artisan queue:listen --tries=1 --timeout=0\" \"php laravel/artisan pail --timeout=0\" \"pnpm run dev\" --names=server,queue,logs,vite --kill-others"
+    ],
+    "preview": [
+      "@putenv COMPOSER_VENDOR_DIR=./vendor",
+      "Composer\\Config::disableProcessTimeout",
+      "pnpm run build",
+      "@php laravel/artisan vendor:publish --tag jasmine-assets",
+      "@php laravel/artisan optimize:clear",
+      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185\" \"php laravel/artisan serve\" \"php laravel/artisan queue:listen --tries=1 --timeout=0\" \"php laravel/artisan pail --timeout=0\" --names=server,queue,logs --kill-others"
+    ]
+  }
+}
