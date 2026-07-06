@@ -1,0 +1,41 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Jasmine\Jasmine\Bread\Breadable;
+use Jasmine\Jasmine\Bread\BreadableInterface;
+use Jasmine\Jasmine\Bread\Manifest\FieldsManifest;
+use Jasmine\Jasmine\Bread\Translatable;
+
+class {{ class }} extends Model implements BreadableInterface
+{
+    use HasFactory;
+    use Breadable;
+    use Translatable;
+
+    protected $fillable = [
+        // TODO
+    ];
+
+    protected $translatable = [
+        // TODO
+    ];
+
+    protected function casts(): array {
+        return [
+            // TODO
+        ];
+    }
+
+    public static function browseableColumns(): array {
+        return [];
+    }
+
+    public static function fieldsManifest(BreadableInterface&Model $ent): FieldsManifest {
+        return new FieldsManifest([
+            // TODO: define fields . . .
+        ]);
+    }
+}

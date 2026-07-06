@@ -12,6 +12,8 @@ use Illuminate\Support\ServiceProvider;
 use Jasmine\Jasmine\Bread\BreadableContext;
 use Jasmine\Jasmine\Console\Commands\CreateUser;
 use Jasmine\Jasmine\Console\Commands\LinkPublicAssets;
+use Jasmine\Jasmine\Console\Commands\ModelMake;
+use Jasmine\Jasmine\Console\Commands\PageMake;
 use Jasmine\Jasmine\Http\Controllers\AuthController;
 use Jasmine\Jasmine\Http\Middleware\Authenticate;
 use Jasmine\Jasmine\Http\Middleware\FileManagerMiddleware;
@@ -35,6 +37,8 @@ class JasmineServiceProvider extends ServiceProvider
             $this->commands([
                 CreateUser::class,
                 LinkPublicAssets::class,
+                ModelMake::class,
+                PageMake::class,
             ]);
 
             $this->publishes(

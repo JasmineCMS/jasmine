@@ -1,0 +1,20 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Database\Eloquent\Model;
+use Jasmine\Jasmine\Bread\BreadableInterface;
+use Jasmine\Jasmine\Bread\Manifest\FieldsManifest;
+use Jasmine\Jasmine\Bread\Translatable;
+use Jasmine\Jasmine\Models\JasminePage;
+
+class {{ class }} extends JasminePage
+{
+    use Translatable;
+
+    public static function fieldsManifest(BreadableInterface&Model $ent): FieldsManifest {
+        return new FieldsManifest([
+            // TODO: define fields . . .
+        ]);
+    }
+}

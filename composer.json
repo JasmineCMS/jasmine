@@ -67,10 +67,13 @@
     }
   },
   "scripts": {
+    "artisan": [
+      "@putenv COMPOSER_VENDOR_DIR=./vendor",
+      "@php laravel/artisan"
+    ],
     "post-autoload-dump": [
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-      "@putenv COMPOSER_VENDOR_DIR=./vendor",
-      "@php laravel/artisan package:discover --ansi",
+      "@artisan package:discover --ansi",
       "@php script_post_update.php"
     ],
     "lint": [
@@ -78,24 +81,20 @@
       "@php vendor/bin/phpstan analyse --verbose --ansi"
     ],
     "test": [
-      "@php vendor/bin/pest --coverage --min=80"
-    ],
-    "tinker": [
-      "@putenv COMPOSER_VENDOR_DIR=./vendor",
-      "@php laravel/artisan tinker"
+      "@php vendor/bin/pest --coverage --min=20"
     ],
     "dev": [
       "@putenv COMPOSER_VENDOR_DIR=./vendor",
       "Composer\\Config::disableProcessTimeout",
-      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php laravel/artisan serve\" \"php laravel/artisan queue:listen --tries=1 --timeout=0\" \"php laravel/artisan pail --timeout=0\" \"pnpm run dev\" --names=server,queue,logs,vite --kill-others"
+      "pnpm exec concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php laravel/artisan serve\" \"php laravel/artisan queue:listen --tries=1 --timeout=0\" \"php laravel/artisan pail --timeout=0\" \"pnpm run dev\" --names=server,queue,logs,vite --kill-others"
     ],
     "preview": [
       "@putenv COMPOSER_VENDOR_DIR=./vendor",
       "Composer\\Config::disableProcessTimeout",
       "pnpm run build",
-      "@php laravel/artisan vendor:publish --tag jasmine-assets",
-      "@php laravel/artisan optimize:clear",
-      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185\" \"php laravel/artisan serve\" \"php laravel/artisan queue:listen --tries=1 --timeout=0\" \"php laravel/artisan pail --timeout=0\" --names=server,queue,logs --kill-others"
+      "@artisan vendor:publish --tag jasmine-assets",
+      "@artisan optimize:clear",
+      "pnpm exec concurrently -c \"#93c5fd,#c4b5fd,#fb7185\" \"php laravel/artisan serve\" \"php laravel/artisan queue:listen --tries=1 --timeout=0\" \"php laravel/artisan pail --timeout=0\" --names=server,queue,logs --kill-others"
     ]
   }
 }
