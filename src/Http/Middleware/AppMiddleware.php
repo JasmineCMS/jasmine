@@ -19,6 +19,6 @@ class AppMiddleware
 
     private function localize(): void {
         if ($locale = request('locale')) session(['jasmine.locale' => $locale]);
-        app()->setLocale(session('jasmine.locale', config('jasmine.locale')));
+        app()->setLocale(session('jasmine.locale', config('app.locale')));
     }
 }
