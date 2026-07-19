@@ -126,7 +126,7 @@ class ManifestFaker
     }
 
     public function groupedField(array $field): array {
-        return $this->fakeFields($field['options']['fields'] ?? [], true);
+        return $this->fakeFields($field['options']->fields ?? [], true);
     }
 
     public function switchField(array $field): bool {
@@ -134,18 +134,18 @@ class ManifestFaker
     }
 
     public function imageField(array $field): array {
-        if ($field['options']['flexible'] ?? false) {
+        if ($field['options']->flexible ?? false) {
             $w = $this->faker()->numberBetween(
-                (int)(0.9 * ($field['options']['w'] ?? 111)),
-                (int)(1.1 * ($field['options']['w'] ?? 363))
+                (int)(0.9 * ($field['options']->w ?? 111)),
+                (int)(1.1 * ($field['options']->w ?? 363))
             );
             $h = $this->faker()->numberBetween(
-                (int)(0.9 * ($field['options']['h'] ?? 111)),
-                (int)(1.1 * ($field['options']['h'] ?? 363))
+                (int)(0.9 * ($field['options']->h ?? 111)),
+                (int)(1.1 * ($field['options']->h ?? 363))
             );
         } else {
-            $w = $field['options']['w'] ?? 400;
-            $h = $field['options']['h'] ?? 400;
+            $w = $field['options']->w ?? 400;
+            $h = $field['options']->h ?? 400;
         }
 
         return [
@@ -157,9 +157,9 @@ class ManifestFaker
     }
 
     public function selectField(array $field): array|string|null {
-        $options = $field['options']['options'] ?? [];
+        $options = (array)$field['options']->options ?? [];
 
-        if ($field['options']['multiple'] ?? false) {
+        if ($field['options']->multiple ?? false) {
             if (empty($options)) return [];
 
             return $this->faker()->randomElements(array_keys($options), null);
@@ -169,14 +169,12 @@ class ManifestFaker
     }
 
     public function multiSelectField(array $field): array|string|null {
-        $options = $field['options']['options'] ?? [];
-        if ($options instanceof Arrayable) {
-            $options = $options->toArray();
-        }
+        $options = $field['options']->options ?? [];
+        if ($options instanceof Arrayable) $options = $options->toArray();
 
         $values = array_column($options, 'value');
 
-        if (($field['options']['mode'] ?? '') === 'single') {
+        if (($field['options']->mode ?? '') === 'single') {
             return empty($values) ? null : $this->faker()->randomElement($values);
         }
 
@@ -197,8 +195,8 @@ class ManifestFaker
 
     public function dateField(array $field, string $format = 'Y-m-d'): string {
         return $this->faker()->dateTimeBetween(
-            $field['options']['min'] ?? '-1 year',
-            $field['options']['max'] ?? 'now'
+            $field['options']->min ?? '-1 year',
+            $field['options']->max ?? 'now'
         )->format($format);
     }
 
@@ -271,7 +269,7 @@ class ManifestFaker
     }
 
     public function textareaField(array $field): string {
-        $rows = $field['options']['rows'] ?? 3;
+        $rows = $field['options']->rows ?? 3;
         $rows = $this->faker()->numberBetween((int)ceil(0.25 * $rows), (int)$rows);
 
         $res = collect()->times($rows, fn() => $this->faker()->text(50))->toArray();
