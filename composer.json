@@ -37,13 +37,13 @@
   },
   "autoload": {
     "psr-4": {
-      "Jasmine\\Jasmine\\": "src/"
+      "Jasmine\\Jasmine\\": "src/",
+      "Jasmine\\Jasmine\\Database\\Factories\\": "database/factories/"
     }
   },
   "autoload-dev": {
     "psr-4": {
       "Tests\\": "tests/",
-      "Jasmine\\Jasmine\\Database\\Factories\\": "database/factories/",
       "App\\": "laravel/app/",
       "Database\\Factories\\": "laravel/database/factories/",
       "Database\\Seeders\\": "laravel/database/seeders/"
