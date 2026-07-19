@@ -1,1 +1,0 @@
-import{F as e,q as t}from"./app-Ch9DvE5x.js";var n=Symbol(`Context`),r=(e=>(e[e.Open=1]=`Open`,e[e.Closed=2]=`Closed`,e[e.Closing=4]=`Closing`,e[e.Opening=8]=`Opening`,e))(r||{});function i(){return a()!==null}function a(){return e(n,null)}function o(e){t(n,e)}export{o as i,a as n,i as r,r as t};

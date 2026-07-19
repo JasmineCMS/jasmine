@@ -77,28 +77,24 @@ const getFormData = () => {
   const data: Record<string, any> = {};
 
   for (const f of props.breadable.fields) {
-    const def = structuredClone(toRaw(f.default));
+    const def = structuredClone(toRaw(f.default)); // per-ITEM default for repeaters
 
-    // baseline: repeaters start as [], everything else as the default
     data[f.name] = isRepeater(f) ? [] : def;
 
-    // if property does not exist on entity, keep baseline
     if (typeof props.ent[f.name] === 'undefined') continue;
 
     const val = structuredClone(toRaw(props.ent[f.name]));
 
-    // merge entity value over the default skeleton
-    // (fills in branches added to the schema after the entity was saved,
-    //  and rescues null/{}/partial objects)
-    data[f.name] = isPlainObject(def) ? deepMerge(def, val) : val;
-
-    // repeater must be an array
-    if (isRepeater(f) && !Array.isArray(data[f.name])) data[f.name] = [];
-
-    // repeater: nulls become empty strings
-    if (isRepeater(f) && data[f.name].length) {
-      data[f.name] = data[f.name].map((v: any) => (v === null ? '' : v));
+    if (isRepeater(f)) {
+      if (!Array.isArray(val)) continue; // malformed → keep []
+      data[f.name] = val.map((item: any) => {
+        if (item === null) return isPlainObject(def) ? structuredClone(def) : '';
+        return isPlainObject(def) && isPlainObject(item) ? deepMerge(structuredClone(def), item) : item;
+      });
+      continue;
     }
+
+    data[f.name] = isPlainObject(def) ? deepMerge(def, val) : val;
   }
 
   return data;
