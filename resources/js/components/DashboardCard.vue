@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import {onErrorCaptured, provide, ref} from 'vue';
-import Dynamic from '@/js/pages/Dynamic.vue';
+import {defineAsyncComponent, onErrorCaptured, provide, ref} from 'vue';
+
+const Dynamic = defineAsyncComponent(() => import('@/js/pages/Dynamic.vue'));
 
 export interface DashboardCardAction {
   name: string;
