@@ -34,7 +34,7 @@ class ManifestFaker
     }
 
     /** Replaces magic __get property for better static analysis and IDE support. */
-    protected function faker(): Generator {
+    public function faker(): Generator {
         return $this->fakers[app()->getLocale()];
     }
 
