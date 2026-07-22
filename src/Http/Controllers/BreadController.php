@@ -457,7 +457,7 @@ class BreadController extends Controller
             'id'        => $model->getKey(),
             'ent'       => $data,
             'title'     => $model->exists ? $model->getTitle() : null,
-            'publicUrl' => $model->getPublicUrl(),
+            'publicUrl' => $model->exists ? $model->getPublicUrl() : null,
             'loadedRev' => isset($revision) ? $revision->created_at : null,
             'revisions' => JasmineRevision::whereRevisionableType($model::class)->whereRevisionableId($revisionableId)
                 ->latest()->with('user:id,name,email')
