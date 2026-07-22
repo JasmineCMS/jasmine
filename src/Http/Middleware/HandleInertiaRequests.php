@@ -41,10 +41,7 @@ class HandleInertiaRequests extends Middleware
             ]),
 
             '_locale'  => app()->getLocale(),
-            '_locales' => Inertia::once(fn() => collect([
-                ...glob(realpath(__DIR__ . '/../../../resources/locales/ui') . '/*.json') ?: [],
-                ...glob(lang_path('vendor/jasmine/ui/*.json')) ?: [],
-            ])->map(fn(string $i) => basename($i, '.json'))->unique()->sort()->values()->toArray()),
+            '_locales' => Inertia::once(fn() => Jasmine::getUiLocales()),
 
             '_i18n' => Inertia::once(fn() => Jasmine::loadUiLocale(app()->getLocale())),
 

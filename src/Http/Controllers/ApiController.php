@@ -4,6 +4,7 @@ namespace Jasmine\Jasmine\Http\Controllers;
 
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 use Inertia\Response;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Http\Middleware\HandleInertiaRequests;
@@ -85,7 +86,9 @@ class ApiController extends Controller
     }
 
     public function profileWebauthnRegister() {
-        return self::inertiaDelegate(ProfileController::class, 'webauthnRegister');
+        throw ValidationException::withMessages([
+            'name' => 'Operation not permitted via API',
+        ]);
     }
 
     public function listBreadables() {

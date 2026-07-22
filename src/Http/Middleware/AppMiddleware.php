@@ -4,6 +4,7 @@ namespace Jasmine\Jasmine\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Jasmine\Jasmine\Facades\Jasmine;
 use Symfony\Component\HttpFoundation\Response;
 
 class AppMiddleware
@@ -18,7 +19,12 @@ class AppMiddleware
     }
 
     private function localize(): void {
-        if ($locale = request('locale')) session(['jasmine.locale' => $locale]);
-        app()->setLocale(session('jasmine.locale', config('app.locale')));
+        $allowed = Jasmine::getUiLocales();
+        $fallback = config('app.locale');
+
+        if (($l = request('locale')) && in_array($l, $allowed, true)) session(['jasmine.locale' => $l]);
+
+        $stored = session('jasmine.locale', $fallback);
+        app()->setLocale(in_array($stored, $allowed, true) ? $stored : $fallback);
     }
 }

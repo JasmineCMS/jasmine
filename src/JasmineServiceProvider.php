@@ -17,6 +17,7 @@ use Jasmine\Jasmine\Console\Commands\PageMake;
 use Jasmine\Jasmine\Http\Controllers\AuthController;
 use Jasmine\Jasmine\Http\Middleware\Authenticate;
 use Jasmine\Jasmine\Http\Middleware\FileManagerMiddleware;
+use Jasmine\Jasmine\Http\Middleware\MfaConfirmed;
 use Jasmine\Jasmine\Models\JasmineUser;
 
 class JasmineServiceProvider extends ServiceProvider
@@ -119,7 +120,12 @@ class JasmineServiceProvider extends ServiceProvider
     }
 
     private function overwriteFileManagerConfig(): void {
-        config()->set('file-manager.middleware', ['web', Authenticate::class, FileManagerMiddleware::class]);
+        config()->set('file-manager.middleware', [
+            'web',
+            Authenticate::class,
+            MfaConfirmed::class,
+            FileManagerMiddleware::class,
+        ]);
         config()->set('file-manager.routePrefix', 'jasmine/file-manager');
     }
 

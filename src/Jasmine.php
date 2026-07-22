@@ -66,4 +66,13 @@ class Jasmine
 
         return $loaded[$locale] = [...$merge('ui'), 'manifest' => (object)$merge('manifest')];
     }
+
+    private ?array $uiLocales = null;
+
+    public function getUiLocales(): array {
+        return $this->uiLocales ??= collect([
+            ...glob(realpath(__DIR__ . '/../resources/locales/ui') . '/*.json') ?: [],
+            ...glob(lang_path('vendor/jasmine/ui/*.json')) ?: [],
+        ])->map(fn(string $i) => basename($i, '.json'))->unique()->sort()->values()->toArray();
+    }
 }

@@ -3,6 +3,7 @@
 namespace Jasmine\Jasmine\Http\Middleware;
 
 use Closure;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Support\Header;
@@ -29,8 +30,14 @@ class ApiMiddleware
             abort(401);
         }
 
+        /** @var SessionGuard $guard */
         $guard = AuthController::guard();
-        abort_if(!$guard->loginUsingId($token->jasmine_user_id), 401);
+
+        if (!$user = $guard->getProvider()->retrieveById($token->jasmine_user_id)) {
+            RateLimiter::hit($key, 60 * 5);
+            abort(401);
+        }
+        $guard->setUser($user);
 
         $token->forceFill(['last_used_at' => now()])->saveQuietly();
 
