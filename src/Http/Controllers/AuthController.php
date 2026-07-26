@@ -12,7 +12,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -220,7 +219,7 @@ class AuthController extends Controller
         $ipKey = $this->ipThrottleKey('forgot', $ip);
 
         $this->ensureNotRateLimited($rlKey, config('jasmine.auth.rate_limits.forgot.attempts', 3));
-        $this->ensureNotRateLimited($rlKey, config('jasmine.auth.rate_limits.forgot.ip_attempts', 10));
+        $this->ensureNotRateLimited($ipKey, config('jasmine.auth.rate_limits.forgot.ip_attempts', 10));
 
         ResetPassword::createUrlUsing(function (Authenticatable $user, string $token) {
             return route('jasmine.password.reset', [
