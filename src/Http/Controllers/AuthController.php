@@ -40,14 +40,16 @@ class AuthController extends Controller
     }
 
     private function throttleKey(string $purpose, string $email, string $ip): string {
-        return "jasmine:{$purpose}|" . Str::transliterate(Str::lower($email) . '|' . $ip);
+        return "jasmine:$purpose|" . Str::transliterate(Str::lower($email) . '|' . $ip);
     }
 
     private function ipThrottleKey(string $purpose, string $ip): string {
-        return "jasmine:{$purpose}-ip|{$ip}";
+        return "jasmine:$purpose-ip|$ip";
     }
 
     private function ensureNotRateLimited(string $key, int $maxAttempts, string $field = 'email'): void {
+        if ($maxAttempts < 1) return;
+
         if (!RateLimiter::tooManyAttempts($key, $maxAttempts)) return;
 
         $seconds = RateLimiter::availableIn($key);
@@ -76,8 +78,8 @@ class AuthController extends Controller
 
         // Per-account (email+IP) AND per-IP throttles. The IP cap blocks
         // user-enumeration / credential-spraying across many accounts from one source.
-        $this->ensureNotRateLimited($rlKey, 5);
-        $this->ensureNotRateLimited($ipKey, 30);
+        $this->ensureNotRateLimited($rlKey, config('jasmine.auth.rate_limits.login.attempts', 5));
+        $this->ensureNotRateLimited($ipKey, config('jasmine.auth.rate_limits.login.ip_attempts', 30));
 
         if (static::guard()->attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::clear($rlKey);
@@ -86,8 +88,8 @@ class AuthController extends Controller
             return Inertia::location(session('url.intended', route('jasmine.dashboard')));
         }
 
-        RateLimiter::hit($rlKey, 60);
-        RateLimiter::hit($ipKey, 60);
+        RateLimiter::hit($rlKey, config('jasmine.auth.rate_limits.login.decay', 60));
+        RateLimiter::hit($ipKey, config('jasmine.auth.rate_limits.login.ip_decay', 60));
 
         return back()->withErrors(['email' => trans('auth.failed')])->onlyInput('email');
     }
@@ -217,8 +219,8 @@ class AuthController extends Controller
         $rlKey = $this->throttleKey('forgot', $data['email'], $ip);
         $ipKey = $this->ipThrottleKey('forgot', $ip);
 
-        $this->ensureNotRateLimited($rlKey, 3);
-        $this->ensureNotRateLimited($ipKey, 10);
+        $this->ensureNotRateLimited($rlKey, config('jasmine.auth.rate_limits.forgot.attempts', 3));
+        $this->ensureNotRateLimited($rlKey, config('jasmine.auth.rate_limits.forgot.ip_attempts', 10));
 
         ResetPassword::createUrlUsing(function (Authenticatable $user, string $token) {
             return route('jasmine.password.reset', [
@@ -231,8 +233,8 @@ class AuthController extends Controller
 
         // Hit the limiter regardless of outcome — INVALID_USER must look identical to a real
         // send to prevent enumeration, and RESET_THROTTLED should still count against our cap.
-        RateLimiter::hit($rlKey, 600);
-        RateLimiter::hit($ipKey, 600);
+        RateLimiter::hit($rlKey, config('jasmine.auth.rate_limits.forgot.decay', 600));
+        RateLimiter::hit($ipKey, config('jasmine.auth.rate_limits.forgot.ip_decay', 600));
 
         if ($res === Password::RESET_THROTTLED) {
             throw ValidationException::withMessages(['email' => [trans($res)]])
@@ -294,7 +296,7 @@ class AuthController extends Controller
         abort_unless((bool)$user->otp_secret, 404);
 
         $rlKey = "jasmine:otp|{$user->getAuthIdentifier()}";
-        $this->ensureNotRateLimited($rlKey, 5, 'code');
+        $this->ensureNotRateLimited($rlKey, config('jasmine.auth.rate_limits.otp.attempts', 5), 'code');
 
         $request->validate(['code' => [
             'required', 'digits:6',
@@ -304,8 +306,8 @@ class AuthController extends Controller
                 );
 
                 if ($timestamp === false) {
-                    RateLimiter::hit($rlKey, 900);
-                    $fail("The {$attribute} is invalid.");
+                    RateLimiter::hit($rlKey, config('jasmine.auth.rate_limits.otp.decay', 900));
+                    $fail("The $attribute is invalid.");
 
                     return;
                 }
@@ -340,7 +342,7 @@ class AuthController extends Controller
         $user = static::guard()->user();
 
         $rlKey = "jasmine:webauthn|{$user->getAuthIdentifier()}";
-        $this->ensureNotRateLimited($rlKey, 5, 'credential');
+        $this->ensureNotRateLimited($rlKey, config('jasmine.auth.rate_limits.webauthn.attempts', 5), 'credential');
 
         $data = $request->validate(['credential' => ['required', 'array']]);
 
@@ -356,7 +358,7 @@ class AuthController extends Controller
         try {
             $webauthn->verifyAssertion($user, json_encode($data['credential']), $options);
         } catch (\Throwable) {
-            RateLimiter::hit($rlKey, 900);
+            RateLimiter::hit($rlKey, config('jasmine.auth.rate_limits.webauthn.decay', 900));
             throw ValidationException::withMessages(['credential' => 'Could not verify the security key.']);
         }
 
