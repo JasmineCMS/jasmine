@@ -28,7 +28,11 @@ const map = shallowRef<Map | null>(null);
 
 let marker: Marker | null = null;
 
-const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+const num = (v: unknown): number | null => {
+  const n = typeof v === 'string' ? parseFloat(v) : v;
+  return typeof n === 'number' && Number.isFinite(n) ? n : null;
+};
+
 const round6 = (n: number) => Math.round(n * 1e6) / 1e6;
 
 const pinIcon = L.divIcon({
