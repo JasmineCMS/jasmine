@@ -31,6 +31,20 @@ let marker: Marker | null = null;
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 const round6 = (n: number) => Math.round(n * 1e6) / 1e6;
 
+const pinIcon = L.divIcon({
+  className: 'geocoding-pin',
+  html: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32"
+         fill="#4f46e5" stroke="#fff" stroke-width="1.5">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+      <circle cx="12" cy="9" r="2.5" fill="#fff"/>
+    </svg>
+  `,
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+});
+
 const setPoint = (lat: number, lng: number): void => {
   model.value.lat = round6(lat);
   model.value.lng = round6(lng);
@@ -40,7 +54,7 @@ const setPin = (lat: number, lng: number): void => {
   if (!map.value) return;
 
   if (!marker) {
-    marker = L.marker([lat, lng], {draggable: true})
+    marker = L.marker([lat, lng], {draggable: true, icon: pinIcon})
       .addTo(map.value)
       .on('dragend', () => {
         const p = marker!.getLatLng();
