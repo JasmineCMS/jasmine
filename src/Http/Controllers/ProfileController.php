@@ -206,7 +206,10 @@ class ProfileController extends Controller
     }
 
     private function saveCreateToken() {
-        $data = request()->validate(['name' => ['required', 'string', 'min:2', 'max:255']]);
+        $data = request()->validate([
+            'name'       => ['required', 'string', 'min:2', 'max:255'],
+            'expires_at' => ['nullable', 'date', 'after:today'],
+        ]);
 
         $plain = 'jsm_' . Str::random(33);
 
@@ -216,8 +219,6 @@ class ProfileController extends Controller
             'token' => Str::substr($plain, 0, 8),
         ]);
 
-        // The only moment the plaintext exists outside the client's hands. A toast would let it
-        // scroll past unread, so this is a blocking dialog the user has to dismiss deliberately.
         return back()->with('swal', [
             'icon'              => 'success',
             'title'             => 'Token created',
@@ -233,11 +234,15 @@ class ProfileController extends Controller
 
     private function saveUpdateToken() {
         $data = request()->validate([
-            'id'   => ['required', 'integer', 'min:1'],
-            'name' => ['required', 'string', 'min:2', 'max:255'],
+            'id'         => ['required', 'integer', 'min:1'],
+            'name'       => ['required', 'string', 'min:2', 'max:255'],
+            'expires_at' => ['nullable', 'date', 'after:today'],
         ]);
 
-        $this->user()->apiTokens()->findOrFail($data['id'])->update(['name' => $data['name']]);
+        $this->user()->apiTokens()->findOrFail($data['id'])->update([
+            'name'       => $data['name'],
+            'expires_at' => $data['expires_at'] ?? null,
+        ]);
 
         return back()->with('swal', $this->savedToast('Token updated'));
     }

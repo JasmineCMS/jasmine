@@ -17,6 +17,7 @@ interface ApiToken {
   token: string;
   created_at: string;
   last_used_at: string | null;
+  expires_at: string | null;
 }
 
 const props = defineProps<{
@@ -123,6 +124,14 @@ const fields = {
     validation: ['required'],
     options: {type: 'password', autocomplete: 'current-password'},
   }),
+  createTokenExpiresAt: makeField({
+    type: 'DateField',
+    component: 'input-field',
+    name: 'expires_at',
+    label: t('Profile.expires'),
+    description: t('Profile.blank_for_never'),
+    options: {type: 'date', min: dayjs().add(1, 'day').format('YYYY-MM-DD')},
+  }),
   createTokenName: makeField({
     type: 'InputField',
     component: 'input-field',
@@ -143,7 +152,7 @@ const passwordForm = useForm({
   forget_remembered_devices: true,
 });
 const otpForm = useForm({_sec: 'otp', password: '', enabled: props.otp.enabled, code: null as string | null});
-const createTokenForm = useForm({_sec: 'createToken', name: '', abilities: ['*']});
+const createTokenForm = useForm({_sec: 'createToken', name: '', expires_at: '', abilities: ['*']});
 
 // ---------- Tabs ----------
 const tabs = [
@@ -270,13 +279,20 @@ const deleteCredential = (c: {id: number; name: string}) => {
 const submitCreateToken = () =>
   createTokenForm.post('', {
     preserveScroll: true,
-    onSuccess: () => createTokenForm.reset('name'),
+    onSuccess: () => createTokenForm.reset('name', 'expires_at'),
   });
 
 const updateToken = (evt: Event, token: ApiToken) => {
   const form = evt.target as HTMLFormElement;
   const nameInput = form.elements.namedItem('name') as HTMLInputElement;
-  router.post('', {_sec: 'updateToken', id: token.id, name: nameInput.value}, {preserveScroll: true});
+  const expiresInput = form.elements.namedItem('expires_at') as HTMLInputElement;
+
+  router.post(
+    '',
+    // an empty date input means "never"; the controller reads null the same way
+    {_sec: 'updateToken', id: token.id, name: nameInput.value, expires_at: expiresInput.value || null},
+    {preserveScroll: true},
+  );
 };
 
 const deleteToken = (token: ApiToken) => {
@@ -292,6 +308,14 @@ const deleteToken = (token: ApiToken) => {
 };
 
 const formatDate = (date: string | null, format = 'DD.MM.YYYY HH:mm:ss') => (date ? dayjs(date).format(format) : null);
+
+const isExpired = (t: ApiToken) => !!t.expires_at && dayjs(t.expires_at).isBefore(dayjs());
+
+// <input type="date"> wants YYYY-MM-DD, not the ISO string the API sends
+const toDateInput = (date: string | null) => (date ? dayjs(date).format('YYYY-MM-DD') : '');
+
+// no point offering an expiry that is already in the past
+const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD');
 </script>
 
 <template>
@@ -500,14 +524,19 @@ const formatDate = (date: string | null, format = 'DD.MM.YYYY HH:mm:ss') => (dat
             <form
               v-for="t in tokens"
               :key="t.id"
-              class="mb-3 rounded-md border border-gray-200 p-3 dark:border-gray-700"
+              class="mb-3 rounded-md border p-3"
+              :class="
+                isExpired(t)
+                  ? 'border-red-300 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20'
+                  : 'border-gray-200 dark:border-gray-700'
+              "
               @submit.prevent="updateToken($event, t)"
             >
               <div class="grid grid-cols-12 items-end gap-2">
-                <div class="col-span-12 sm:col-span-3">
-                  <label :for="`token_${t.id}_name`" class="mb-1 block text-sm font-medium">{{
-                    $t('Profile.name')
-                  }}</label>
+                <div class="col-span-12 sm:col-span-5">
+                  <label :for="`token_${t.id}_name`" class="mb-1 block text-sm font-medium">
+                    {{ $t('Profile.name') }}
+                  </label>
                   <input
                     :id="`token_${t.id}_name`"
                     type="text"
@@ -516,18 +545,22 @@ const formatDate = (date: string | null, format = 'DD.MM.YYYY HH:mm:ss') => (dat
                     class="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                   />
                 </div>
-                <div class="col-span-12 sm:col-span-6">
-                  <label :for="`token_${t.id}_token`" class="mb-1 block text-sm font-medium">{{
-                    $t('Profile.token')
-                  }}</label>
+
+                <div class="col-span-12 sm:col-span-4">
+                  <label :for="`token_${t.id}_expires`" class="mb-1 block text-sm font-medium">
+                    {{ $t('Profile.expires') }}
+                  </label>
                   <input
-                    :id="`token_${t.id}_token`"
-                    type="text"
-                    readonly
-                    :value="t.token + '***'"
-                    class="w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-1.5 font-mono text-sm dark:border-gray-600 dark:bg-gray-900"
+                    :id="`token_${t.id}_expires`"
+                    type="date"
+                    name="expires_at"
+                    :min="tomorrow"
+                    :value="toDateInput(t.expires_at)"
+                    :placeholder="$t('Profile.never')"
+                    class="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                   />
                 </div>
+
                 <div class="col-span-12 flex gap-2 sm:col-span-3">
                   <button
                     type="submit"
@@ -545,7 +578,9 @@ const formatDate = (date: string | null, format = 'DD.MM.YYYY HH:mm:ss') => (dat
                 </div>
               </div>
 
-              <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
+              <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
+                <!-- identification only: the full value existed for one dialog and is gone -->
+                <code class="rounded bg-gray-100 px-1.5 py-0.5 font-mono dark:bg-gray-900">{{ t.token }}***</code>
                 <span>
                   <strong>{{ $t('Profile.created') }}:</strong>
                   {{ formatDate(t.created_at) }}
@@ -553,6 +588,15 @@ const formatDate = (date: string | null, format = 'DD.MM.YYYY HH:mm:ss') => (dat
                 <span>
                   <strong>{{ $t('Profile.used') }}:</strong>
                   {{ formatDate(t.last_used_at) || $t('Profile.never') }}
+                </span>
+                <span
+                  v-if="isExpired(t)"
+                  class="rounded-full bg-red-100 px-2 py-0.5 font-medium text-red-700 dark:bg-red-900/50 dark:text-red-300"
+                >
+                  {{ $t('Profile.expired') }}
+                </span>
+                <span v-else-if="!t.expires_at" class="text-gray-500">
+                  {{ $t('Profile.no_expiry') }}
                 </span>
               </div>
             </form>
@@ -563,8 +607,8 @@ const formatDate = (date: string | null, format = 'DD.MM.YYYY HH:mm:ss') => (dat
                 {{ $t('Profile.create_new_token') }}
               </h6>
 
-              <div class="grid grid-cols-12 items-end gap-2">
-                <div class="col-span-12 sm:col-span-3">
+              <div class="grid grid-cols-12 gap-2">
+                <div class="col-span-12 sm:col-span-5">
                   <FieldDispatcher
                     v-model="createTokenForm.name"
                     :field="fields.createTokenName"
@@ -573,15 +617,12 @@ const formatDate = (date: string | null, format = 'DD.MM.YYYY HH:mm:ss') => (dat
                   />
                 </div>
 
-                <div class="col-span-12 sm:col-span-6">
-                  <label for="create_token_token" class="mb-1 block text-sm font-medium">
-                    {{ $t('Profile.token') }}
-                  </label>
-                  <input
-                    id="create_token_token"
-                    type="text"
-                    disabled
-                    class="w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-1.5 font-mono text-sm dark:border-gray-600 dark:bg-gray-900"
+                <div class="col-span-12 sm:col-span-4">
+                  <FieldDispatcher
+                    v-model="createTokenForm.expires_at"
+                    :field="fields.createTokenExpiresAt"
+                    :errors="createTokenForm.errors"
+                    path="expires_at"
                   />
                 </div>
 
@@ -596,6 +637,8 @@ const formatDate = (date: string | null, format = 'DD.MM.YYYY HH:mm:ss') => (dat
                   </button>
                 </div>
               </div>
+
+              <p class="mt-2 text-xs text-gray-500">{{ $t('Profile.token_shown_once') }}</p>
             </form>
           </TabPanel>
         </TabPanels>

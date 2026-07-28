@@ -195,3 +195,73 @@ it('backfills every row, not just the first', function () {
         DB::table(TOKENS_TABLE)->where('hash', hash('sha256', $p))->exists()
     )->toBeTrue());
 });
+
+// ---------------------------------------------------------------------------
+// Expiry
+// ---------------------------------------------------------------------------
+
+it('stores an expiry supplied at creation', function () {
+    $user = JasmineUser::factory()->create();
+    $when = now()->addDays(30)->format('Y-m-d');
+
+    $this->actingAs($user, config('jasmine.auth.guard'))
+        ->post(route('jasmine.profile.show'), ['_sec' => 'createToken', 'name' => 'ci', 'expires_at' => $when])
+        ->assertSessionHasNoErrors();
+
+    expect($user->apiTokens()->sole()->expires_at->format('Y-m-d'))->toBe($when);
+});
+
+it('defaults to no expiry when none is given', function () {
+    $user = JasmineUser::factory()->create();
+    createTokenViaProfile($user);
+
+    expect($user->apiTokens()->sole()->expires_at)->toBeNull();
+});
+
+it('rejects an expiry that is not in the future', function () {
+    $user = JasmineUser::factory()->create();
+
+    foreach ([now()->subDay(), now()] as $bad) {
+        $this->actingAs($user, config('jasmine.auth.guard'))
+            ->post(route('jasmine.profile.show'), [
+                '_sec' => 'createToken', 'name' => 'ci', 'expires_at' => $bad->format('Y-m-d'),
+            ])
+            ->assertSessionHasErrors('expires_at');
+    }
+
+    expect($user->apiTokens()->count())->toBe(0);
+});
+
+it('lets an expiry be edited and cleared', function () {
+    $user = JasmineUser::factory()->create();
+    createTokenViaProfile($user);
+    $id = $user->apiTokens()->sole()->id;
+    $when = now()->addDays(7)->format('Y-m-d');
+
+    $this->actingAs($user, config('jasmine.auth.guard'))
+        ->post(route('jasmine.profile.show'), [
+            '_sec' => 'updateToken', 'id' => $id, 'name' => 'ci', 'expires_at' => $when,
+        ])->assertSessionHasNoErrors();
+
+    expect($user->apiTokens()->sole()->expires_at->format('Y-m-d'))->toBe($when);
+
+    // blank means "never" — the UI sends null for an empty date input
+    $this->actingAs($user, config('jasmine.auth.guard'))
+        ->post(route('jasmine.profile.show'), [
+            '_sec' => 'updateToken', 'id' => $id, 'name' => 'ci', 'expires_at' => null,
+        ])->assertSessionHasNoErrors();
+
+    expect($user->apiTokens()->sole()->expires_at)->toBeNull();
+});
+
+it('refuses to authenticate an expired token', function () {
+    $user = JasmineUser::factory()->create(['admin' => true]);
+    $plain = createTokenViaProfile($user)['inputValue'];
+
+    $this->withToken($plain)->getJson('/jasmine/api/info')->assertSuccessful();
+
+    // set it in the past directly — the validator will not accept a past date on the way in
+    $user->apiTokens()->sole()->forceFill(['expires_at' => now()->subMinute()])->save();
+
+    $this->withToken($plain)->getJson('/jasmine/api/info')->assertStatus(401);
+});
