@@ -277,10 +277,28 @@ const deleteCredential = (c: {id: number; name: string}) => {
     icon: 'warning',
     title: t('Profile.are_you_sure'),
     text: t('Profile.are_you_sure_you_want_to_delete', {i: c.name}),
+    input: 'password',
+    inputLabel: t('Profile.current_password'),
+    inputAttributes: {autocomplete: 'current-password'},
+    inputValidator: (v) => (v ? null : t('Profile.current_password')),
     showCancelButton: true,
-  }).then(({isConfirmed}) => {
-    if (!isConfirmed) return;
-    router.post('', {_sec: 'deleteWebauthn', id: c.id}, {preserveScroll: true});
+    showLoaderOnConfirm: true,
+    preConfirm: (password: string) =>
+      new Promise<void>((resolve) => {
+        router.post(
+          '',
+          {_sec: 'deleteWebauthn', id: c.id, password},
+          {
+            preserveScroll: true,
+            onSuccess: () => resolve(),
+            onError: (errors) => {
+              Swal.showValidationMessage(errors.password ?? Object.values(errors)[0] ?? '');
+              resolve();
+            },
+          },
+        );
+      }),
+    allowOutsideClick: () => !Swal.isLoading(),
   });
 };
 

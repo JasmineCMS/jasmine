@@ -199,7 +199,11 @@ class ProfileController extends Controller
     }
 
     private function saveDeleteWebauthn() {
-        $data = request()->validate(['id' => ['required', 'integer', 'min:1']]);
+        $data = request()->validate([
+            'password' => ['required', 'string', 'current_password:' . config('jasmine.auth.guard')],
+            'id'       => ['required', 'integer', 'min:1'],
+        ]);
+
         $this->user()->webauthnCredentials()->findOrFail($data['id'])->delete();
 
         return back()->with('swal', $this->savedToast('Security key removed'));
