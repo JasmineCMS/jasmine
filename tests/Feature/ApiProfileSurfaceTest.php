@@ -13,7 +13,13 @@ const API_PROFILE = '/jasmine/api/profile';
  * Mint a usable bearer token and hand back the plaintext.
  */
 function bearerFor(JasmineUser $user): string {
-    $user->apiTokens()->create(['name' => 'test', 'token' => $plain = Str::random(33)]);
+    $plain = 'jsm_' . Str::random(33);
+
+    $user->apiTokens()->create([
+        'name'  => 'test',
+        'hash'  => hash('sha256', $plain),
+        'token' => Str::substr($plain, 0, 8),
+    ]);
 
     return $plain;
 }

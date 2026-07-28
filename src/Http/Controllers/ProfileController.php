@@ -8,7 +8,6 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Jasmine\Jasmine\Models\JasmineUser;
-use Jasmine\Jasmine\Models\JasmineUserApiToken;
 use Jasmine\Jasmine\Models\JasmineWebauthnCredential;
 use Jasmine\Jasmine\WebAuthn\WebAuthnService;
 use ParagonIE\ConstantTime\Base64UrlSafe;
@@ -40,8 +39,7 @@ class ProfileController extends Controller
                         'last_used_at' => $c->last_used_at,
                     ]),
             ],
-            'tokens'   => $user->apiTokens()->orderByDesc('id')->get()
-                ->map(fn(JasmineUserApiToken $t) => $t->makeVisible(['token'])),
+            'tokens'   => $user->apiTokens()->orderByDesc('id')->get(),
         ]);
     }
 
@@ -210,9 +208,27 @@ class ProfileController extends Controller
     private function saveCreateToken() {
         $data = request()->validate(['name' => ['required', 'string', 'min:2', 'max:255']]);
 
-        $this->user()->apiTokens()->create([...$data, 'token' => Str::random(33)]);
+        $plain = 'jsm_' . Str::random(33);
 
-        return back()->with('swal', $this->savedToast('Token created'));
+        $this->user()->apiTokens()->create([
+            ...$data,
+            'hash'  => hash('sha256', $plain),
+            'token' => Str::substr($plain, 0, 8),
+        ]);
+
+        // The only moment the plaintext exists outside the client's hands. A toast would let it
+        // scroll past unread, so this is a blocking dialog the user has to dismiss deliberately.
+        return back()->with('swal', [
+            'icon'              => 'success',
+            'title'             => 'Token created',
+            'text'              => 'Copy it now — it is stored hashed and cannot be shown again.',
+            'input'             => 'text',
+            'inputValue'        => $plain,
+            'inputAttributes'   => ['readonly' => true, 'onfocus' => 'this.select()'],
+            'confirmButtonText' => 'I have copied it',
+            'allowOutsideClick' => false,
+            'allowEscapeKey'    => false,
+        ]);
     }
 
     private function saveUpdateToken() {

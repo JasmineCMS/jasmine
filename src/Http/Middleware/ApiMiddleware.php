@@ -27,9 +27,14 @@ class ApiMiddleware
 
         if ($maxAttempts > 0 && RateLimiter::tooManyAttempts($key, $maxAttempts)) abort(429);
 
-        abort_unless($request->bearerToken(), 401);
+        // Cast up front: hash() takes a strict string, and bearerToken() is nullable.
+        $bearer = (string)$request->bearerToken();
+        abort_unless($bearer !== '', 401);
 
-        $token = JasmineUserApiToken::firstWhere('token', $request->bearerToken());
+        // `token` holds only a display prefix; the credential lives in `hash`. SHA-256 keeps this
+        // a single indexed lookup — a salted KDF would force a scan-and-verify over every row, and
+        // buys nothing against a 196-bit random secret.
+        $token = JasmineUserApiToken::firstWhere('hash', hash('sha256', $bearer));
 
         if (!$token || ($token->expires_at && $token->expires_at < now())) {
             $hit();

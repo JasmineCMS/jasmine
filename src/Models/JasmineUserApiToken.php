@@ -11,13 +11,19 @@ class JasmineUserApiToken extends Model
     protected $fillable = [
         'jasmine_user_id',
         'name',
+        'hash',
         'token',
         'abilities',
         'last_used_at',
         'expires_at',
     ];
 
-    protected $hidden = ['token'];
+    /**
+     * `hash` is the credential — a SHA-256 of the plaintext, never exposed. `token` holds only the
+     * first 8 characters (`jsm_` plus four) so the UI has something to identify a row by; the
+     * plaintext itself is shown exactly once, at creation.
+     */
+    protected $hidden = ['hash'];
 
     protected $casts = [
         'abilities'    => AsArrayObject::class,

@@ -524,7 +524,7 @@ const formatDate = (date: string | null, format = 'DD.MM.YYYY HH:mm:ss') => (dat
                     :id="`token_${t.id}_token`"
                     type="text"
                     readonly
-                    :value="t.token"
+                    :value="t.token + '***'"
                     class="w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-1.5 font-mono text-sm dark:border-gray-600 dark:bg-gray-900"
                   />
                 </div>

@@ -55,7 +55,12 @@ it('does not throttle a valid token', function () {
     config(['jasmine.auth.rate_limits.api.attempts' => 1]);
 
     $user = JasmineUser::factory()->create(['admin' => true]);
-    $user->apiTokens()->create(['name' => 'ci', 'token' => $plain = Str::random(33)]);
+    $plain = 'jsm_' . Str::random(33);
+    $user->apiTokens()->create([
+        'name'  => 'ci',
+        'hash'  => hash('sha256', $plain),
+        'token' => Str::substr($plain, 0, 8),
+    ]);
 
     for ($i = 0; $i < 5; $i++) {
         $this->withToken($plain)->getJson(API_INFO)->assertSuccessful();
