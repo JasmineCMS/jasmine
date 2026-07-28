@@ -279,7 +279,7 @@ class AuthController extends Controller
         /** @var JasmineUser $user */
         $user = static::guard()->user();
 
-        if (!$user->hasTwoFactor() || session('jasmine.2fa_confirmed') === true) {
+        if (!$user->hasTwoFactor() || session('jasmine.2fa_confirmed') === $user->getKey()) {
             return redirect()->intended(route('jasmine.dashboard'));
         }
 
@@ -317,7 +317,7 @@ class AuthController extends Controller
         ]]);
 
         RateLimiter::clear($rlKey);
-        session(['jasmine.2fa_confirmed' => true]);
+        session(['jasmine.2fa_confirmed' => $user->getKey()]);
 
         // NOTE: "remember this device" intentionally removed — returns with the
         // trusted-devices slice (and reads via MfaConfirmed, not a dangling cookie).
@@ -362,7 +362,7 @@ class AuthController extends Controller
         }
 
         RateLimiter::clear($rlKey);
-        session(['jasmine.2fa_confirmed' => true]);
+        session(['jasmine.2fa_confirmed' => $user->getKey()]);
 
         return Inertia::location(session('url.intended', route('jasmine.dashboard')));
     }

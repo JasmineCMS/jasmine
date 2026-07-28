@@ -17,7 +17,7 @@ class MfaConfirmed
 
         if ($user === null) return $next($request);
 
-        if (!$user->hasTwoFactor() || $request->session()->get('jasmine.2fa_confirmed') === true) {
+        if (!$user->hasTwoFactor() || $request->session()->get('jasmine.2fa_confirmed') === $user->getKey()) {
             return $next($request);
         }
 

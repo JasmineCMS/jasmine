@@ -122,7 +122,7 @@ class ProfileController extends Controller
 
             $user->otp_secret = request('secret');
             $user->save();
-            session(['jasmine.2fa_confirmed' => true]);
+            session(['jasmine.2fa_confirmed' => $user->getKey()]);
 
             return back()->with('swal', $this->savedToast('Two-factor authentication enabled'));
         }
@@ -145,7 +145,7 @@ class ProfileController extends Controller
             $user->otp_secret = null;
             $user->otp_remember_token = null;
             $user->save();
-            session(['jasmine.2fa_confirmed' => false]);
+            session()->forget('jasmine.2fa_confirmed');
 
             return back()->with('swal', $this->savedToast('Two-factor authentication disabled'));
         }
@@ -193,7 +193,7 @@ class ProfileController extends Controller
         ]);
 
         // Possession just proven this session — treat the gate as satisfied, mirroring saveOtp().
-        session(['jasmine.2fa_confirmed' => true]);
+        session(['jasmine.2fa_confirmed' => $this->user()->getKey()]);
 
         return back()->with('swal', $this->savedToast('Security key added'));
     }
