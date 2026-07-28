@@ -18,15 +18,21 @@ class ApiMiddleware
         $request->headers->set('Accept', 'application/json');
 
         $key = 'jasmine.api.auth.' . $request->ip();
+        $maxAttempts = (int)config('jasmine.auth.rate_limits.api.attempts', 5);
+        $decay = (int)config('jasmine.auth.rate_limits.api.decay', 300);
 
-        if (RateLimiter::tooManyAttempts($key, 5)) abort(429);
+        $hit = function () use ($key, $maxAttempts, $decay): void {
+            if ($maxAttempts > 0) RateLimiter::hit($key, $decay);
+        };
+
+        if ($maxAttempts > 0 && RateLimiter::tooManyAttempts($key, $maxAttempts)) abort(429);
 
         abort_unless($request->bearerToken(), 401);
 
         $token = JasmineUserApiToken::firstWhere('token', $request->bearerToken());
 
         if (!$token || ($token->expires_at && $token->expires_at < now())) {
-            RateLimiter::hit($key, 60 * 5);
+            $hit();
             abort(401);
         }
 
@@ -34,7 +40,7 @@ class ApiMiddleware
         $guard = AuthController::guard();
 
         if (!$user = $guard->getProvider()->retrieveById($token->jasmine_user_id)) {
-            RateLimiter::hit($key, 60 * 5);
+            $hit();
             abort(401);
         }
         $guard->setUser($user);

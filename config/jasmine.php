@@ -23,6 +23,8 @@ return [
         |             credential spraying / user enumeration from one source)
         | decay       seconds an attempt is remembered by the limiter
         |
+        | `api` throttles bearer-token auth failures keyed by IP only!
+        |
         | Set any `attempts` value to 0 to disable that limiter entirely — handy
         | in the test environment, not recommended in production.
         */
@@ -46,6 +48,10 @@ return [
             'webauthn' => [
                 'attempts' => env('JASMINE_THROTTLE_WEBAUTHN_ATTEMPTS', 5),
                 'decay'    => env('JASMINE_THROTTLE_WEBAUTHN_DECAY', 900),
+            ],
+            'api'      => [
+                'attempts' => env('JASMINE_THROTTLE_API_ATTEMPTS', 5),
+                'decay'    => env('JASMINE_THROTTLE_API_DECAY', 300),
             ],
         ],
     ],
