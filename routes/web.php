@@ -10,6 +10,7 @@ use Jasmine\Jasmine\Http\Controllers\PageController as PageCtl;
 use Jasmine\Jasmine\Http\Controllers\ProfileController as ProfileCtl;
 use Jasmine\Jasmine\Http\Middleware\AppMiddleware;
 use Jasmine\Jasmine\Http\Middleware\Authenticate;
+use Jasmine\Jasmine\Http\Middleware\AuthenticateSession;
 use Jasmine\Jasmine\Http\Middleware\HandleInertiaRequests;
 use Jasmine\Jasmine\Http\Middleware\MfaConfirmed;
 
@@ -32,7 +33,7 @@ Route::name('jasmine.')->middleware([AppMiddleware::class, HandleInertiaRequests
         foreach (Jasmine::getGuestRouteGroups() as $group) $group();
     });
 
-    Route::middleware(Authenticate::class)->group(function () {
+    Route::middleware([Authenticate::class, AuthenticateSession::class])->group(function () {
         Route::post('/logout', [AuthCtl::class, 'logout'])->name('logout');
 
         Route::controller(AuthCtl::class)->group(function () {

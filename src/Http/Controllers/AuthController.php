@@ -38,6 +38,10 @@ class AuthController extends Controller
         return Password::broker(config('jasmine.auth.broker'));
     }
 
+    public static function passwordRule(): \Illuminate\Validation\Rules\Password {
+        return \Illuminate\Validation\Rules\Password::default();
+    }
+
     private function throttleKey(string $purpose, string $email, string $ip): string {
         return "jasmine:$purpose|" . Str::transliterate(Str::lower($email) . '|' . $ip);
     }
@@ -257,7 +261,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'token'    => ['required'],
             'email'    => ['required', 'email'],
-            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', static::passwordRule()],
         ]);
 
         $res = static::broker()->reset($data, function (Authenticatable $user, $password) {

@@ -78,6 +78,13 @@ const fields = {
     validation: ['required'],
     options: {type: 'password', autocomplete: 'new-password'},
   }),
+  forgetRememberedDevices: makeField({
+    type: 'SwitchField',
+    component: 'switch-field',
+    name: 'forget_remembered_devices',
+    label: t('Profile.forget_remembered_devices'),
+    validation: [],
+  }),
   otpCode: makeField({
     type: 'InputField',
     component: 'input-field',
@@ -128,7 +135,13 @@ const fields = {
 
 // ---------- Forms ----------
 const detailsForm = useForm({_sec: 'details', name: props.user.name});
-const passwordForm = useForm({_sec: 'password', password: '', new_password: '', new_password_confirmation: ''});
+const passwordForm = useForm({
+  _sec: 'password',
+  password: '',
+  new_password: '',
+  new_password_confirmation: '',
+  forget_remembered_devices: true,
+});
 const otpForm = useForm({_sec: 'otp', password: '', enabled: props.otp.enabled, code: null as string | null});
 const createTokenForm = useForm({_sec: 'createToken', name: '', abilities: ['*']});
 
@@ -361,6 +374,13 @@ const formatDate = (date: string | null, format = 'DD.MM.YYYY HH:mm:ss') => (dat
                 :field="fields.newPasswordConfirmation"
                 :errors="passwordForm.errors"
                 path="new_password_confirmation"
+              />
+
+              <FieldDispatcher
+                v-model="passwordForm.forget_remembered_devices"
+                :field="fields.forgetRememberedDevices"
+                :errors="passwordForm.errors"
+                path="forget_remembered_devices"
               />
 
               <button

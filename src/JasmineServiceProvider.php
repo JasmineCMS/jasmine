@@ -16,6 +16,7 @@ use Jasmine\Jasmine\Console\Commands\ModelMake;
 use Jasmine\Jasmine\Console\Commands\PageMake;
 use Jasmine\Jasmine\Http\Controllers\AuthController;
 use Jasmine\Jasmine\Http\Middleware\Authenticate;
+use Jasmine\Jasmine\Http\Middleware\AuthenticateSession;
 use Jasmine\Jasmine\Http\Middleware\FileManagerMiddleware;
 use Jasmine\Jasmine\Http\Middleware\MfaConfirmed;
 use Jasmine\Jasmine\Models\JasmineUser;
@@ -123,6 +124,7 @@ class JasmineServiceProvider extends ServiceProvider
         config()->set('file-manager.middleware', [
             'web',
             Authenticate::class,
+            AuthenticateSession::class,
             MfaConfirmed::class,
             FileManagerMiddleware::class,
         ]);

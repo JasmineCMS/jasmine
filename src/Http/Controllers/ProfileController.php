@@ -68,12 +68,14 @@ class ProfileController extends Controller
 
     private function savePassword() {
         $data = request()->validate([
-            'password'     => ['required', 'string', 'current_password:' . config('jasmine.auth.guard')],
-            'new_password' => ['required', 'confirmed', 'string', 'min:10'],
+            'password'                  => ['required', 'string', 'current_password:' . config('jasmine.auth.guard')],
+            'new_password'              => ['required', 'confirmed', AuthController::passwordRule()],
+            'forget_remembered_devices' => ['nullable', 'bool'],
         ]);
 
         $user = $this->user();
         $user->password = bcrypt($data['new_password']);
+        if ($data['forget_remembered_devices'] ?? false) $user->setRememberToken(Str::random(60));
         $user->save();
 
         return back()->with('swal', $this->savedToast());
