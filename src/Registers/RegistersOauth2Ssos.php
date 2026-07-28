@@ -4,11 +4,18 @@ namespace Jasmine\Jasmine\Registers;
 
 use Closure;
 
+/**
+ * @phpstan-type Oauth2UserData array{email: string, name: string, admin?: bool}
+ */
 trait RegistersOauth2Ssos
 {
     /** @var array<string, array<string, mixed>> */
     private array $oauth2Ssos = [];
 
+    /**
+     * @param Closure(string): Oauth2UserData    $userDataCallback Receives the raw token-endpoint body.
+     * @param (Closure(Oauth2UserData): bool)|bool $allowCreate
+     */
     public function registerOauth2Sso(
         string $name,
         string $icon,
@@ -42,8 +49,8 @@ trait RegistersOauth2Ssos
      *      authorize_url: string,
      *      token_url: string,
      *      scopes: array,
-     *      allowCreate: Closure|bool,
-     *      userDataCallback: Closure,
+     *      allowCreate: (Closure(Oauth2UserData): bool)|bool,
+     *      userDataCallback: (Closure(string): Oauth2UserData),
      * }>
      */
     public function getOauth2Ssos(): array {
@@ -59,8 +66,8 @@ trait RegistersOauth2Ssos
      *      authorize_url: string,
      *      token_url: string,
      *      scopes: array,
-     *      allowCreate: Closure|bool,
-     *      userDataCallback: Closure,
+     *      allowCreate: (Closure(Oauth2UserData): bool)|bool,
+     *      userDataCallback: (Closure(string): Oauth2UserData),
      * }
      */
     public function getOauth2Sso(string $name): ?array {
