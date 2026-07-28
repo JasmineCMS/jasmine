@@ -78,6 +78,12 @@ class ApiController extends Controller
     }
 
     public function profileSave() {
+        if (in_array(request('_sec'), ['deleteWebauthn', 'createToken', 'password', 'otp'], true)) {
+            throw ValidationException::withMessages([
+                '_sec' => 'Operation not permitted via API',
+            ]);
+        }
+
         return self::inertiaDelegate(ProfileController::class, 'save');
     }
 
