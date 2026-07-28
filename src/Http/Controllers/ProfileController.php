@@ -207,6 +207,7 @@ class ProfileController extends Controller
 
     private function saveCreateToken() {
         $data = request()->validate([
+            'password'   => ['required', 'string', 'current_password:' . config('jasmine.auth.guard')],
             'name'       => ['required', 'string', 'min:2', 'max:255'],
             'expires_at' => ['nullable', 'date', 'after:today'],
         ]);
@@ -214,9 +215,10 @@ class ProfileController extends Controller
         $plain = 'jsm_' . Str::random(33);
 
         $this->user()->apiTokens()->create([
-            ...$data,
-            'hash'  => hash('sha256', $plain),
-            'token' => Str::substr($plain, 0, 8),
+            'name'       => $data['name'],
+            'expires_at' => $data['expires_at'] ?? null,
+            'hash'       => hash('sha256', $plain),
+            'token'      => Str::substr($plain, 0, 8),
         ]);
 
         return back()->with('swal', [

@@ -124,6 +124,14 @@ const fields = {
     validation: ['required'],
     options: {type: 'password', autocomplete: 'current-password'},
   }),
+  createTokenPassword: makeField({
+    type: 'InputField',
+    component: 'input-field',
+    name: 'password',
+    label: t('Profile.current_password'),
+    validation: ['required'],
+    options: {type: 'password', autocomplete: 'current-password'},
+  }),
   createTokenExpiresAt: makeField({
     type: 'DateField',
     component: 'input-field',
@@ -152,7 +160,7 @@ const passwordForm = useForm({
   forget_remembered_devices: true,
 });
 const otpForm = useForm({_sec: 'otp', password: '', enabled: props.otp.enabled, code: null as string | null});
-const createTokenForm = useForm({_sec: 'createToken', name: '', expires_at: '', abilities: ['*']});
+const createTokenForm = useForm({_sec: 'createToken', password: '', name: '', expires_at: ''});
 
 // ---------- Tabs ----------
 const tabs = [
@@ -279,7 +287,7 @@ const deleteCredential = (c: {id: number; name: string}) => {
 const submitCreateToken = () =>
   createTokenForm.post('', {
     preserveScroll: true,
-    onSuccess: () => createTokenForm.reset('name', 'expires_at'),
+    onSuccess: () => createTokenForm.reset('password', 'name', 'expires_at'),
   });
 
 const updateToken = (evt: Event, token: ApiToken) => {
@@ -608,7 +616,7 @@ const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD');
               </h6>
 
               <div class="grid grid-cols-12 gap-2">
-                <div class="col-span-12 sm:col-span-5">
+                <div class="col-span-12 sm:col-span-4">
                   <FieldDispatcher
                     v-model="createTokenForm.name"
                     :field="fields.createTokenName"
@@ -626,19 +634,27 @@ const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD');
                   />
                 </div>
 
-                <div class="col-span-12 sm:col-span-3">
-                  <button
-                    v-if="createTokenForm.isDirty"
-                    type="submit"
-                    :disabled="createTokenForm.processing"
-                    class="cursor-pointer rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {{ $t('Profile.create') }}
-                  </button>
+                <div class="col-span-12 sm:col-span-4">
+                  <FieldDispatcher
+                    v-model="createTokenForm.password"
+                    :field="fields.createTokenPassword"
+                    :errors="createTokenForm.errors"
+                    path="password"
+                  />
                 </div>
               </div>
 
-              <p class="mt-2 text-xs text-gray-500">{{ $t('Profile.token_shown_once') }}</p>
+              <div class="mt-2 flex items-center gap-3">
+                <button
+                  v-if="createTokenForm.isDirty"
+                  type="submit"
+                  :disabled="createTokenForm.processing"
+                  class="cursor-pointer rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {{ $t('Profile.create') }}
+                </button>
+                <p class="text-xs text-gray-500">{{ $t('Profile.token_shown_once') }}</p>
+              </div>
             </form>
           </TabPanel>
         </TabPanels>

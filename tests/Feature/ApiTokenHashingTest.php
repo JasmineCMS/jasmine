@@ -15,7 +15,9 @@ const TOKENS_TABLE = 'jasmine_user_api_tokens';
 
 function createTokenViaProfile(JasmineUser $user): array {
     test()->actingAs($user, config('jasmine.auth.guard'))
-        ->post(route('jasmine.profile.show'), ['_sec' => 'createToken', 'name' => 'ci']);
+        ->post(route('jasmine.profile.show'), [
+            '_sec' => 'createToken', 'name' => 'ci', 'password' => 'password',
+        ]);
 
     return session('swal');
 }
@@ -205,7 +207,9 @@ it('stores an expiry supplied at creation', function () {
     $when = now()->addDays(30)->format('Y-m-d');
 
     $this->actingAs($user, config('jasmine.auth.guard'))
-        ->post(route('jasmine.profile.show'), ['_sec' => 'createToken', 'name' => 'ci', 'expires_at' => $when])
+        ->post(route('jasmine.profile.show'), [
+            '_sec' => 'createToken', 'name' => 'ci', 'password' => 'password', 'expires_at' => $when,
+        ])
         ->assertSessionHasNoErrors();
 
     expect($user->apiTokens()->sole()->expires_at->format('Y-m-d'))->toBe($when);
@@ -224,7 +228,8 @@ it('rejects an expiry that is not in the future', function () {
     foreach ([now()->subDay(), now()] as $bad) {
         $this->actingAs($user, config('jasmine.auth.guard'))
             ->post(route('jasmine.profile.show'), [
-                '_sec' => 'createToken', 'name' => 'ci', 'expires_at' => $bad->format('Y-m-d'),
+                '_sec'       => 'createToken', 'name' => 'ci', 'password' => 'password',
+                'expires_at' => $bad->format('Y-m-d'),
             ])
             ->assertSessionHasErrors('expires_at');
     }
@@ -264,4 +269,39 @@ it('refuses to authenticate an expired token', function () {
     $user->apiTokens()->sole()->forceFill(['expires_at' => now()->subMinute()])->save();
 
     $this->withToken($plain)->getJson('/jasmine/api/info')->assertStatus(401);
+});
+
+// ---------------------------------------------------------------------------
+// Minting requires re-authentication
+// ---------------------------------------------------------------------------
+
+it('refuses to mint a token without the current password', function () {
+    $user = JasmineUser::factory()->create();
+
+    $this->actingAs($user, config('jasmine.auth.guard'))
+        ->post(route('jasmine.profile.show'), ['_sec' => 'createToken', 'name' => 'ci'])
+        ->assertSessionHasErrors('password');
+
+    expect($user->apiTokens()->count())->toBe(0);
+});
+
+it('refuses to mint a token with the wrong password', function () {
+    $user = JasmineUser::factory()->create();
+
+    // A hijacked session must not convert into a long-lived credential in one request; the token
+    // outlives password changes, so this is the last point at which the owner can be checked.
+    $this->actingAs($user, config('jasmine.auth.guard'))
+        ->post(route('jasmine.profile.show'), [
+            '_sec' => 'createToken', 'name' => 'ci', 'password' => 'not-the-password',
+        ])
+        ->assertSessionHasErrors('password');
+
+    expect($user->apiTokens()->count())->toBe(0);
+});
+
+it('does not leak the submitted password onto the token row', function () {
+    $user = JasmineUser::factory()->create();
+    createTokenViaProfile($user);
+
+    expect(DB::table(TOKENS_TABLE)->sole())->not->toHaveProperty('password');
 });
