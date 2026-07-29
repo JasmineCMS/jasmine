@@ -88,8 +88,8 @@ class ProfileController extends Controller
         $user = $this->user();
         $google2fa = new Google2FA;
 
-        // Setup: generate secret
-        if (!$user->otp_secret && $data['enabled'] && !request('secret')) {
+        // Setup: generate secret (also when the pending session secret expired mid-setup)
+        if (!$user->otp_secret && $data['enabled'] && (!request('secret') || !session()->has('jasmine.2fa_secret'))) {
             $secret = $google2fa->generateSecretKey();
             session()->put('jasmine.2fa_secret', $secret);
 
@@ -104,24 +104,27 @@ class ProfileController extends Controller
             return back();
         }
 
-        // Setup: verify secret
+        // Setup: verify secret — the one this session generated, never the request's copy
         if (!$user->otp_secret && $data['enabled'] && request('secret')) {
+            $secret = session('jasmine.2fa_secret');
+
             session()->flash('otp_profile', [
-                'secret' => request('secret'),
+                'secret' => $secret,
                 'url'    => $google2fa->getQRCodeUrl(
                     config('app.name') . ' - Jasmine',
-                    $user->email, request('secret'),
+                    $user->email, $secret,
                 ),
             ]);
 
             request()->validate(['code' => [
                 'required', 'digits:6',
-                fn($a, $v, $f) => !$google2fa->verifyKey(session('jasmine.2fa_secret', ''), $v)
+                fn($a, $v, $f) => !$google2fa->verifyKey($secret, $v)
                     && $f('The ' . $a . ' is invalid.'),
             ]]);
 
-            $user->otp_secret = request('secret');
+            $user->otp_secret = $secret;
             $user->save();
+            session()->forget('jasmine.2fa_secret');
             session(['jasmine.2fa_confirmed' => $user->getKey()]);
 
             return back()->with('swal', $this->savedToast('Two-factor authentication enabled'));
