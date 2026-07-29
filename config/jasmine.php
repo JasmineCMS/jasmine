@@ -28,6 +28,16 @@ return [
         ],
 
         /*
+        | New accounts are created without a usable password; the single-use
+        | onboarding link e-mailed to the user is their only way in. Expiry is
+        | in minutes (default 20 minutes) — once it lapses, an administrator has
+        | to send a fresh link from the users list.
+        */
+        'onboarding'  => [
+            'expire' => env('JASMINE_ONBOARDING_EXPIRE', 20),
+        ],
+
+        /*
         | Throttling for the authentication endpoints.
         |
         | attempts    max failed attempts per account (email + IP) before lockout
@@ -48,10 +58,10 @@ return [
                 'ip_decay'    => env('JASMINE_THROTTLE_LOGIN_IP_DECAY', 60),
             ],
             'forgot'   => [
-                'attempts'       => env('JASMINE_THROTTLE_FORGOT_ATTEMPTS', 3),
-                'ip_attempts'    => env('JASMINE_THROTTLE_FORGOT_IP_ATTEMPTS', 10),
-                'decay'          => env('JASMINE_THROTTLE_FORGOT_DECAY', 600),
-                'ip_decay'       => env('JASMINE_THROTTLE_FORGOT_DECAY', 600),
+                'attempts'    => env('JASMINE_THROTTLE_FORGOT_ATTEMPTS', 3),
+                'ip_attempts' => env('JASMINE_THROTTLE_FORGOT_IP_ATTEMPTS', 10),
+                'decay'       => env('JASMINE_THROTTLE_FORGOT_DECAY', 600),
+                'ip_decay'    => env('JASMINE_THROTTLE_FORGOT_DECAY', 600),
             ],
             'otp'      => [
                 'attempts' => env('JASMINE_THROTTLE_OTP_ATTEMPTS', 5),

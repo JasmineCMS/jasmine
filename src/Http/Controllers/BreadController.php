@@ -364,8 +364,9 @@ class BreadController extends Controller
                 ->paginate($reordering ? max(1, (clone $query)->count()) : request('perPage', 10))
                 ->through(function (Model&BreadableInterface $m) use ($columns, $locale, $user) {
                     if ($locale) {
-                        /** @var Translatable $m */
-                        $m->setLocale($locale);
+                        /** @var Translatable $translatable scoped alias — a @var on $m would retype it for the whole closure */
+                        $translatable = $m;
+                        $translatable->setLocale($locale);
                     }
 
                     $res = ['jasmine' => ['title' => $m->getTitle()]];
@@ -377,10 +378,17 @@ class BreadController extends Controller
 
                     if ($v = $m->getPublicUrl()) $res['jasmine']['public_url'] = $v;
 
-                    $res['jasmine']['actions'] = array_values(array_filter(
-                        array_filter(array_values($m->browseActions())),
-                        fn(Action $i) => $user->jCan($i->permission),
-                    ));
+                    $actions = array_filter($m->browseActions(),
+                        fn(?Action $i) => $i && (!$i->permission || $user->jCan($i->permission)));
+
+                    $res['jasmine']['actions'] = array_map(fn(string $k, Action $i) => [
+                        ...$i->toArray(),
+                        'url' => $i->handler ? route('jasmine.bread.action', [
+                            'breadable'   => $m::getBreadableKey(),
+                            'breadableId' => $m->getKey(),
+                            'action'      => $k,
+                        ]) : $i->url,
+                    ], array_keys($actions), $actions);
 
                     return self::fireEvent('retrievedForIndex', $m, $res);
                 }),
@@ -618,6 +626,30 @@ class BreadController extends Controller
             'breadable' => $breadable->key,
             ...(request('_locale') ? ['_locale' => request('_locale')] : []),
         ])->with('bread_data', collect($model->toArray())->except([$model->getKeyName()]));
+    }
+
+    public function action(Request $request) {
+        /** @var BreadableContext $breadable */
+        $breadable = $request->route('breadable');
+        $breadableId = $request->route('breadableId');
+
+        /** @var JasmineUser $user */
+        $user = AuthController::guard()->user();
+
+        abort_unless($user->jCan($breadable->permission('read')), 403);
+        $model = $breadable->find($breadableId);
+
+        $action = $model->browseActions()[$request->route('action')] ?? null;
+        if (!$action?->getHandler()) abort(404);
+
+        // the index merely hides unauthorized actions — the endpoint must enforce
+        if ($action->permission) abort_unless($user->jCan($action->permission), 403);
+
+        $res = $action->getHandler()($request, $model);
+
+        if ($res) return $res;
+
+        return redirect()->back();
     }
 
     public function delete(Request $request) {

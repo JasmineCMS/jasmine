@@ -28,6 +28,9 @@ Route::name('jasmine.')->middleware([AppMiddleware::class, HandleInertiaRequests
 
             Route::get('login/reset/{token}', 'showPasswordReset')->name('password.reset');
             Route::post('login/reset/{token}', 'passwordReset');
+
+            Route::get('onboarding/{user}', 'showOnboarding')->name('onboarding');
+            Route::post('onboarding/{user}', 'onboard');
         });
 
         foreach (Jasmine::getGuestRouteGroups() as $group) $group();
@@ -81,6 +84,10 @@ Route::name('jasmine.')->middleware([AppMiddleware::class, HandleInertiaRequests
                     Route::put('/{breadableId}/edit', 'save');
 
                     Route::get('/{breadableId}/clone', 'clone')->name('clone');
+
+                    Route::match(['GET', 'POST', 'PUT', 'DELETE'],
+                        '/{breadableId}/action/{action}', 'action'
+                    )->name('action');
 
                     Route::delete('/{breadableId}', 'delete')->name('delete');
 

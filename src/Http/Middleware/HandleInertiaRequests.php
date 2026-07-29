@@ -36,7 +36,8 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
 
             '_ziggy' => Inertia::once(fn() => [
-                ...(new Ziggy)->filter(['jasmine.login', 'jasmine.sso.*', 'jasmine.password.*'])->toArray(),
+                ...(new Ziggy)->filter(['jasmine.login', 'jasmine.sso.*', 'jasmine.password.*', 'jasmine.onboarding'])
+                    ->toArray(),
                 'location' => $request->url(),
             ]),
 

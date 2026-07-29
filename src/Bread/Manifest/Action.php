@@ -13,16 +13,17 @@ class Action implements Arrayable, JsonSerializable
      * @param 'GET'|'POST'|'PUT'|'DELETE'               $method
      */
     public function __construct(
-        private(set) string $name,
-        private(set) ?string $icon = null,
-        private(set) ?string $url = null,
-        private(set) string $target = '_self',
-        private(set) ?string $permission = null,
-        private(set) ?array $confirm = null,
-        private(set) ?string $label = null,
-        private(set) ?string $classes = null,
-        private(set) string $method = 'GET',
-        private(set) bool $bulk = false,
+        public private(set) string $name,
+        public private(set) ?string $icon = null,
+        public private(set) ?string $url = null,
+        public private(set) string $target = '_self',
+        public private(set) ?string $permission = null,
+        public private(set) ?array $confirm = null,
+        public private(set) ?string $label = null,
+        public private(set) ?string $classes = null,
+        public private(set) string $method = 'GET',
+        public private(set) bool $bulk = false,
+        public private(set) ?\Closure $handler = null,
     ) {
         $this->label ??= $this->name;
     }
@@ -43,6 +44,7 @@ class Action implements Arrayable, JsonSerializable
         ?string $classes = null,
         string $method = 'GET',
         bool $bulk = false,
+        ?\Closure $handler = null,
     ): self {
         return new self(
             $name,
@@ -55,6 +57,7 @@ class Action implements Arrayable, JsonSerializable
             $classes,
             $method,
             $bulk,
+            $handler,
         );
     }
 
@@ -127,6 +130,16 @@ class Action implements Arrayable, JsonSerializable
 
     public function setBulk(bool $bulk): Action {
         $this->bulk = $bulk;
+
+        return $this;
+    }
+
+    public function getHandler(): ?\Closure {
+        return $this->handler;
+    }
+
+    public function setHandler(?\Closure $handler): Action {
+        $this->handler = $handler;
 
         return $this;
     }

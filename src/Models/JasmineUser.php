@@ -9,20 +9,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Jasmine\Jasmine\Bread\Breadable;
+use Jasmine\Jasmine\Bread\BreadableContext;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\GroupedField;
 use Jasmine\Jasmine\Bread\Fields\InputField;
 use Jasmine\Jasmine\Bread\Fields\SwitchField;
+use Jasmine\Jasmine\Bread\Manifest\Action;
 use Jasmine\Jasmine\Bread\Manifest\Column;
 use Jasmine\Jasmine\Bread\Manifest\Section;
 use Jasmine\Jasmine\Database\Factories\JasmineUserFactory;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Http\Controllers\AuthController;
+use Jasmine\Jasmine\Notifications\OnboardingInvite;
 
 /**
  * @property string      $name
@@ -35,7 +40,9 @@ use Jasmine\Jasmine\Http\Controllers\AuthController;
  */
 class JasmineUser extends Authenticatable implements BreadableInterface
 {
-    use Breadable;
+    use Breadable {
+        browseActions as private defaultBrowseActions;
+    }
 
     /** @use HasFactory<JasmineUserFactory> */
     use HasFactory, Notifiable;
@@ -164,6 +171,57 @@ class JasmineUser extends Authenticatable implements BreadableInterface
         $data['permissions'] = array_keys(array_filter(Arr::dot($data['permissions'] ?? []), fn($p) => $p));
 
         return $data;
+    }
+
+    public static function jasmineOnSaved(JasmineUser $model, ?array $data = null): ?array {
+        if ($model->wasRecentlyCreated) $model->sendOnboardingLink();
+
+        return $data;
+    }
+
+    public function sendOnboardingLink(): string {
+        $url = URL::temporarySignedRoute('jasmine.onboarding',
+            now()->addMinutes((int)config('jasmine.auth.onboarding.expire', 20)), [
+                'user' => $this->getKey(),
+                'k'    => hash('sha256', $this->password),
+            ],
+        );
+
+        $this->notify(new OnboardingInvite($url));
+
+        return $url;
+    }
+
+    public function browseActions(): array {
+        $context = new BreadableContext(self::getBreadableKey(), self::class);
+
+        $actions = $this->defaultBrowseActions();
+
+        if (!$this->hasTwoFactor() && $this->getKey() !== AuthController::guard()->id()) {
+            $actions['send-onboarding-link'] = Action::for(
+                name: 'send-onboarding-link',
+                icon: 'bi-envelope-arrow-up',
+                permission: $context->permission('edit'),
+                confirm: ['auth.send_onboarding_link_confirm' => ['email' => $this->email]],
+                method: 'POST',
+                handler: function (Request $request, JasmineUser $user) {
+                    $url = e($user->sendOnboardingLink());
+                    $note = __('If the email does not arrive, copy the link and share it through another secure channel.');
+
+                    return back()->with('swal', [
+                        'icon'  => 'success',
+                        'title' => __('Onboarding link sent'),
+                        // SweetAlert2 ignores `text` when `html` is set — the note lives inside it
+                        'html'  => <<<HTML
+<p>$note</p>
+<code style="word-break: break-all; user-select: all">$url</code>
+HTML,
+                    ]);
+                },
+            );
+        }
+
+        return $actions;
     }
 
     public static function jasmineOnDeleting(JasmineUser $model): ?array {

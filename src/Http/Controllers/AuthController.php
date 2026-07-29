@@ -210,15 +210,57 @@ class AuthController extends Controller
         static::guard()->login($user);
         $request->session()->regenerate();
 
-        // The exemption reflects the most recent login event: stamped only when this
-        // provider is trusted to enforce its own MFA, cleared otherwise so a flag
-        // earned through a trusted provider cannot outlive it. Keyed to the user,
-        // like `jasmine.2fa_confirmed`.
         $mfaTrusted = $sso['mfaTrusted'] instanceof \Closure ? ($sso['mfaTrusted'])($userData) : $sso['mfaTrusted'];
         if ($mfaTrusted) $request->session()->put('jasmine.sso_login', $user->getKey());
         else $request->session()->forget('jasmine.sso_login');
 
         return Inertia::location(session('url.intended', route('jasmine.dashboard')));
+    }
+
+    private function onboardingUser(Request $request): ?JasmineUser {
+        if (!$request->hasValidSignature()) return null;
+
+        /** @var JasmineUser|null $user */
+        $user = JasmineUser::find($request->route('user'));
+        if ($user === null) return null;
+
+        if (!hash_equals(hash('sha256', $user->password), (string)$request->query('k'))) return null;
+
+        return $user;
+    }
+
+    private function onboardingInvalid(): RedirectResponse {
+        return redirect()->route('jasmine.login')->withErrors([
+            'email' => __('This onboarding link is invalid or has expired. Ask an administrator to send you a new one.'),
+        ]);
+    }
+
+    public function showOnboarding(Request $request): InertiaResponse|RedirectResponse {
+        $user = $this->onboardingUser($request);
+        if ($user === null) return $this->onboardingInvalid();
+
+        return Inertia::render('Onboarding', [
+            'email'  => $user->email,
+            'action' => $request->fullUrl(),
+        ]);
+    }
+
+    public function onboard(Request $request): RedirectResponse|Response {
+        $user = $this->onboardingUser($request);
+        if ($user === null) return $this->onboardingInvalid();
+
+        $data = $request->validate(['password' => ['required', 'confirmed', static::passwordRule()]]);
+
+        $user->password = Hash::make($data['password']);
+        $user->setRememberToken(Str::random(60));
+        $user->save();
+
+        static::guard()->login($user);
+        $request->session()->regenerate();
+
+        $request->session()->forget('jasmine.sso_login');
+
+        return Inertia::location(route('jasmine.dashboard'));
     }
 
     public function showForgotPassword(): InertiaResponse {
@@ -234,6 +276,22 @@ class AuthController extends Controller
 
         $this->ensureNotRateLimited($rlKey, (int)config('jasmine.auth.rate_limits.forgot.attempts', 3));
         $this->ensureNotRateLimited($ipKey, (int)config('jasmine.auth.rate_limits.forgot.ip_attempts', 10));
+
+        // With MFA required, an un-enrolled account's only credential path is an
+        // admin-issued onboarding link — self-service reset would keep the enrollment
+        // window open indefinitely. Answer exactly like a successful send so account
+        // state is not disclosed.
+        /** @var JasmineUser|null $target */
+        $target = JasmineUser::where('email', $data['email'])->first();
+        if ($target && config('jasmine.auth.mfa.required') && !$target->hasTwoFactor()) {
+            RateLimiter::hit($rlKey, (int)config('jasmine.auth.rate_limits.forgot.decay', 600));
+            RateLimiter::hit($ipKey, (int)config('jasmine.auth.rate_limits.forgot.ip_decay', 600));
+
+            return back()->with(['swal' => [
+                'icon' => 'success',
+                'text' => trans(Password::RESET_LINK_SENT),
+            ]]);
+        }
 
         ResetPassword::createUrlUsing(function (Authenticatable $user, string $token) {
             return route('jasmine.password.reset', [
