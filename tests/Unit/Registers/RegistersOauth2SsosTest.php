@@ -39,6 +39,7 @@ it('stores all SSO fields under the provider name', function () {
         'token_url'     => 'https://provider.test/token',
         'scopes'        => ['email', 'profile'],
         'allowCreate'   => true,
+        'mfaTrusted'    => true, // the default — providers are trusted unless said otherwise
     ])->and($sso['userDataCallback'])->toBe($userData);
 });
 
@@ -74,4 +75,13 @@ it('accepts a closure for allowCreate', function () {
     $host->registerOauth2Sso('google', 'i', 'c', 's', 'https://a', 'https://t', [], $allow, fn() => []);
 
     expect($host->getOauth2Sso('google')['allowCreate'])->toBe($allow);
+});
+
+it('accepts a closure for mfaTrusted', function () {
+    $host = makeSsoHost();
+    $trusted = fn() => false;
+
+    $host->registerOauth2Sso('google', 'i', 'c', 's', 'https://a', 'https://t', [], true, fn() => [], $trusted);
+
+    expect($host->getOauth2Sso('google')['mfaTrusted'])->toBe($trusted);
 });

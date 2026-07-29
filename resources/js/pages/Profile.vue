@@ -25,6 +25,7 @@ const props = defineProps<{
   otp: {enabled: boolean; secret?: string | null; url?: string | null};
   webauthn: {credentials: {id: number; name: string; created_at: string; last_used_at: string | null}[]};
   tokens: ApiToken[];
+  mfaEnrollmentRequired: boolean;
 }>();
 
 const {t} = useI18n();
@@ -349,6 +350,13 @@ const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD');
 
   <AppLayout>
     <div class="max-w-4xl">
+      <div
+        v-if="mfaEnrollmentRequired"
+        class="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+      >
+        {{ $t('Profile.mfa_required_enroll') }}
+      </div>
+
       <TabGroup>
         <!-- TAB BAR -->
         <TabList class="mb-6 flex flex-wrap gap-x-6 border-b border-gray-200 dark:border-gray-700">
@@ -457,6 +465,10 @@ const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD');
                   {{ $t('Profile.require_two_factor_authentication') }}
                 </span>
               </label>
+
+              <p v-if="otpForm.errors.enabled" class="text-sm text-red-600 dark:text-red-400">
+                {{ otpForm.errors.enabled }}
+              </p>
 
               <!-- QR -->
               <div v-if="otp.url" class="my-3">

@@ -96,6 +96,7 @@
     "expired": "Expired",
     "expires": "Expires",
     "forget_remembered_devices": "Forget remembered devices",
+    "mfa_required_enroll": "Two-factor authentication is required. Set up an authenticator app or add a security key to continue.",
     "name": "Name",
     "never": "Never",
     "new_password": "New password",

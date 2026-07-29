@@ -16,6 +16,18 @@ return [
         'broker'      => env('JASMINE_AUTH_BROKER', 'jasmine_users'),
 
         /*
+        | Require every user to have a second factor (OTP or a security key).
+        |
+        | Users without one are limited to the profile page until they enroll,
+        | and cannot remove their last remaining factor. Sessions whose latest
+        | login came through an SSO provider registered with `mfaTrusted`
+        | (the default) are exempt — that IdP is trusted to enforce its own MFA.
+        */
+        'mfa'         => [
+            'required' => env('JASMINE_MFA_REQUIRED', false),
+        ],
+
+        /*
         | Throttling for the authentication endpoints.
         |
         | attempts    max failed attempts per account (email + IP) before lockout

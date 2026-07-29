@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Jasmine\Jasmine\Http\Middleware\MfaConfirmed;
 use Jasmine\Jasmine\Models\JasmineUser;
 use Jasmine\Jasmine\Models\JasmineWebauthnCredential;
 use Jasmine\Jasmine\WebAuthn\WebAuthnService;
@@ -40,6 +41,8 @@ class ProfileController extends Controller
                     ]),
             ],
             'tokens'   => $user->apiTokens()->orderByDesc('id')->get(),
+
+            'mfaEnrollmentRequired' => !$user->hasTwoFactor() && MfaConfirmed::requiredFor($user),
         ]);
     }
 
@@ -145,6 +148,12 @@ class ProfileController extends Controller
 
         // Disable
         if ($user->otp_secret && !$data['enabled']) {
+            if (MfaConfirmed::requiredFor($user) && !$user->webauthnCredentials()->exists()) {
+                throw ValidationException::withMessages([
+                    'enabled' => __('Two-factor authentication is required — add a security key before disabling the authenticator app.'),
+                ]);
+            }
+
             $user->otp_secret = null;
             $user->otp_remember_token = null;
             $user->save();
@@ -207,7 +216,17 @@ class ProfileController extends Controller
             'id'       => ['required', 'integer', 'min:1'],
         ]);
 
-        $this->user()->webauthnCredentials()->findOrFail($data['id'])->delete();
+        $user = $this->user();
+        $credential = $user->webauthnCredentials()->findOrFail($data['id']);
+
+        if (MfaConfirmed::requiredFor($user) && !$user->otp_secret
+            && $user->webauthnCredentials()->whereKeyNot($credential->getKey())->doesntExist()) {
+            throw ValidationException::withMessages([
+                'id' => __('Two-factor authentication is required — enable the authenticator app before removing your last security key.'),
+            ]);
+        }
+
+        $credential->delete();
 
         return back()->with('swal', $this->savedToast('Security key removed'));
     }

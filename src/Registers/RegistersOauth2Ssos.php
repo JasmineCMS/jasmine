@@ -13,8 +13,9 @@ trait RegistersOauth2Ssos
     private array $oauth2Ssos = [];
 
     /**
-     * @param Closure(string): Oauth2UserData    $userDataCallback Receives the raw token-endpoint body.
      * @param (Closure(Oauth2UserData): bool)|bool $allowCreate
+     * @param Closure(string): Oauth2UserData    $userDataCallback Receives the raw token-endpoint body.
+     * @param (Closure(Oauth2UserData): bool)|bool $mfaTrusted
      */
     public function registerOauth2Sso(
         string $name,
@@ -26,6 +27,7 @@ trait RegistersOauth2Ssos
         array $scopes,
         Closure|bool $allowCreate,
         Closure $userDataCallback,
+        Closure|bool $mfaTrusted = true,
     ): void {
         $this->oauth2Ssos[$name] = compact(
             'name',
@@ -37,6 +39,7 @@ trait RegistersOauth2Ssos
             'scopes',
             'allowCreate',
             'userDataCallback',
+            'mfaTrusted',
         );
     }
 
@@ -51,6 +54,7 @@ trait RegistersOauth2Ssos
      *      scopes: array,
      *      allowCreate: (Closure(Oauth2UserData): bool)|bool,
      *      userDataCallback: (Closure(string): Oauth2UserData),
+     *      mfaTrusted: (Closure(Oauth2UserData): bool)|bool,
      * }>
      */
     public function getOauth2Ssos(): array {
@@ -68,6 +72,7 @@ trait RegistersOauth2Ssos
      *      scopes: array,
      *      allowCreate: (Closure(Oauth2UserData): bool)|bool,
      *      userDataCallback: (Closure(string): Oauth2UserData),
+     *      mfaTrusted: (Closure(Oauth2UserData): bool)|bool,
      * }
      */
     public function getOauth2Sso(string $name): ?array {

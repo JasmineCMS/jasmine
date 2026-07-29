@@ -88,6 +88,9 @@ class AuthController extends Controller
             RateLimiter::clear($rlKey);
             $request->session()->regenerate();
 
+            // This login was not IdP-backed — drop any SSO-earned MFA exemption.
+            $request->session()->forget('jasmine.sso_login');
+
             return Inertia::location(session('url.intended', route('jasmine.dashboard')));
         }
 
@@ -190,8 +193,7 @@ class AuthController extends Controller
 
         if (!$user) {
             $allowCreate = $sso['allowCreate'] instanceof \Closure
-                ? ($sso['allowCreate'])($userData)
-                : $sso['allowCreate'];
+                ? ($sso['allowCreate'])($userData) : $sso['allowCreate'];
 
             if (!$allowCreate) return redirect()
                 ->route('jasmine.login')
@@ -207,6 +209,14 @@ class AuthController extends Controller
 
         static::guard()->login($user);
         $request->session()->regenerate();
+
+        // The exemption reflects the most recent login event: stamped only when this
+        // provider is trusted to enforce its own MFA, cleared otherwise so a flag
+        // earned through a trusted provider cannot outlive it. Keyed to the user,
+        // like `jasmine.2fa_confirmed`.
+        $mfaTrusted = $sso['mfaTrusted'] instanceof \Closure ? ($sso['mfaTrusted'])($userData) : $sso['mfaTrusted'];
+        if ($mfaTrusted) $request->session()->put('jasmine.sso_login', $user->getKey());
+        else $request->session()->forget('jasmine.sso_login');
 
         return Inertia::location(session('url.intended', route('jasmine.dashboard')));
     }
@@ -275,6 +285,9 @@ class AuthController extends Controller
         if ($res !== Password::PASSWORD_RESET) throw ValidationException::withMessages(['email' => [trans($res)]]);
 
         $request->session()->regenerate();
+
+        // This login was not IdP-backed — drop any SSO-earned MFA exemption.
+        $request->session()->forget('jasmine.sso_login');
 
         return Inertia::location(session('url.intended', route('jasmine.dashboard')));
     }
