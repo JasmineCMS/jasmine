@@ -211,7 +211,6 @@ class JasmineUser extends Authenticatable implements BreadableInterface
                     return back()->with('swal', [
                         'icon'  => 'success',
                         'title' => __('Onboarding link sent'),
-                        // SweetAlert2 ignores `text` when `html` is set — the note lives inside it
                         'html'  => <<<HTML
 <p>$note</p>
 <code style="word-break: break-all; user-select: all">$url</code>
