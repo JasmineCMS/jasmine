@@ -234,11 +234,10 @@ class BreadController extends Controller
             'locale'    => $locale,
             'can'       => Inertia::once(function () use ($user, $breadable) {
                 $res = ['b'];
-                if ($user->jCan("models.$breadable->key.read")) $res[] = 'r';
-                if ($user->jCan("models.$breadable->key.edit")) $res[] = 'e';
-                if ($user->jCan("models.$breadable->key.add")) $res[] = 'a';
-                if ($user->jCan("models.$breadable->key.delete")) $res[] = 'd';
-
+                if ($user->jCan($breadable->permission('read'))) $res[] = 'r';
+                if ($user->jCan($breadable->permission('edit'))) $res[] = 'e';
+                if ($user->jCan($breadable->permission('add'))) $res[] = 'a';
+                if ($user->jCan($breadable->permission('delete'))) $res[] = 'd';
                 return $res;
             })->as('breadable.can.' . $breadable->key),
             'paginator' => $query
@@ -455,10 +454,10 @@ class BreadController extends Controller
             'locale'    => $locale,
             'can'       => Inertia::once(function () use ($user, $breadable) {
                 $res = ['r'];
-                if ($user->jCan("models.$breadable->key.browse")) $res[] = 'b';
-                if ($user->jCan("models.$breadable->key.edit")) $res[] = 'e';
-                if ($user->jCan("models.$breadable->key.add")) $res[] = 'a';
-                if ($user->jCan("models.$breadable->key.delete")) $res[] = 'd';
+                if ($user->jCan($breadable->permission('browse'))) $res[] = 'b';
+                if ($user->jCan($breadable->permission('edit'))) $res[] = 'e';
+                if ($user->jCan($breadable->permission('add'))) $res[] = 'a';
+                if ($user->jCan($breadable->permission('delete'))) $res[] = 'd';
 
                 return $res;
             })->as('breadable.can.' . $breadable->key),
