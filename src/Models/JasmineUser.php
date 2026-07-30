@@ -173,6 +173,18 @@ class JasmineUser extends Authenticatable implements BreadableInterface
         return $data;
     }
 
+    public static function jasmineOnRetrievedForEdit(JasmineUser $u): array {
+        if (!$u->exists) return $u->toArray();
+
+        // prep permissions
+        $u->permissions = Arr::undot(
+            array_combine((array)$u->permissions, array_map(fn() => true, (array)$u->permissions))
+            + array_map(fn() => false, Jasmine::getPermissions())
+        );
+
+        return $u->toArray();
+    }
+
     public static function jasmineOnSaved(JasmineUser $model, ?array $data = null): ?array {
         if ($model->wasRecentlyCreated) $model->sendOnboardingLink();
 
