@@ -238,6 +238,7 @@ class BreadController extends Controller
                 if ($user->jCan($breadable->permission('edit'))) $res[] = 'e';
                 if ($user->jCan($breadable->permission('add'))) $res[] = 'a';
                 if ($user->jCan($breadable->permission('delete'))) $res[] = 'd';
+
                 return $res;
             })->as('breadable.can.' . $breadable->key),
             'paginator' => $query
@@ -554,7 +555,10 @@ class BreadController extends Controller
             }
         }
 
-        return redirect()->back()->with('swal', [
+        return to_route('jasmine.bread.edit', [
+            'breadable'   => $breadable->key,
+            'breadableId' => $model->getKey(),
+        ])->with('swal', [
             'toast'             => true,
             'position'          => 'top-right',
             'timer'             => 2 * 1000,
