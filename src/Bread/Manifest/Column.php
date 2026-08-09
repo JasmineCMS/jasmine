@@ -10,14 +10,14 @@ use JsonSerializable;
 class Column implements Arrayable, JsonSerializable
 {
     public function __construct(
-        private(set) string $data,
-        private(set) ?string $label = null,
-        private(set) bool $sortable = true,
-        private(set) bool $searchable = true,
-        private(set) null|string|array $filtering = null,
-        private(set) ?Closure $render = null,
-        private(set) ?Closure $searchLogic = null,
-        private(set) bool $html = false,
+        public private(set) string $data,
+        public private(set) ?string $label = null,
+        public private(set) bool $sortable = true,
+        public private(set) bool $searchable = true,
+        public private(set) null|string|array $filtering = null,
+        public private(set) ?Closure $render = null,
+        public private(set) ?Closure $searchLogic = null,
+        public private(set) bool $html = false,
     ) {
         $this->label ??= $this->data;
     }

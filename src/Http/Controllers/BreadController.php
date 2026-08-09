@@ -555,10 +555,16 @@ class BreadController extends Controller
             }
         }
 
-        return to_route('jasmine.bread.edit', [
-            'breadable'   => $breadable->key,
-            'breadableId' => $model->getKey(),
-        ])->with('swal', [
+        $to = $model instanceof JasminePage
+            ? to_route('jasmine.page.edit', [
+                'jasminePage' => $breadable->key,
+            ])
+            : to_route('jasmine.bread.edit', [
+                'breadable'   => $breadable->key,
+                'breadableId' => $model->getKey(),
+            ]);
+
+        return $to->with('swal', [
             'toast'             => true,
             'position'          => 'top-right',
             'timer'             => 2 * 1000,
