@@ -45,10 +45,27 @@ let editorEl: HTMLDivElement | null = null;
 
 const editor = shallowRef<Editor | null>(null);
 
+/**
+ * TinyMCE wrote blank lines as `<p>&nbsp;</p>`; tiptap writes `<p></p>`.
+ * Downstream consumers still expect the nbsp form, so translate at the model
+ * boundary: strip it on the way in (otherwise legacy content carries an
+ * invisible, undeletable nbsp and never looks empty), re-add on the way out.
+ */
+const BLANK_PARAGRAPH = /<p([^>]*)>(?:\s|&nbsp;|&#160;|<br\s*\/?>)*<\/p>/gi;
+
+function toEditorContent(value: unknown) {
+  if (typeof value !== 'string') return value ?? '';
+  return value.replace(BLANK_PARAGRAPH, '<p$1></p>');
+}
+
+function toModelHtml(ed: {getHTML: () => string}): string {
+  return ed.getHTML().replace(BLANK_PARAGRAPH, '<p$1>&nbsp;</p>');
+}
+
 watch(model, (val) => {
   if (!editor.value) return;
-  if (val === editor.value.getHTML()) return;
-  editor.value.commands.setContent(val ?? '', {emitUpdate: false});
+  if (val === toModelHtml(editor.value)) return;
+  editor.value.commands.setContent(toEditorContent(val), {emitUpdate: false});
 });
 
 function injectShadowStyles(root: ShadowRoot) {
@@ -179,8 +196,8 @@ onMounted(() => {
         allowBase64: props.options.image_allow_base64 ?? false,
       }),
     ],
-    content: model.value ?? '',
-    onUpdate: ({editor}) => (model.value = editor.getHTML()),
+    content: toEditorContent(model.value),
+    onUpdate: ({editor}) => (model.value = toModelHtml(editor)),
     editorProps: {
       attributes: {
         role: 'textbox',
@@ -492,13 +509,13 @@ const sourceText = ref('');
 
 function enterSourceMode() {
   if (!editor.value) return;
-  sourceText.value = editor.value.getHTML();
+  sourceText.value = toModelHtml(editor.value);
   sourceMode.value = true;
 }
 
 function exitSourceMode() {
   if (!editor.value) return;
-  editor.value.commands.setContent(sourceText.value, {emitUpdate: true});
+  editor.value.commands.setContent(toEditorContent(sourceText.value), {emitUpdate: true});
   sourceMode.value = false;
 }
 
