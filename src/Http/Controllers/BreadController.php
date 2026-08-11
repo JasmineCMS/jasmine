@@ -558,10 +558,12 @@ class BreadController extends Controller
         $to = $model instanceof JasminePage
             ? to_route('jasmine.page.edit', [
                 'jasminePage' => $breadable->key,
+                '_locale'     => $locale,
             ])
             : to_route('jasmine.bread.edit', [
                 'breadable'   => $breadable->key,
                 'breadableId' => $model->getKey(),
+                '_locale'     => $locale,
             ]);
 
         return $to->with('swal', [
