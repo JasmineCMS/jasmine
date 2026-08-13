@@ -88,3 +88,11 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+input[readonly],
+textarea[readonly],
+input:disabled,
+textarea:disabled,
+select:disabled {
+  @apply bg-gray-100 text-gray-500 cursor-not-allowed;
+}
