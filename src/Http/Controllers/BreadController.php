@@ -41,7 +41,7 @@ class BreadController extends Controller
         // Fire Trait Hooks
         $res = $data;
         foreach (self::$traitCache[$class] as $trait) {
-            $traitMethod = class_basename($trait) . 'JasmineOn' . $methodSuffix;
+            $traitMethod = lcfirst(class_basename($trait)) . 'JasmineOn' . $methodSuffix;
             if (method_exists($model, $traitMethod)) $res = $model::$traitMethod($model, $res);
         }
 

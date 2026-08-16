@@ -4,6 +4,7 @@ namespace App\Pages;
 
 use Illuminate\Database\Eloquent\Model;
 use Jasmine\Jasmine\Bread\BreadableInterface;
+use Jasmine\Jasmine\Bread\Fields\DateField;
 use Jasmine\Jasmine\Bread\Fields\GroupedField;
 use Jasmine\Jasmine\Bread\Fields\ImageField;
 use Jasmine\Jasmine\Bread\Fields\InputField;
@@ -74,6 +75,7 @@ class Home extends JasminePage
             ],
             'col-md-3'   => [
                 __('Hero Media') => [
+                    DateField::for('date'),
                     InputField::for('hero_media_title'),
                     VideoField::for('hero_video')->setWidth('col-md-12'),
                     InputField::for('hero_video_name'),
