@@ -214,9 +214,11 @@ function removeImg() {
 }
 
 const box = computed(() => {
-  const w = model.value?.w ?? opts.value.w;
-  const h = model.value?.h ?? opts.value.h;
+  const w = Number(model.value?.w) || Number(opts.value.w);
+  const h = Number(model.value?.h) || Number(opts.value.h);
+
   if (!w || !h) return null;
+
   const scale = Math.min(1, 200 / h);
   return {width: Math.round(w * scale), height: Math.round(h * scale)};
 });

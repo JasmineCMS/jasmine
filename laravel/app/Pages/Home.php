@@ -76,6 +76,7 @@ class Home extends JasminePage
             'col-md-3'   => [
                 __('Hero Media') => [
                     DateField::for('date'),
+                    ImageField::for('image')->flexible(),
                     InputField::for('hero_media_title'),
                     VideoField::for('hero_video')->setWidth('col-md-12'),
                     InputField::for('hero_video_name'),
