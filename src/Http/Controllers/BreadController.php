@@ -3,6 +3,7 @@
 namespace Jasmine\Jasmine\Http\Controllers;
 
 use Closure;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,10 +27,13 @@ use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Models\JasminePage;
 use Jasmine\Jasmine\Models\JasmineRevision;
 use Jasmine\Jasmine\Models\JasmineUser;
+use Throwable;
 
 class BreadController extends Controller
 {
     private static array $traitCache = [];
+
+    private const array DATE_CASTS = ['date', 'datetime', 'immutable_date', 'immutable_datetime', 'timestamp'];
 
     private static function fireEvent(string $event, Model&BreadableInterface $model, ?array $data = null): ?array {
         $class = get_class($model);
@@ -50,6 +54,60 @@ class BreadController extends Controller
         if (method_exists($model, $modelMethod)) $res = $model::$modelMethod($model, $res);
 
         return $res;
+    }
+
+    /**
+     * Resolve the model actually holding the column, walking the relations of a dotted path.
+     *
+     * @return null|array{0: Model, 1: string}
+     */
+    private static function ownerOf(Model $model, string $data): ?array {
+        $parts = explode('.', $data);
+        $attr = array_pop($parts);
+
+        foreach ($parts as $part) {
+            $relation = Str::camel($part);
+            if (!$model->isRelation($relation)) return null;
+
+            try {
+                $rel = $model->{$relation}();
+            } catch (Throwable) {
+                return null;
+            }
+
+            if (!$rel instanceof Relation) return null;
+
+            $model = $rel->getRelated();
+        }
+
+        return [$model, $attr];
+    }
+
+    /**
+     * Formatter for a date column, picked up from the model casts (or the eloquent
+     * timestamps, which never show up in the casts). Null when it is not a date.
+     */
+    private static function dateRender(Model $model, string $data): ?Closure {
+        [$owner, $attr] = self::ownerOf($model, $data) ?? [null, null];
+        if (!$owner) return null;
+
+        $cast = $owner->getCasts()[$attr] ?? (in_array($attr, $owner->getDates(), true) ? 'datetime' : null);
+        if (!$cast) return null;
+
+        // a cast may carry its own format, e.g. 'datetime:d/m/Y' — do not lowercase it, the format is case sensitive
+        [$type, $castFormat] = array_pad(explode(':', $cast, 2), 2, null);
+        $type = strtolower($type);
+        if (!in_array($type, self::DATE_CASTS, true)) return null;
+
+        // TODO: allow custom formatting for the casts that do not declare one?
+        $format = $castFormat ?? (in_array($type, ['date', 'immutable_date'], true) ? 'd.m.Y' : 'd.m.Y H:i:s');
+
+        return fn($v) => match (true) {
+            $v === null || $v === ''        => null,
+            $type === 'timestamp'           => Carbon::createFromTimestamp($v)->format($format),
+            $v instanceof DateTimeInterface => $v->format($format),
+            default                         => Carbon::parse($v)->format($format),
+        };
     }
 
     private function buildRules(AbstractField $field, string $prefix) {
@@ -100,6 +158,10 @@ class BreadController extends Controller
                 default               => null,
             };
             if (!$col) continue;
+
+            // date columns format themselves, unless the app renders them on its own
+            if (!$col->render && ($render = self::dateRender($model, $col->data))) $col->render($render);
+
             $columns[] = $col;
             $data[] = $col->data;
         }
@@ -109,39 +171,11 @@ class BreadController extends Controller
             $columns = [new Column($model->getKeyName()), ...$columns];
         }
 
-        // date columns, picked up from the model casts
-        // trashed rows never reach the listing, so the deleted_at column would always be empty
-        $trashedAt = method_exists($model, 'getDeletedAtColumn') ? $model->getDeletedAtColumn() : null;
-
-        $dates = [];
-        foreach ($model->getCasts() as $attr => $cast) {
-            if ($attr === $trashedAt) continue;
-
-            // a cast may carry its own format, e.g. 'datetime:d/m/Y' — do not lowercase it, the format is case sensitive
-            [$type, $castFormat] = array_pad(explode(':', $cast, 2), 2, null);
-            $type = strtolower($type);
-            if (!in_array($type, [
-                'date', 'datetime', 'immutable_date', 'immutable_datetime', 'timestamp',
-            ], true)) continue;
-
-            $dates[$attr] = [$type, $castFormat];
-        }
-
-        // timestamps are handled by eloquent, they never show up in the casts
+        // timestamps
         if ($model->usesTimestamps()) foreach ([$model->getUpdatedAtColumn(), $model->getCreatedAtColumn()] as $ts) {
-            if ($ts) $dates[$ts] ??= ['datetime', null];
-        }
+            if (!$ts || in_array($ts, $data)) continue;
 
-        foreach ($dates as $attr => [$type, $castFormat]) {
-            if (in_array($attr, $data)) continue;
-
-            // TODO: allow custom formatting for the casts that do not declare one?
-            $format = $castFormat ?? (in_array($type, ['date', 'immutable_date'], true) ? 'd.m.Y' : 'd.m.Y H:i:s');
-            $columns[] = new Column(data: $attr, filtering: 'date', render: fn($v) => match (true) {
-                $v === null           => null,
-                $type === 'timestamp' => Carbon::createFromTimestamp($v)->format($format),
-                default               => $v->format($format),
-            });
+            $columns[] = new Column(data: $ts, filtering: 'date', render: self::dateRender($model, $ts));
         }
 
         // input validation
