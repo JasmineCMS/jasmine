@@ -109,12 +109,39 @@ class BreadController extends Controller
             $columns = [new Column($model->getKeyName()), ...$columns];
         }
 
-        // timestamps
-        if ($model->usesTimestamps()) foreach ([$model->getUpdatedAtColumn(), $model->getCreatedAtColumn()] as $ts) {
-            if (in_array($ts, $data)) continue;
+        // date columns, picked up from the model casts
+        // trashed rows never reach the listing, so the deleted_at column would always be empty
+        $trashedAt = method_exists($model, 'getDeletedAtColumn') ? $model->getDeletedAtColumn() : null;
 
-            // TODO: allow custom or native formatting?
-            $columns[] = new Column(data: $ts, filtering: 'date', render: fn($v) => $v?->format('d.m.Y H:i:s'));
+        $dates = [];
+        foreach ($model->getCasts() as $attr => $cast) {
+            if ($attr === $trashedAt) continue;
+
+            // a cast may carry its own format, e.g. 'datetime:d/m/Y' — do not lowercase it, the format is case sensitive
+            [$type, $castFormat] = array_pad(explode(':', $cast, 2), 2, null);
+            $type = strtolower($type);
+            if (!in_array($type, [
+                'date', 'datetime', 'immutable_date', 'immutable_datetime', 'timestamp',
+            ], true)) continue;
+
+            $dates[$attr] = [$type, $castFormat];
+        }
+
+        // timestamps are handled by eloquent, they never show up in the casts
+        if ($model->usesTimestamps()) foreach ([$model->getUpdatedAtColumn(), $model->getCreatedAtColumn()] as $ts) {
+            if ($ts) $dates[$ts] ??= ['datetime', null];
+        }
+
+        foreach ($dates as $attr => [$type, $castFormat]) {
+            if (in_array($attr, $data)) continue;
+
+            // TODO: allow custom formatting for the casts that do not declare one?
+            $format = $castFormat ?? (in_array($type, ['date', 'immutable_date'], true) ? 'd.m.Y' : 'd.m.Y H:i:s');
+            $columns[] = new Column(data: $attr, filtering: 'date', render: fn($v) => match (true) {
+                $v === null           => null,
+                $type === 'timestamp' => Carbon::createFromTimestamp($v)->format($format),
+                default               => $v->format($format),
+            });
         }
 
         // input validation
