@@ -2,6 +2,7 @@
 
 namespace Jasmine\Jasmine\Bread;
 
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Jasmine\Jasmine\Bread\Manifest\Action;
@@ -26,7 +27,7 @@ interface BreadableInterface
 
     public static function getMenuIcon(): string;
 
-    /** @return array<string|int, Column|string|array> */
+    /** @return array<string|int, Column|string|array|Closure> */
     public static function browseableColumns(): array;
 
     /** @return array<string|int, Action|null> */
