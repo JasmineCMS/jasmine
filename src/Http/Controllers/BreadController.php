@@ -524,7 +524,7 @@ class BreadController extends Controller
                 return $res;
             })->as('breadable.can.' . $breadable->key),
             'id'        => $model->getKey(),
-            'ent'       => $data,
+            'ent'       => (object)$data,
             'title'     => $model->exists ? $model->getTitle() : null,
             'publicUrl' => $model->exists ? $model->getPublicUrl() : null,
             'loadedRev' => isset($revision) ? $revision->created_at : null,
