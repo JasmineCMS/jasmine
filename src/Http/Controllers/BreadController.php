@@ -307,10 +307,6 @@ class BreadController extends Controller
                     foreach ($filters as $fld => $val) {
                         if ($val === null || $val === '') continue;
 
-                        // handle boolean
-                        if ($val === '_T') $val = true;
-                        elseif ($val === '_F') $val = false;
-
                         /** @var Column|null $col */
                         $col = array_find($columns, fn(Column $c) => $c->data === $fld);
                         if (!$col || $col->filtering === null) continue;
@@ -340,6 +336,13 @@ class BreadController extends Controller
                         // ---- Multi-select: comma-separated values, whereIn-style ----
                         $values = array_values(array_filter(explode(',', $val), fn($v) => $v !== ''));
                         if (empty($values)) continue;
+
+                        // handle boolean — per value, so `_F` and `_T,_F` survive the split
+                        $values = array_map(fn($v) => match ($v) {
+                            '_T'    => true,
+                            '_F'    => false,
+                            default => $v,
+                        }, $values);
 
                         if ($col->isRelation()) {
                             $parts = explode('.', $fld);
