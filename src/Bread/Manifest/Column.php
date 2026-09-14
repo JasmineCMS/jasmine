@@ -18,6 +18,7 @@ class Column implements Arrayable, JsonSerializable
         public private(set) ?Closure $render = null,
         public private(set) ?Closure $searchLogic = null,
         public private(set) bool $html = false,
+        public private(set) ?Closure $filterLogic = null,
     ) {
         $this->label ??= $this->data;
     }
@@ -31,8 +32,9 @@ class Column implements Arrayable, JsonSerializable
         ?Closure $render = null,
         ?Closure $searchLogic = null,
         bool $html = false,
+        ?Closure $filterLogic = null,
     ): self {
-        return new self($data, $label, $sortable, $searchable, $filtering, $render, $searchLogic, $html);
+        return new self($data, $label, $sortable, $searchable, $filtering, $render, $searchLogic, $html, $filterLogic);
     }
 
     public function data(string $data): self {
@@ -79,6 +81,18 @@ class Column implements Arrayable, JsonSerializable
 
     public function searchLogic(?Closure $searchLogic): self {
         $this->searchLogic = $searchLogic;
+
+        return $this;
+    }
+
+    /**
+     * Replace the default filtering (whereIn / date range) of a filterable column,
+     * e.g. to apply a scope: fn(Builder $q, array $values) => $q->ofStatus($values).
+     * Receives the selected values (booleans already cast), or [from, to] for a date filter.
+     * The column must still be filterable() so the UI offers the filter.
+     */
+    public function filterLogic(?Closure $filterLogic): self {
+        $this->filterLogic = $filterLogic;
 
         return $this;
     }

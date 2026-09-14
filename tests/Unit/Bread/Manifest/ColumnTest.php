@@ -73,6 +73,17 @@ it('render() leaves html untouched when the flag is omitted', function () {
     expect($c->html)->toBeTrue();
 });
 
+it('filterLogic() stores the closure and keeps it out of the output', function () {
+    $fn = fn($q, array $values) => $q;
+    $c = Column::for('status')->filterable(['draft', 'live']);
+
+    expect($c->filterLogic(null))->toBe($c)
+        ->and($c->filterLogic)->toBeNull()
+        ->and(Column::for('status', filterLogic: $fn)->filterLogic)->toBe($fn)
+        ->and($c->filterLogic($fn)->filterLogic)->toBe($fn)
+        ->and($c->toArray())->not->toHaveKey('filterLogic');
+});
+
 it('data() updates the data key', function () {
     expect(Column::for('old')->data('new')->data)->toBe('new');
 });

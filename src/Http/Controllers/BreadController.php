@@ -180,14 +180,14 @@ class BreadController extends Controller
 
         // input validation
         $request->validate([
-            'filters'   => ['nullable', 'array'],
+            'filters'     => ['nullable', 'array'],
             'filters.*'   => ['nullable'],
             'filters.*.*' => ['nullable', 'string'],
-            'q'         => ['nullable', 'string'],
-            'sortBy'    => ['nullable', 'string'],
-            'sort'      => ['nullable', 'string', 'in:asc,desc'],
-            'perPage'   => ['nullable', 'integer', 'min:1', 'max:100'],
-            '_locale'   => ['sometimes', 'string', Rule::in(Jasmine::getLocales())],
+            'q'           => ['nullable', 'string'],
+            'sortBy'      => ['nullable', 'string'],
+            'sort'        => ['nullable', 'string', 'in:asc,desc'],
+            'perPage'     => ['nullable', 'integer', 'min:1', 'max:100'],
+            '_locale'     => ['sometimes', 'string', Rule::in(Jasmine::getLocales())],
         ]);
 
         // initiate an eloquent query
@@ -319,6 +319,12 @@ class BreadController extends Controller
                             $to = $to !== '' ? $to : null;
                             if (!$from && !$to) continue;
 
+                            if ($col->filterLogic instanceof Closure) {
+                                ($col->filterLogic)($q, [$from, $to]);
+
+                                continue;
+                            }
+
                             $apply = function (Builder $b, string $column) use ($from, $to) {
                                 if ($from) $b->whereDate($column, '>=', $from);
                                 if ($to) $b->whereDate($column, '<=', $to);
@@ -345,6 +351,12 @@ class BreadController extends Controller
                             '_F'    => false,
                             default => $v,
                         }, $values);
+
+                        if ($col->filterLogic instanceof Closure) {
+                            ($col->filterLogic)($q, $values);
+
+                            continue;
+                        }
 
                         if ($col->isRelation()) {
                             $parts = explode('.', $fld);
