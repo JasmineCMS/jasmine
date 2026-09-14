@@ -181,7 +181,8 @@ class BreadController extends Controller
         // input validation
         $request->validate([
             'filters'   => ['nullable', 'array'],
-            'filters.*' => ['nullable', 'string'],
+            'filters.*'   => ['nullable'],
+            'filters.*.*' => ['nullable', 'string'],
             'q'         => ['nullable', 'string'],
             'sortBy'    => ['nullable', 'string'],
             'sort'      => ['nullable', 'string', 'in:asc,desc'],
@@ -305,7 +306,7 @@ class BreadController extends Controller
             'paginator' => $query
                 ->when(request('filters'), function (Builder $q, array $filters) use ($columns) {
                     foreach ($filters as $fld => $val) {
-                        if ($val === null || $val === '') continue;
+                        if ($val === null || $val === '' || $val === []) continue;
 
                         /** @var Column|null $col */
                         $col = array_find($columns, fn(Column $c) => $c->data === $fld);
@@ -313,7 +314,7 @@ class BreadController extends Controller
 
                         // ---- Date range "from,to" with either side optional ----
                         if ($col->filtering === 'date') {
-                            [$from, $to] = array_pad(explode(',', $val, 2), 2, '');
+                            [$from, $to] = array_pad(is_array($val) ? array_values($val) : explode(',', $val, 2), 2, '');
                             $from = $from !== '' ? $from : null;
                             $to = $to !== '' ? $to : null;
                             if (!$from && !$to) continue;
@@ -333,8 +334,9 @@ class BreadController extends Controller
                             continue;
                         }
 
-                        // ---- Multi-select: comma-separated values, whereIn-style ----
-                        $values = array_values(array_filter(explode(',', $val), fn($v) => $v !== ''));
+                        // ---- Multi-select: an array of values (a comma-separated string is still accepted), whereIn-style ----
+                        $values = array_values(array_filter(is_array($val) ? $val : explode(',', $val),
+                            fn($v) => $v !== null && $v !== ''));
                         if (empty($values)) continue;
 
                         // handle boolean — per value, so `_F` and `_T,_F` survive the split

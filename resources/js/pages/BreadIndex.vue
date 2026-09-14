@@ -57,11 +57,17 @@ const q = computed<QueryState>({
 
     const filters: Record<string, any> = {};
     for (const [k, v] of sp.entries()) {
-      // Look for keys matching exactly "filters[something]"
-      const match = k.match(/^filters\[(.*?)]$/);
+      // "filters[something]" holds a comma-separated string (date ranges),
+      // "filters[something][]" (or "[0]") holds one value of an array (multi-select)
+      const match = k.match(/^filters\[(.*?)](\[\d*])?$/);
       if (!match?.[1]) continue;
 
       const key = match[1];
+      if (match[2] !== undefined) {
+        if (v) filters[key] = [...(filters[key] ?? []), v];
+        continue;
+      }
+
       // Split by comma and drop any empty strings
       const val = (v || '').split(',').filter(Boolean);
       if (val.length > 0) filters[key] = val;
@@ -92,10 +98,13 @@ const q = computed<QueryState>({
     if ((v.page || 1) > 1) data.page = v.page;
     if (v.q) data.q = v.q;
 
-    const filters: Record<string, string> = {};
+    const filters: Record<string, string | string[]> = {};
     for (const [k, val] of Object.entries(v.filters)) {
       if (Array.isArray(val)) {
-        if (val.length) filters[k] = val.join(',');
+        if (!val.length) continue;
+        // values may contain commas, so only date ranges ("from,to") are joined
+        const isDate = props.breadable.columns.find((c) => c.data === k)?.filtering === 'date';
+        filters[k] = isDate ? val.join(',') : val.map(String);
       } else if (typeof val === 'string' && val !== '') {
         filters[k] = val;
       }
