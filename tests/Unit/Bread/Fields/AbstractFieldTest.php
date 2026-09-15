@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Database\Eloquent\Model;
+use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Fields\InputField;
 
 // ---------------------------------------------------------------------------
@@ -95,6 +97,13 @@ it('regenerates an auto id when set to empty or null', function () {
     expect($f->getId())->toStartWith('jf');
 });
 
+it('is repeating when repeats is true or above 1', function () {
+    expect(InputField::for('x')->isRepeating())->toBeFalse()
+        ->and(InputField::for('x')->setRepeats(1)->isRepeating())->toBeFalse()
+        ->and(InputField::for('x')->setRepeats(2)->isRepeating())->toBeTrue()
+        ->and(InputField::for('x')->setRepeats(true)->isRepeating())->toBeTrue();
+});
+
 it('sets repeats width together with repeats', function () {
     $f = InputField::for('x')->setRepeats(2, 6);
 
@@ -176,4 +185,35 @@ it('jsonSerialize matches toArray', function () {
     $f = InputField::for('x')->setOptions(['a' => 1]);
 
     expect($f->jsonSerialize())->toEqual($f->toArray());
+});
+
+// ---------------------------------------------------------------------------
+// Value for edit formatting
+// ---------------------------------------------------------------------------
+
+function makeBreadableModel(): Model&BreadableInterface {
+    return Mockery::mock(Model::class . ', ' . BreadableInterface::class);
+}
+
+it('returns the value untouched without a formatter', function () {
+    expect(InputField::for('x')->formatValueForEdit('raw', makeBreadableModel()))->toBe('raw');
+});
+
+it('applies the formatter with the value and model', function () {
+    $model = makeBreadableModel();
+    $f = InputField::for('x')->setValueForEditFormatter(fn($v, $m) => [$v, $m]);
+
+    expect($f->formatValueForEdit('raw', $model))->toBe(['raw', $model]);
+});
+
+it('accepts the formatter through for()', function () {
+    $f = InputField::for('x', valueForEditFormatter: fn($v) => strtoupper($v));
+
+    expect($f->getValueForEditFormatter())->toBeInstanceOf(Closure::class)
+        ->and($f->formatValueForEdit('abc', makeBreadableModel()))->toBe('ABC');
+});
+
+it('does not leak the formatter into the client payload', function () {
+    expect(InputField::for('x')->setValueForEditFormatter(fn($v) => $v)->toArray())
+        ->not->toHaveKey('valueForEditFormatter');
 });

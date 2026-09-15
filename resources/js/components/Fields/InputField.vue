@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onMounted, watch} from 'vue';
+import {computed, onMounted} from 'vue';
 
 const props = defineProps<{
   id: string;
@@ -27,17 +27,6 @@ onMounted(() => {
     );
   }
 });
-
-watch(
-  model,
-  (v) => {
-    if (v && opts.value.type === 'date') {
-      const m = String(v).match(/(\d{4}-\d{2}-\d{2})/);
-      if (m && m[1] !== v) model.value = m[1];
-    }
-  },
-  {immediate: true},
-);
 </script>
 
 <template>

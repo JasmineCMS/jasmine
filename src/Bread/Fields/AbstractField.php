@@ -2,8 +2,11 @@
 
 namespace Jasmine\Jasmine\Bread\Fields;
 
+use Closure;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Manifest\GridItem;
 use JsonSerializable;
 
@@ -25,23 +28,25 @@ abstract class AbstractField implements Arrayable, GridItem, JsonSerializable
         protected int $repeaterWidth = 12,
         protected mixed $default = null,
         protected string $classes = '',
+        protected ?Closure $valueForEditFormatter = null,
     ) {
         $this->id ??= 'jf' . Str::random(4);
         $this->label ??= $this->name;
     }
 
     public static function for(
-        $name,
-        $width = 12,
-        $options = [],
-        $validation = [],
-        $label = null,
-        $id = null,
-        $description = null,
-        $repeats = false,
-        $repeaterWidth = 12,
-        $default = null,
-        $classes = '',
+        string $name,
+        int $width = 12,
+        array $options = [],
+        array $validation = [],
+        ?string $label = null,
+        ?string $id = null,
+        ?string $description = null,
+        int|bool $repeats = false,
+        int $repeaterWidth = 12,
+        mixed $default = null,
+        string $classes = '',
+        ?Closure $valueForEditFormatter = null,
     ): static {
         return new static(
             $name,
@@ -55,6 +60,7 @@ abstract class AbstractField implements Arrayable, GridItem, JsonSerializable
             $repeaterWidth,
             $default,
             $classes,
+            $valueForEditFormatter,
         );
     }
 
@@ -163,6 +169,10 @@ abstract class AbstractField implements Arrayable, GridItem, JsonSerializable
         return $this->repeats;
     }
 
+    public function isRepeating(): bool {
+        return $this->repeats > 1 || $this->repeats === true;
+    }
+
     public function setRepeaterWidth(int $repeaterWidth): static {
         $this->repeaterWidth = $repeaterWidth;
 
@@ -191,6 +201,16 @@ abstract class AbstractField implements Arrayable, GridItem, JsonSerializable
 
     public function getClasses(): string {
         return $this->classes;
+    }
+
+    public function setValueForEditFormatter(?Closure $valueForEditFormatter): static {
+        $this->valueForEditFormatter = $valueForEditFormatter;
+
+        return $this;
+    }
+
+    public function getValueForEditFormatter(): ?Closure {
+        return $this->valueForEditFormatter;
     }
 
     /**
@@ -238,5 +258,11 @@ abstract class AbstractField implements Arrayable, GridItem, JsonSerializable
 
     public function jsonSerialize(): array {
         return $this->toArray();
+    }
+
+    public function formatValueForEdit(mixed $value, BreadableInterface&Model $model): mixed {
+        $formatter = $this->getValueForEditFormatter();
+
+        return $formatter ? $formatter($value, $model) : $value;
     }
 }

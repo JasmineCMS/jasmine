@@ -114,7 +114,7 @@ class BreadController extends Controller
         $rules = [];
         $key = $prefix . '.' . $field->getName();
 
-        if ($field->getRepeats() > 1 || $field->getRepeats() === true) {
+        if ($field->isRepeating()) {
             $rules[$key] = ['array'];
             $key .= '.*';
         }
@@ -514,19 +514,24 @@ class BreadController extends Controller
             $data = self::fireEvent('retrievedForEdit', $model, $model->toArray());
         }
 
-        return Inertia::render('BreadEdit', [
-            'breadable' => Inertia::once(function () use ($breadable, $model) {
-                $manifest = $breadable->class::fieldsManifest($model);
-                if (is_array($manifest)) $manifest = new FieldsManifest($manifest);
+        $manifest = $breadable->class::fieldsManifest($model);
+        if (is_array($manifest)) $manifest = new FieldsManifest($manifest);
 
-                return [
-                    'key'      => $model instanceof JasminePage ? 'pages' : $breadable->key,
-                    'singular' => $breadable->class::getSingularName(),
-                    'plural'   => $breadable->class::getPluralName(),
-                    'manifest' => $manifest->toArray(),
-                    'fields'   => $manifest->getFields(),
-                ];
-            })->as("breadable.edit.$breadable->key." . $locale),
+        // missing keys are left to the client, which fills in the field default; nulls pass through untouched
+        $data ??= [];
+        foreach ($manifest->getFields() as $field) {
+            $name = $field->getName();
+            if (isset($data[$name])) $data[$name] = $field->formatValueForEdit($data[$name], $model);
+        }
+
+        return Inertia::render('BreadEdit', [
+            'breadable' => Inertia::once(fn() => [
+                'key'      => $model instanceof JasminePage ? 'pages' : $breadable->key,
+                'singular' => $breadable->class::getSingularName(),
+                'plural'   => $breadable->class::getPluralName(),
+                'manifest' => $manifest->toArray(),
+                'fields'   => $manifest->getFields(),
+            ])->as("breadable.edit.$breadable->key." . $locale),
 
             'locales'   => Inertia::once(fn() => $locale ? Jasmine::getLocales() : [])
                 ->as('breadable.locales.' . $breadable->key),
