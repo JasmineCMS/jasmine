@@ -719,7 +719,7 @@ class BreadController extends Controller
         return redirect()->route('jasmine.bread.create', [
             'breadable' => $breadable->key,
             ...(request('_locale') ? ['_locale' => request('_locale')] : []),
-        ])->with('bread_data', collect($model->toArray())->except([$model->getKeyName()]));
+        ])->with('bread_data', collect($model->toArray())->except([$model->getKeyName()])->toArray());
     }
 
     public function action(Request $request) {
