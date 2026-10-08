@@ -11,6 +11,7 @@ import type {route as routeFn} from 'ziggy-js';
 import {useFlashSwal} from '@/js/composeables/useFlashSwal.ts';
 import SidebarMenu from '@/js/components/SidebarMenu.vue';
 import LocaleLinks from '@/js/components/LocaleLinks.vue';
+import NotificationBell from '@/js/components/NotificationBell.vue';
 
 import MascotHead from '@/svg/mascot-head.svg';
 
@@ -357,6 +358,8 @@ const icons = {
         </button>
 
         <div class="ms-auto flex items-center gap-1">
+          <NotificationBell />
+
           <Menu as="div" class="relative" v-slot="{close}">
             <MenuButton
               class="flex items-center gap-1.5 px-2 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"

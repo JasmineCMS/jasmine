@@ -54,6 +54,15 @@ Route::name('jasmine.')->middleware([AppMiddleware::class, HandleInertiaRequests
 
             Route::get('/search', [AppCtl::class, 'search'])->name('search');
 
+            Route::prefix('/notifications')->name('notifications.')->controller(AppCtl::class)
+                ->group(function () {
+                    Route::get('/', 'notifications')->name('index');
+                    Route::get('/recent', 'recentNotifications')->name('recent');
+                    Route::post('/read-all', 'readAllNotifications')->name('read-all');
+                    Route::post('/{notification}/read', 'readNotification')->name('read');
+                    Route::post('/{notification}/open', 'openNotification')->name('open');
+                });
+
             Route::prefix('/profile')->name('profile.')->controller(ProfileCtl::class)
                 ->group(function () {
                     Route::get('/', 'show')->name('show');

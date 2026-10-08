@@ -300,6 +300,67 @@ Jasmine::registerDashboardCard('cache', DashboardCard::blade(fn() => view('dashb
 - `->post($name, $handler)` — mutating action
 - `->action($name, $handler, $method)` — any of `GET`, `POST`, `PUT`, `DELETE`
 
+### Notifications
+
+Jasmine shows Laravel [database notifications](https://laravel.com/docs/notifications#database-notifications)
+sent to Jasmine users: a bell in the top bar with the unread count, a dropdown of the latest ones and a full
+list at `/jasmine/notifications`. Your app only dispatches them:
+
+```php
+use Illuminate\Notifications\Notification;
+use Jasmine\Jasmine\Notifications\JasmineNotificationData;
+
+class AlertOpened extends Notification
+{
+    public function __construct(private Alert $alert) {}
+
+    public function via(object $notifiable): array {
+        return ['database'];
+    }
+
+    public function toArray(object $notifiable): array {
+        return JasmineNotificationData::make('Alert opened')
+            ->message($this->alert->summary)
+            ->url(route('jasmine.bread.edit', ['alerts', $this->alert->id]))
+            ->icon('bi-exclamation-triangle')
+            ->warning()
+            ->toArray();
+    }
+}
+
+Notification::send(JasmineUser::all(), new AlertOpened($alert));
+```
+
+A plain array of the same shape works too:
+
+| key       | required | notes                                                                    |
+|-----------|----------|--------------------------------------------------------------------------|
+| `title`   | yes      | falls back to the notification class name, e.g. "Alert Opened"           |
+| `message` | no       | plain text                                                               |
+| `url`     | no       | opened in the same tab when clicked; the notification is marked read     |
+| `icon`    | no       | a Bootstrap Icons class, default `bi-bell`                               |
+| `level`   | no       | `info` (default), `success`, `warning` or `danger` — colours the icon    |
+
+The date comes from the notification itself. URLs under the Jasmine prefix open as a normal Jasmine page;
+any other URL gets a full page load.
+
+#### The `notifications` table
+
+Jasmine ships a migration for Laravel's standard `notifications` table. It only creates the table when it's
+missing and never drops it, so an app that already has one (from `php artisan make:notifications-table`) is
+left as is.
+
+#### Morph maps
+
+If your app calls `Relation::enforceMorphMap()` without mapping `JasmineUser`, Jasmine registers the
+`jasmine_user` alias for it. To use a different alias, map it yourself:
+
+```php
+Relation::enforceMorphMap(['admin_user' => \Jasmine\Jasmine\Models\JasmineUser::class, /* ... */]);
+```
+
+Apps without an enforced morph map keep storing the class name.
+
 ### Route groups
 
 You can register your own route groups inside Jasmine's route scope — useful both for

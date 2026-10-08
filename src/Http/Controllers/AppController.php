@@ -5,15 +5,19 @@ namespace Jasmine\Jasmine\Http\Controllers;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 use Jasmine\Jasmine\Bread\BreadableContext;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Manifest\Column;
 use Jasmine\Jasmine\Dashboard\DashboardCard;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Models\JasmineUser;
+use Jasmine\Jasmine\Notifications\JasmineNotificationData;
 
 class AppController extends Controller
 {
@@ -139,6 +143,56 @@ class AppController extends Controller
         }
 
         return ['groups' => $groups];
+    }
+
+    public function notifications(): InertiaResponse {
+        $notifications = $this->user()->notifications()->paginate(20)
+            ->through(fn(DatabaseNotification $n) => JasmineNotificationData::present($n));
+
+        return Inertia::render('Notifications', ['notifications' => $notifications]);
+    }
+
+    public function recentNotifications(): array {
+        $user = $this->user();
+
+        return [
+            'items'  => $user->notifications()->limit(10)->get()
+                ->map(fn(DatabaseNotification $n) => JasmineNotificationData::present($n)),
+            'unread' => $user->unreadNotifications()->count(),
+        ];
+    }
+
+    public function readNotification(string $notification): RedirectResponse {
+        $this->user()->notifications()->findOrFail($notification)->markAsRead();
+
+        return back();
+    }
+
+    public function readAllNotifications(): RedirectResponse {
+        $this->user()->unreadNotifications()->update(['read_at' => now()]);
+
+        return back();
+    }
+
+    /** Marks it read, then follows its url: Jasmine pages as an Inertia visit, anything else as a full load. */
+    public function openNotification(string $notification) {
+        /** @var DatabaseNotification $n */
+        $n = $this->user()->notifications()->findOrFail($notification);
+        $n->markAsRead();
+
+        $url = JasmineNotificationData::present($n)['url'];
+        if ($url === null) return back();
+
+        $url = url($url);
+        $base = url(config('jasmine.routes.web.prefix'));
+
+        return $url === $base || str_starts_with($url, "$base/")
+            ? redirect()->to($url)
+            : Inertia::location($url);
+    }
+
+    private function user(): JasmineUser {
+        return AuthController::guard()->user();
     }
 
     /**

@@ -6,6 +6,7 @@ use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -65,6 +66,9 @@ class JasmineServiceProvider extends ServiceProvider
 
         $jasmine = $this->app->make('jasmine');
 
+        // after the host's providers, so we see its enforceMorphMap() call
+        $this->app->booted(fn() => $this->registerMorphAlias());
+
         // routes
         $this->app->booted(function () use ($jasmine) {
             if (config('jasmine.routes.web.register')) {
@@ -118,6 +122,19 @@ class JasmineServiceProvider extends ServiceProvider
                 'expire'   => 60,
             ]),
         ]);
+    }
+
+    /**
+     * Hosts that enforce a morph map can't store JasmineUser on a polymorphic
+     * relation (e.g. notifications) unless it's mapped. Map it for them when they
+     * haven't; hosts without an enforced map keep storing the class name, so
+     * their existing rows still resolve.
+     */
+    private function registerMorphAlias(): void {
+        if (!Relation::requiresMorphMap()) return;
+        if (Relation::getMorphAlias(JasmineUser::class) !== JasmineUser::class) return;
+
+        Relation::morphMap(['jasmine_user' => JasmineUser::class]);
     }
 
     private function overwriteFileManagerConfig(): void {

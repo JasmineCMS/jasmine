@@ -26,6 +26,7 @@ declare module '@inertiajs/core' {
       _sb_menu: SideBarItems;
       _user: {name: string; email: string; avatar_url: string};
       _info: {jasmine: string};
+      _notifications_unread?: number;
       _ssos?: {[provider: string]: {name: string; icon: string}};
       _swal?: null | SweetAlertOptions;
     };

@@ -230,5 +230,18 @@
     "redo": "Redo",
     "editingRawHtml": "Editing raw HTML",
     "backToEditor": "Back to editor"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "mark_all_read": "Mark all as read",
+    "mark_read": "Mark as read",
+    "view_all": "View all notifications",
+    "empty": "You have no notifications",
+    "loading": "Loading…",
+    "unread": "Unread",
+    "pagination": "Notifications pages",
+    "newer": "Newer",
+    "older": "Older",
+    "page_of": "Page {page} of {pages}"
   }
 }

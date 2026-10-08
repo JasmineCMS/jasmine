@@ -410,5 +410,18 @@
     "Dashboard": "לוח הבקרה",
     "File Manager": "מנהל הקבצים",
     "Pages": "עמודים"
+  },
+  "notifications": {
+    "title": "התראות",
+    "mark_all_read": "סמן הכל כנקרא",
+    "mark_read": "סמן כנקרא",
+    "view_all": "הצג את כל ההתראות",
+    "empty": "אין לך התראות",
+    "loading": "טוען…",
+    "unread": "לא נקרא",
+    "pagination": "עמודי התראות",
+    "newer": "חדשות יותר",
+    "older": "ישנות יותר",
+    "page_of": "עמוד {page} מתוך {pages}"
   }
 }

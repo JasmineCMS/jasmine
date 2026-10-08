@@ -13,6 +13,16 @@ uses(RefreshDatabase::class);
 
 const TOKENS_TABLE = 'jasmine_user_api_tokens';
 
+const HASH_MIGRATION = '2026_07_28_120000_hash_jasmine_user_api_tokens';
+
+/**
+ * Undo just the hashing migration; it isn't necessarily the latest, so `--step 1` won't do.
+ */
+function rollbackTokenHashing(): void {
+    (require __DIR__ . '/../../database/migrations/' . HASH_MIGRATION . '.php')->down();
+    DB::table('migrations')->where('migration', HASH_MIGRATION)->delete();
+}
+
 function createTokenViaProfile(JasmineUser $user): array {
     test()->actingAs($user, config('jasmine.auth.guard'))
         ->post(route('jasmine.profile.show'), [
@@ -137,7 +147,7 @@ it('leaves the schema in the expected shape', function () {
  * @return array{0: JasmineUser, 1: string} the owner and the legacy plaintext
  */
 function seedLegacyPlaintextToken(): array {
-    Artisan::call('migrate:rollback', ['--step' => 1]);
+    rollbackTokenHashing();
     expect(Schema::hasColumn(TOKENS_TABLE, 'hash'))->toBeFalse();
 
     $user = JasmineUser::factory()->create(['admin' => true]);
@@ -175,7 +185,7 @@ it('leaves an already-issued token working after the migration', function () {
 });
 
 it('backfills every row, not just the first', function () {
-    Artisan::call('migrate:rollback', ['--step' => 1]);
+    rollbackTokenHashing();
 
     $user = JasmineUser::factory()->create();
     $plains = collect(range(1, 3))->map(function (int $i) use ($user) {

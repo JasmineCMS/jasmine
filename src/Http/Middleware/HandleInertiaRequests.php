@@ -71,6 +71,8 @@ class HandleInertiaRequests extends Middleware
                 ->user()?->only(['name', 'email', 'avatar_url'])),
 
             '_info' => Inertia::once(fn() => static::getInfo($user)),
+
+            '_notifications_unread' => fn() => $user->unreadNotifications()->count(),
         ];
         else $data['_ssos'] = Inertia::once(fn() => (object)array_map(fn($i) => [
             'name' => $i['name'],
