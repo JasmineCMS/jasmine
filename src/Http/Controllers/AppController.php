@@ -37,7 +37,7 @@ class AppController extends Controller
                 'actions' => collect($card->getActions())->map(fn($a, $name) => [
                     'name'   => $name,
                     'method' => $a['method'],
-                    'url'    => route('dashboard.card.action', [$id, $name]),
+                    'url'    => route('jasmine.dashboard.card.action', [$id, $name]),
                 ])->values(),
             ];
         })->filter()->values();
