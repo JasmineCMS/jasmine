@@ -344,6 +344,38 @@ A plain array of the same shape works too:
 The date comes from the notification itself. URLs under the Jasmine prefix open as a normal Jasmine page;
 any other URL gets a full page load.
 
+#### Live updates
+
+The unread count refreshes on every page load, and in the background in one of two ways:
+
+- **Polling** (always available): every `jasmine.notifications.poll` seconds (default `300`, `0` turns it
+  off) while the tab is visible. Polls don't count as activity: Jasmine signs a user out once they've been
+  idle for `session.lifetime` minutes, however long the tab polls.
+- **Broadcasting**: when your app has a real broadcaster (`broadcasting.default` is not `null`/`log`),
+  Jasmine pushes a `notifications.updated` event on the private channel `jasmine.user.{id}` whenever a
+  Jasmine user gets a database notification or marks one read. Your notifications don't need the
+  `broadcast` channel. Polling pauses while the socket is connected and resumes if it drops.
+
+Broadcast events go through your queue like any other `ShouldBroadcast` event, so a queue worker must be
+running unless the queue is `sync`. A broadcaster failure is reported and never stops the notification
+from being stored.
+
+On the browser side, Jasmine connects in this order:
+
+1. `window.Echo`, if your app sets one from a [custom asset](#custom-assets). Use this for any broadcaster
+   (Ably, socket.io, ...). Jasmine's channel auth works through your `/broadcasting/auth` as well as its
+   own.
+2. Its own Echo client for `reverb` and `pusher`, configured from `jasmine.notifications.echo.<driver>`.
+   These options default to the `VITE_REVERB_*` / `VITE_PUSHER_*` env values your frontend already uses,
+   and are sent to the browser, so put only public keys and hosts there. Channel auth goes through
+   `/jasmine/broadcasting/auth`, which requires a completed MFA check.
+3. Polling only.
+
+```dotenv
+JASMINE_NOTIFICATIONS_POLL=300        # seconds, 0 = off
+JASMINE_NOTIFICATIONS_BROADCAST=      # empty = auto, true/false to force
+```
+
 #### The `notifications` table
 
 Jasmine ships a migration for Laravel's standard `notifications` table. It only creates the table when it's

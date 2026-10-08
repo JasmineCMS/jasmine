@@ -73,6 +73,7 @@ class HandleInertiaRequests extends Middleware
             '_info' => Inertia::once(fn() => static::getInfo($user)),
 
             '_notifications_unread' => fn() => $user->unreadNotifications()->count(),
+            '_notifications'        => Inertia::once(fn() => Jasmine::notificationsClientConfig($user)),
         ];
         else $data['_ssos'] = Inertia::once(fn() => (object)array_map(fn($i) => [
             'name' => $i['name'],

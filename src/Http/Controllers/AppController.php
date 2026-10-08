@@ -162,23 +162,36 @@ class AppController extends Controller
         ];
     }
 
+    /** Polled by the bell; a passive route, so it doesn't count as session activity. */
+    public function unreadNotifications(): array {
+        return ['unread' => $this->user()->unreadNotifications()->count()];
+    }
+
     public function readNotification(string $notification): RedirectResponse {
-        $this->user()->notifications()->findOrFail($notification)->markAsRead();
+        $user = $this->user();
+        $user->notifications()->findOrFail($notification)->markAsRead();
+        Jasmine::notificationsChanged($user);
 
         return back();
     }
 
     public function readAllNotifications(): RedirectResponse {
-        $this->user()->unreadNotifications()->update(['read_at' => now()]);
+        $user = $this->user();
+        $user->unreadNotifications()->update(['read_at' => now()]);
+        Jasmine::notificationsChanged($user);
 
         return back();
     }
 
     /** Marks it read, then follows its url: Jasmine pages as an Inertia visit, anything else as a full load. */
     public function openNotification(string $notification) {
+        $user = $this->user();
         /** @var DatabaseNotification $n */
-        $n = $this->user()->notifications()->findOrFail($notification);
-        $n->markAsRead();
+        $n = $user->notifications()->findOrFail($notification);
+        if ($n->unread()) {
+            $n->markAsRead();
+            Jasmine::notificationsChanged($user);
+        }
 
         $url = JasmineNotificationData::present($n)['url'];
         if ($url === null) return back();

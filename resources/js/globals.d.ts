@@ -27,6 +27,7 @@ declare module '@inertiajs/core' {
       _user: {name: string; email: string; avatar_url: string};
       _info: {jasmine: string};
       _notifications_unread?: number;
+      _notifications?: {poll: number; channel: string | null; echo: Record<string, unknown> | null};
       _ssos?: {[provider: string]: {name: string; icon: string}};
       _swal?: null | SweetAlertOptions;
     };

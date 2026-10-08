@@ -35,6 +35,16 @@ class MfaConfirmed
     }
 
     /**
+     * Whether this session is past the MFA gate, for places that can't redirect
+     * (e.g. broadcast channel auth, which may arrive through the host's own route).
+     */
+    public static function satisfiedBy(JasmineUser $user): bool {
+        if ($user->hasTwoFactor()) return session('jasmine.2fa_confirmed') === $user->getKey();
+
+        return !static::requiredFor($user);
+    }
+
+    /**
      * Whether the MFA requirement applies to this user's current session.
      * Keyed to the user like `jasmine.2fa_confirmed` — session data survives
      * login()/regenerate(), so a bare flag could leak across users.

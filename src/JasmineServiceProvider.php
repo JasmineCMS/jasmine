@@ -7,6 +7,8 @@ use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Notifications\Events\NotificationSent;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -68,6 +70,17 @@ class JasmineServiceProvider extends ServiceProvider
 
         // after the host's providers, so we see its enforceMorphMap() call
         $this->app->booted(fn() => $this->registerMorphAlias());
+
+        // after the host's providers, so broadcasting config is final
+        $this->app->booted(function () use ($jasmine) {
+            if ($jasmine->broadcastsNotifications()) $jasmine->registerNotificationChannel();
+        });
+
+        Event::listen(NotificationSent::class, function (NotificationSent $e) use ($jasmine) {
+            if ($e->channel === 'database' && $e->notifiable instanceof JasmineUser) {
+                $jasmine->notificationsChanged($e->notifiable);
+            }
+        });
 
         // routes
         $this->app->booted(function () use ($jasmine) {

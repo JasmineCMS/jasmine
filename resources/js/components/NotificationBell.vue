@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import {computed, inject, ref} from 'vue';
-import {Link, router, usePage} from '@inertiajs/vue3';
+import {computed, inject, ref, watch} from 'vue';
+import {Link, router} from '@inertiajs/vue3';
 import {Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/vue';
 
 import type {route as routeFn} from 'ziggy-js';
 
 import NotificationItem, {type NotificationData} from '@/js/components/NotificationItem.vue';
+import {useNotifications} from '@/js/composeables/useNotifications.ts';
 
 const route = inject('route') as typeof routeFn;
 
-const unread = computed(() => usePage().props._notifications_unread ?? 0);
+const {unread, changed, setUnread} = useNotifications(route);
 const badge = computed(() => (unread.value > 99 ? '99+' : String(unread.value)));
 
 const items = ref<NotificationData[]>([]);
@@ -28,6 +29,7 @@ const load = async () => {
     if (mine !== seq) return;
     items.value = data?.items ?? [];
     loaded.value = true;
+    if (typeof data?.unread === 'number') setUnread(data.unread);
   } catch {
     if (mine !== seq) return;
     items.value = [];
@@ -36,14 +38,13 @@ const load = async () => {
   }
 };
 
+// once the list has been shown, keep it in step with the count
+watch(changed, () => loaded.value && load());
+
 const open = (n: NotificationData) => router.post(route('jasmine.notifications.open', n.id));
 
 const readAll = () =>
-  router.post(
-    route('jasmine.notifications.read-all'),
-    {},
-    {preserveScroll: true, preserveState: true, onSuccess: load},
-  );
+  router.post(route('jasmine.notifications.read-all'), {}, {preserveScroll: true, preserveState: true});
 
 const bellIcon =
   'M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0';

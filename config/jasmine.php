@@ -89,6 +89,44 @@ return [
     /* Number of revisions to keep, false to disable revisions, zero for unlimited */
     'revisions' => 100,
 
+    /*
+    | Database notifications sent to Jasmine users.
+    |
+    | poll      seconds between unread-count checks while the tab is visible;
+    |           0 disables polling. Polls don't count as activity, so they
+    |           never keep an idle session alive.
+    | broadcast push updates over the app's broadcaster instead of waiting for
+    |           the next poll. null = on whenever `broadcasting.default` is a
+    |           real driver (not null/log); true/false to force.
+    | echo      Laravel Echo client options per broadcaster, passed to
+    |           `new Echo()` for the driver named by `broadcasting.default`.
+    |           These go to the browser: public keys and hosts only. Jasmine
+    |           can build a client for reverb and pusher; for any other driver
+    |           (ably, socket.io, ...) set `window.Echo` from a custom asset and
+    |           Jasmine uses that instead.
+    */
+    'notifications' => [
+        'poll'      => env('JASMINE_NOTIFICATIONS_POLL', 300),
+        'broadcast' => env('JASMINE_NOTIFICATIONS_BROADCAST'),
+        'echo'      => [
+            'reverb' => [
+                'broadcaster'       => 'reverb',
+                'key'               => env('VITE_REVERB_APP_KEY', env('REVERB_APP_KEY')),
+                'wsHost'            => env('VITE_REVERB_HOST', env('REVERB_HOST')),
+                'wsPort'            => env('VITE_REVERB_PORT', env('REVERB_PORT', 80)),
+                'wssPort'           => env('VITE_REVERB_PORT', env('REVERB_PORT', 443)),
+                'forceTLS'          => env('VITE_REVERB_SCHEME', env('REVERB_SCHEME', 'https')) === 'https',
+                'enabledTransports' => ['ws', 'wss'],
+            ],
+            'pusher' => [
+                'broadcaster' => 'pusher',
+                'key'         => env('VITE_PUSHER_APP_KEY', env('PUSHER_APP_KEY')),
+                'cluster'     => env('VITE_PUSHER_APP_CLUSTER', env('PUSHER_APP_CLUSTER')),
+                'forceTLS'    => true,
+            ],
+        ],
+    ],
+
     'routes' => [
         'web' => ['register' => true, 'prefix' => 'jasmine', 'middleware' => ['web']],
         'api' => ['register' => true, 'prefix' => 'jasmine/api', 'middleware' => ['api']],

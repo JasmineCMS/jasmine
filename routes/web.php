@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Broadcasting\BroadcastController;
 use Illuminate\Support\Facades\Route;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Http\Controllers\AppController as AppCtl;
@@ -11,6 +12,7 @@ use Jasmine\Jasmine\Http\Controllers\ProfileController as ProfileCtl;
 use Jasmine\Jasmine\Http\Middleware\AppMiddleware;
 use Jasmine\Jasmine\Http\Middleware\Authenticate;
 use Jasmine\Jasmine\Http\Middleware\AuthenticateSession;
+use Jasmine\Jasmine\Http\Middleware\EnforceIdleTimeout;
 use Jasmine\Jasmine\Http\Middleware\HandleInertiaRequests;
 use Jasmine\Jasmine\Http\Middleware\MfaConfirmed;
 
@@ -36,7 +38,7 @@ Route::name('jasmine.')->middleware([AppMiddleware::class, HandleInertiaRequests
         foreach (Jasmine::getGuestRouteGroups() as $group) $group();
     });
 
-    Route::middleware([Authenticate::class, AuthenticateSession::class])->group(function () {
+    Route::middleware([Authenticate::class, AuthenticateSession::class, EnforceIdleTimeout::class])->group(function () {
         Route::post('/logout', [AuthCtl::class, 'logout'])->name('logout');
 
         Route::controller(AuthCtl::class)->group(function () {
@@ -54,10 +56,15 @@ Route::name('jasmine.')->middleware([AppMiddleware::class, HandleInertiaRequests
 
             Route::get('/search', [AppCtl::class, 'search'])->name('search');
 
+            // private channel auth for Echo; MFA-gated, unlike the host's /broadcasting/auth
+            Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate'])
+                ->name('broadcasting.auth');
+
             Route::prefix('/notifications')->name('notifications.')->controller(AppCtl::class)
                 ->group(function () {
                     Route::get('/', 'notifications')->name('index');
                     Route::get('/recent', 'recentNotifications')->name('recent');
+                    Route::get('/unread', 'unreadNotifications')->name('unread');
                     Route::post('/read-all', 'readAllNotifications')->name('read-all');
                     Route::post('/{notification}/read', 'readNotification')->name('read');
                     Route::post('/{notification}/open', 'openNotification')->name('open');
