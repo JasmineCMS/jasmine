@@ -9,6 +9,7 @@ use Jasmine\Jasmine\Bread\Manifest\Action;
 use Jasmine\Jasmine\Bread\Manifest\Column;
 use Jasmine\Jasmine\Bread\Manifest\FieldsManifest;
 use Jasmine\Jasmine\Bread\Manifest\GridItem;
+use Jasmine\Jasmine\Cards\Card;
 
 /**
  * @method static null|array jasmineOnRetrievedForIndex(Model|BreadableInterface $model, array $data)
@@ -16,6 +17,7 @@ use Jasmine\Jasmine\Bread\Manifest\GridItem;
  * @method static null|array jasmineOnSaving(Model|BreadableInterface $model, array $data)
  * @method static null|array jasmineOnSaved(Model|BreadableInterface $model)
  * @method static null|array jasmineOnDeleting(Model|BreadableInterface $model)
+ * @method static array<string, Card> browseWidgets()
  */
 interface BreadableInterface
 {

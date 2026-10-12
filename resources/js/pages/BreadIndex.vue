@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {Head, Link, router, usePage} from '@inertiajs/vue3';
+import {Deferred, Head, Link, router, usePage} from '@inertiajs/vue3';
 import {computed, inject, ref} from 'vue';
 import {useI18n} from 'vue-i18n';
 import Swal from '@/js/lib/Swal';
@@ -9,6 +9,8 @@ import AppLayout from '@/js/layouts/AppLayout.vue';
 import DataTable from '@/js/components/DataTable.vue';
 import type {QueryState, Column, Paginator} from '@/js/components/DataTable.vue';
 import Breadcrumb from '@/js/components/Breadcrumb.vue';
+import CardGrid from '@/js/components/CardGrid.vue';
+import type {DashboardCardData} from '@/js/components/DashboardCard.vue';
 import {useLabel} from '@/js/composeables/useLabel.ts';
 
 interface BrowseAction {
@@ -42,6 +44,7 @@ const props = defineProps<{
   locales: Array<string>;
   locale: null | string;
   paginator: Paginator<BreadRow>;
+  widgets?: DashboardCardData[];
 }>();
 
 const route = inject('route') as typeof routeFn;
@@ -50,6 +53,14 @@ const page = usePage();
 const {t} = useI18n();
 
 const env = computed(() => page.props._env);
+
+// widgets come deferred, and only when the breadable declares some
+const hasWidgets = computed(
+  () => props.widgets !== undefined || Object.values(page.deferredProps ?? {}).some((p) => p.includes('widgets')),
+);
+
+// widgets follow the filters and search, so they reload along with the rows
+const reloadOnly = computed(() => (hasWidgets.value ? ['paginator', 'widgets'] : ['paginator']));
 
 const q = computed<QueryState>({
   get(): QueryState {
@@ -111,7 +122,7 @@ const q = computed<QueryState>({
     }
     if (Object.keys(filters).length) data.filters = filters;
 
-    router.get(page.url.split('?')[0], data, {preserveState: true, replace: true, only: ['paginator']});
+    router.get(page.url.split('?')[0], data, {preserveState: true, replace: true, only: reloadOnly.value});
   },
 });
 
@@ -202,7 +213,7 @@ const resolveAction = (action: BrowseAction) => ({
 
 const sp = () => new URLSearchParams(page.url.split('?')[1] || '');
 
-const patchUrl = (patch: Record<string, string | number | null | undefined>, only = ['paginator']) => {
+const patchUrl = (patch: Record<string, string | number | null | undefined>, only = reloadOnly.value) => {
   const data: Record<string, any> = {};
   for (const [k, v] of sp().entries()) data[k] = v;
   for (const [k, v] of Object.entries(patch)) {
@@ -354,6 +365,13 @@ const fake = async () => {
         {{ $t('BreadIndex.new_item', {item: parseLabel(breadable.singular, breadable.key)}) }}
       </Link>
     </template>
+
+    <Deferred v-if="hasWidgets" data="widgets">
+      <template #fallback>
+        <div class="mb-4 h-24 animate-pulse rounded-lg border bg-white dark:bg-gray-900" />
+      </template>
+      <CardGrid v-if="widgets?.length" :cards="widgets" class="mb-4" />
+    </Deferred>
 
     <DataTable
       :paginator="paginator"

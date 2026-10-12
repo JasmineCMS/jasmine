@@ -46,3 +46,17 @@ it('404s an unknown card or action', function () {
     $this->post(route('jasmine.dashboard.card.action', ['pinger', 'nope']))->assertNotFound();
     $this->post(route('jasmine.dashboard.card.action', ['nope', 'ping']))->assertNotFound();
 });
+
+it('hides a card the user lacks the permission for, and refuses its actions', function () {
+    Jasmine::registerDashboardCard('pinger', DashboardCard::blade(fn() => '<p>ping</p>')->permission('cards.pinger')
+        ->post('ping', fn(Request $request) => response()->json(['pong' => true])));
+
+    // the first user (from beforeEach) is the superuser, so act as a plain one
+    $this->actingAs(JasmineUser::factory()->create(['permissions' => []]), config('jasmine.auth.guard'));
+
+    $this->get(route('jasmine.dashboard'))
+        ->assertOk()
+        ->assertInertia(fn(AssertableInertia $page) => $page->has('cards', 0));
+
+    $this->post(route('jasmine.dashboard.card.action', ['pinger', 'ping']))->assertForbidden();
+});

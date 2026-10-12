@@ -11,11 +11,13 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Jasmine\Jasmine\Bread\BreadableContext;
 use Jasmine\Jasmine\Bread\BreadableInterface;
+use Jasmine\Jasmine\Bread\BrowseContext;
 use Jasmine\Jasmine\Bread\Fields\AbstractField;
 use Jasmine\Jasmine\Bread\Fields\GroupedField;
 use Jasmine\Jasmine\Bread\Manifest\Action;
@@ -23,6 +25,7 @@ use Jasmine\Jasmine\Bread\Manifest\Column;
 use Jasmine\Jasmine\Bread\Manifest\FieldsManifest;
 use Jasmine\Jasmine\Bread\Sortable;
 use Jasmine\Jasmine\Bread\Translatable;
+use Jasmine\Jasmine\Cards\Card;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Models\JasminePage;
 use Jasmine\Jasmine\Models\JasmineRevision;
@@ -127,23 +130,8 @@ class BreadController extends Controller
         return $rules;
     }
 
-    public function index(Request $request) {
-        /** @var BreadableContext $breadable */
-        $breadable = $request->route('breadable');
-
-        /** @var JasmineUser $user */
-        $user = AuthController::guard()->user();
-
-        // Check permission
-        abort_unless($user->jCan($breadable->permission('browse')), 403);
-
-        $model = $breadable->newInstance();
-
-        // Sortability
-        $groupBy = $model instanceof Sortable ? ($model->sortable['group_by'] ?? null) : null;
-        $reordering = $model instanceof Sortable && $request->boolean('reordering');
-        $group = $request->input('group');
-
+    /** @return Column[] */
+    private static function browseColumns(BreadableContext $breadable, Model $model): array {
         /** @var Column[] $columns */
         $columns = [];
         $data = [];
@@ -178,26 +166,193 @@ class BreadController extends Controller
             $columns[] = new Column(data: $ts, filtering: 'date', render: self::dateRender($model, $ts));
         }
 
-        // input validation
-        $request->validate([
+        return $columns;
+    }
+
+    private static function browseRules(): array {
+        return [
             'filters'     => ['nullable', 'array'],
             'filters.*'   => ['nullable'],
             'filters.*.*' => ['nullable', 'string'],
             'q'           => ['nullable', 'string'],
-            'sortBy'      => ['nullable', 'string'],
-            'sort'        => ['nullable', 'string', 'in:asc,desc'],
-            'perPage'     => ['nullable', 'integer', 'min:1', 'max:100'],
             '_locale'     => ['sometimes', 'string', Rule::in(Jasmine::getLocales())],
+        ];
+    }
+
+    /**
+     * Narrow a query down to the request's browse filters and search — sorting and paging aside.
+     *
+     * @param Column[] $columns
+     */
+    private static function applyBrowseConstraints(Builder $query, array $columns, ?array $filters, ?string $search): Builder {
+        // aggregate columns are not searchable unless they bring their own search logic
+        $aggregates = array_map(fn(Column $c) => $c->data, array_filter($columns, fn(Column $c) => (bool)$c->getAggregate()));
+
+        return $query
+            ->when($filters, function (Builder $q, array $filters) use ($columns) {
+                foreach ($filters as $fld => $val) {
+                    if ($val === null || $val === '' || $val === []) continue;
+
+                    /** @var Column|null $col */
+                    $col = array_find($columns, fn(Column $c) => $c->data === $fld);
+                    if (!$col || $col->filtering === null) continue;
+
+                    // ---- Date range "from,to" with either side optional ----
+                    if ($col->filtering === 'date') {
+                        [$from, $to] = array_pad(is_array($val) ? array_values($val) : explode(',', $val, 2), 2, '');
+                        $from = $from !== '' ? $from : null;
+                        $to = $to !== '' ? $to : null;
+                        if (!$from && !$to) continue;
+
+                        if ($col->filterLogic instanceof Closure) {
+                            ($col->filterLogic)($q, [$from, $to]);
+
+                            continue;
+                        }
+
+                        $apply = function (Builder $b, string $column) use ($from, $to) {
+                            if ($from) $b->whereDate($column, '>=', $from);
+                            if ($to) $b->whereDate($column, '<=', $to);
+                        };
+
+                        if ($col->isRelation()) {
+                            $parts = explode('.', $fld);
+                            $relCol = array_pop($parts);
+                            $relPath = collect($parts)->map(fn($p) => Str::camel($p))->implode('.');
+                            $q->whereHas($relPath, fn(Builder $rq) => $apply($rq, $relCol));
+                        } else $apply($q, $fld);
+
+                        continue;
+                    }
+
+                    // ---- Multi-select: an array of values (a comma-separated string is still accepted), whereIn-style ----
+                    $values = array_values(array_filter(is_array($val) ? $val : explode(',', $val),
+                        fn($v) => $v !== null && $v !== ''));
+                    if (empty($values)) continue;
+
+                    // handle boolean — per value, so `_F` and `_T,_F` survive the split
+                    $values = array_map(fn($v) => match ($v) {
+                        '_T'    => true,
+                        '_F'    => false,
+                        default => $v,
+                    }, $values);
+
+                    if ($col->filterLogic instanceof Closure) {
+                        ($col->filterLogic)($q, $values);
+
+                        continue;
+                    }
+
+                    if ($col->isRelation()) {
+                        $parts = explode('.', $fld);
+                        $relCols = array_pop($parts);
+                        $relPath = collect($parts)->map(fn($p) => Str::camel($p))->implode('.');
+
+                        $q->whereHas($relPath, fn(Builder $rq) => $rq->where(
+                            function (Builder $rq) use ($relCols, $values) {
+                                foreach (explode(',', $relCols) as $rc) $rq->orWhereIn($rc, $values);
+                            }
+                        ));
+                    } else $q->whereIn($fld, $values);
+                }
+            })
+            ->when($search, fn(Builder $q, $v) => $q->where(
+                function (Builder $q) use ($columns, $aggregates, $v) {
+                    $needle = '%' . addcslashes(mb_strtolower($v, 'UTF-8'), '%_\\') . '%';
+
+                    foreach ($columns as $col) {
+                        if (!$col->searchable || (in_array($col->data, $aggregates) && !$col->searchLogic)) continue;
+
+                        if ($col->searchLogic instanceof Closure)($col->searchLogic)($q, $v);
+                        elseif ($col->isRelation()) {
+                            $parts = explode('.', $col->data);
+
+                            // The last element contains the column(s)
+                            $relationCols = array_pop($parts);
+
+                            // The remaining elements form the nested relation path.
+                            // We camelCase each segment individually to ensure "user_profile.data" becomes "userProfile.data"
+                            $path = collect($parts)->map(fn($part) => Str::camel($part))->implode('.');
+
+                            // Laravel magically handles 'post.comments.likes.user' here
+                            $q->orWhereHas($path,
+                                fn(Builder $rq) => $rq->where(function (Builder $rq) use ($relationCols, $needle) {
+                                    foreach (explode(',', $relationCols) as $rc) {
+                                        $k = $rq->getGrammar()->wrap($rc);
+                                        $rq->orWhereRaw("LOWER($k) LIKE ?", [$needle]);
+                                    }
+                                })
+                            );
+                        } else {
+                            $k = $q->getGrammar()->wrap($col->data);
+                            $q->orWhereRaw("LOWER($k) LIKE ?", [$needle]);
+                        }
+                    }
+                }
+            ));
+    }
+
+    private static function browseLocale(Model $model, ?string $requested): ?string {
+        if (!method_exists($model, 'getLocale')) return null;
+
+        return $requested ?? Jasmine::getLocales()[0] ?? app()->getLocale();
+    }
+
+    /** @return array<string, Card> */
+    private static function browseWidgets(BreadableContext $breadable): array {
+        return method_exists($breadable->class, 'browseWidgets') ? $breadable->class::browseWidgets() : [];
+    }
+
+    /**
+     * @param Column[] $columns
+     * @param array<string, mixed> $params the browse page's query params (filters, q, _locale)
+     */
+    private static function browseContext(BreadableContext $breadable, Model $model, array $columns, array $params): BrowseContext {
+        $filters = is_array($params['filters'] ?? null) ? $params['filters'] : [];
+        $search = is_string($params['q'] ?? null) && $params['q'] !== '' ? $params['q'] : null;
+
+        return new BrowseContext(
+            breadable: $breadable,
+            query: self::applyBrowseConstraints($breadable->newQuery(), $columns, $filters, $search),
+            filters: $filters,
+            search: $search,
+            locale: self::browseLocale($model, $params['_locale'] ?? null),
+        );
+    }
+
+    public function index(Request $request) {
+        /** @var BreadableContext $breadable */
+        $breadable = $request->route('breadable');
+
+        /** @var JasmineUser $user */
+        $user = AuthController::guard()->user();
+
+        // Check permission
+        abort_unless($user->jCan($breadable->permission('browse')), 403);
+
+        $model = $breadable->newInstance();
+
+        // Sortability
+        $groupBy = $model instanceof Sortable ? ($model->sortable['group_by'] ?? null) : null;
+        $reordering = $model instanceof Sortable && $request->boolean('reordering');
+        $group = $request->input('group');
+
+        $columns = self::browseColumns($breadable, $model);
+
+        // input validation
+        $request->validate([
+            ...self::browseRules(),
+            'sortBy'  => ['nullable', 'string'],
+            'sort'    => ['nullable', 'string', 'in:asc,desc'],
+            'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
         // initiate an eloquent query
         $query = $breadable->newQuery();
 
         // load aggregates
-        $aggregates = [];
         foreach ($columns as $col) {
             if (!($info = $col->getAggregate())) continue;
-            $aggregates[] = $col->data;
 
             // check the first-level relationship.
             $checkRel = $info['path'] ? explode('.', $info['path'])[0] : $info['relation'];
@@ -238,9 +393,9 @@ class BreadController extends Controller
             if (!array_key_exists($path, $eagerLoads)) $query->with($path);
         }
 
-        if (method_exists($model, 'getLocale')) {
-            $locale = request('_locale', Jasmine::getLocales()[0] ?? app()->getLocale());
-        } else $locale = null;
+        $locale = self::browseLocale($model, $request->input('_locale'));
+
+        $widgets = array_filter(self::browseWidgets($breadable), fn(Card $w) => $w->visibleTo($user));
 
         $sorting = false;
         if ($model instanceof Sortable) {
@@ -303,108 +458,18 @@ class BreadController extends Controller
 
                 return $res;
             })->as('breadable.can.' . $breadable->key),
+            ...($widgets ? ['widgets' => Inertia::defer(fn() => Card::serializeAll($widgets, $request,
+                fn(string $id, string $action) => route('jasmine.bread.widget.action', [
+                    'breadable' => $breadable->key,
+                    'widget'    => $id,
+                    'action'    => $action,
+                    // the action sees what the page shows
+                    ...$request->only(['filters', 'q', '_locale']),
+                ]),
+                self::browseContext($breadable, $model, $columns, $request->only(['filters', 'q', '_locale'])),
+            ))] : []),
             'paginator' => $query
-                ->when(request('filters'), function (Builder $q, array $filters) use ($columns) {
-                    foreach ($filters as $fld => $val) {
-                        if ($val === null || $val === '' || $val === []) continue;
-
-                        /** @var Column|null $col */
-                        $col = array_find($columns, fn(Column $c) => $c->data === $fld);
-                        if (!$col || $col->filtering === null) continue;
-
-                        // ---- Date range "from,to" with either side optional ----
-                        if ($col->filtering === 'date') {
-                            [$from, $to] = array_pad(is_array($val) ? array_values($val) : explode(',', $val, 2), 2, '');
-                            $from = $from !== '' ? $from : null;
-                            $to = $to !== '' ? $to : null;
-                            if (!$from && !$to) continue;
-
-                            if ($col->filterLogic instanceof Closure) {
-                                ($col->filterLogic)($q, [$from, $to]);
-
-                                continue;
-                            }
-
-                            $apply = function (Builder $b, string $column) use ($from, $to) {
-                                if ($from) $b->whereDate($column, '>=', $from);
-                                if ($to) $b->whereDate($column, '<=', $to);
-                            };
-
-                            if ($col->isRelation()) {
-                                $parts = explode('.', $fld);
-                                $relCol = array_pop($parts);
-                                $relPath = collect($parts)->map(fn($p) => Str::camel($p))->implode('.');
-                                $q->whereHas($relPath, fn(Builder $rq) => $apply($rq, $relCol));
-                            } else $apply($q, $fld);
-
-                            continue;
-                        }
-
-                        // ---- Multi-select: an array of values (a comma-separated string is still accepted), whereIn-style ----
-                        $values = array_values(array_filter(is_array($val) ? $val : explode(',', $val),
-                            fn($v) => $v !== null && $v !== ''));
-                        if (empty($values)) continue;
-
-                        // handle boolean — per value, so `_F` and `_T,_F` survive the split
-                        $values = array_map(fn($v) => match ($v) {
-                            '_T'    => true,
-                            '_F'    => false,
-                            default => $v,
-                        }, $values);
-
-                        if ($col->filterLogic instanceof Closure) {
-                            ($col->filterLogic)($q, $values);
-
-                            continue;
-                        }
-
-                        if ($col->isRelation()) {
-                            $parts = explode('.', $fld);
-                            $relCols = array_pop($parts);
-                            $relPath = collect($parts)->map(fn($p) => Str::camel($p))->implode('.');
-
-                            $q->whereHas($relPath, fn(Builder $rq) => $rq->where(
-                                function (Builder $rq) use ($relCols, $values) {
-                                    foreach (explode(',', $relCols) as $rc) $rq->orWhereIn($rc, $values);
-                                }
-                            ));
-                        } else $q->whereIn($fld, $values);
-                    }
-                })
-                ->when(request('q'), fn(Builder $q, $v) => $q->where(
-                    function (Builder $q) use ($columns, $aggregates, $v) {
-                        $needle = '%' . addcslashes(mb_strtolower($v, 'UTF-8'), '%_\\') . '%';
-
-                        foreach ($columns as $col) {
-                            if (!$col->searchable || (in_array($col->data, $aggregates) && !$col->searchLogic)) continue;
-
-                            if ($col->searchLogic instanceof Closure)($col->searchLogic)($q, $v);
-                            elseif ($col->isRelation()) {
-                                $parts = explode('.', $col->data);
-
-                                // The last element contains the column(s)
-                                $relationCols = array_pop($parts);
-
-                                // The remaining elements form the nested relation path.
-                                // We camelCase each segment individually to ensure "user_profile.data" becomes "userProfile.data"
-                                $path = collect($parts)->map(fn($part) => Str::camel($part))->implode('.');
-
-                                // Laravel magically handles 'post.comments.likes.user' here
-                                $q->orWhereHas($path,
-                                    fn(Builder $rq) => $rq->where(function (Builder $rq) use ($relationCols, $needle) {
-                                        foreach (explode(',', $relationCols) as $rc) {
-                                            $k = $rq->getGrammar()->wrap($rc);
-                                            $rq->orWhereRaw("LOWER($k) LIKE ?", [$needle]);
-                                        }
-                                    })
-                                );
-                            } else {
-                                $k = $q->getGrammar()->wrap($col->data);
-                                $q->orWhereRaw("LOWER($k) LIKE ?", [$needle]);
-                            }
-                        }
-                    }
-                ))
+                ->tap(fn(Builder $q) => self::applyBrowseConstraints($q, $columns, $request->input('filters'), $request->input('q')))
                 ->when($reordering ? null : request('sortBy'), function (Builder $q, $v) use ($columns) {
                     $col = array_find($columns, fn(Column $i) => $i->data === $v);
                     if (!$col?->sortable) return;
@@ -744,6 +809,29 @@ class BreadController extends Controller
         if ($res) return $res;
 
         return redirect()->back();
+    }
+
+    public function widgetAction(Request $request) {
+        /** @var BreadableContext $breadable */
+        $breadable = $request->route('breadable');
+
+        /** @var JasmineUser $user */
+        $user = AuthController::guard()->user();
+
+        abort_unless($user->jCan($breadable->permission('browse')), 403);
+
+        $widget = self::browseWidgets($breadable)[$request->route('widget')] ?? abort(404);
+        abort_unless($widget->visibleTo($user), 403);
+
+        $action = $widget->getAction($request->route('action')) ?? abort(404);
+        abort_unless($request->isMethod($action['method']), 405);
+
+        // the browse state rides on the query string, apart from whatever payload the widget sends
+        $params = Validator::make($request->query(), self::browseRules())->validate();
+
+        $model = $breadable->newInstance();
+
+        return ($action['handler'])($request, self::browseContext($breadable, $model, self::browseColumns($breadable, $model), $params));
     }
 
     public function delete(Request $request) {

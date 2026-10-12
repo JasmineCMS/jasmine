@@ -300,6 +300,33 @@ Jasmine::registerDashboardCard('cache', DashboardCard::blade(fn() => view('dashb
 - `->post($name, $handler)` — mutating action
 - `->action($name, $handler, $method)` — any of `GET`, `POST`, `PUT`, `DELETE`
 
+#### Card permissions
+
+`->permission('some.permission')` hides the card from users who lack it, and refuses its actions with a 403.
+
+#### Breadable widgets
+
+The same cards can sit above a breadable's browse table. Declare them on the model with `browseWidgets()`
+(use `Jasmine\Jasmine\Cards\Card`). Renderers, props and actions get a `BrowseContext` after the request,
+whose `query()` is the breadable's query narrowed down to the filters and search the page currently shows —
+so the widgets follow the table as it is filtered:
+
+```php
+use Jasmine\Jasmine\Bread\BrowseContext;
+use Jasmine\Jasmine\Cards\Card;
+
+public static function browseWidgets(): array {
+    return [
+        'revenue' => Card::vueFile(resource_path('js/jasmine-cards/Revenue.vue'),
+            props: fn($request, BrowseContext $ctx) => ['total' => $ctx->query()->sum('amount')],
+        )->width(4)->post('export', fn($request, BrowseContext $ctx) => /* ... */),
+    ];
+}
+```
+
+`BrowseContext` also exposes `filters`, `search`, `locale` and `breadable`. Widgets load deferred, so a slow
+one never holds up the table, and they need the breadable's `browse` permission on top of their own.
+
 ### Notifications
 
 Jasmine shows Laravel [database notifications](https://laravel.com/docs/notifications#database-notifications)

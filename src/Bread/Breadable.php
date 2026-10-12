@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Jasmine\Jasmine\Bread\Manifest\Action;
 use Jasmine\Jasmine\Bread\Manifest\ManifestFaker;
+use Jasmine\Jasmine\Cards\Card;
 use Spatie\EloquentSortable\SortableTrait;
 
 trait Breadable
@@ -49,6 +50,16 @@ trait Breadable
     /** @return Builder<static> */
     public static function jasmineQuery(): Builder {
         return static::query();
+    }
+
+    /**
+     * Cards shown above the browse table. Their renderers, props and actions get the
+     * request and a {@see BrowseContext} holding the page's filtered query.
+     *
+     * @return array<string, Card>
+     */
+    public static function browseWidgets(): array {
+        return [];
     }
 
     public function browseActions(): array {

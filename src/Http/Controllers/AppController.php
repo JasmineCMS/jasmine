@@ -14,7 +14,7 @@ use Inertia\Response as InertiaResponse;
 use Jasmine\Jasmine\Bread\BreadableContext;
 use Jasmine\Jasmine\Bread\BreadableInterface;
 use Jasmine\Jasmine\Bread\Manifest\Column;
-use Jasmine\Jasmine\Dashboard\DashboardCard;
+use Jasmine\Jasmine\Cards\Card;
 use Jasmine\Jasmine\Facades\Jasmine;
 use Jasmine\Jasmine\Models\JasmineUser;
 use Jasmine\Jasmine\Notifications\JasmineNotificationData;
@@ -22,37 +22,23 @@ use Jasmine\Jasmine\Notifications\JasmineNotificationData;
 class AppController extends Controller
 {
     public function dashboard(Request $request) {
-        $cards = collect(Jasmine::getDashboardCards())->map(function (DashboardCard $card, string $id) use ($request) {
-            try {
-                $resolved = $card->isVue()
-                    ? ['sfc' => $card->getSfc(), 'props' => $card->resolveProps($request)]
-                    : ['html' => $card->render($request)];
-            } catch (\Throwable $e) {
-                report($e);
+        /** @var JasmineUser $user */
+        $user = AuthController::guard()->user();
 
-                return;
-            }
-
-            return [
-                'id'      => $id,
-                'type'    => $card->getType(),
-                'width'   => $card->getWidth(),
-                ...$resolved,
-                'actions' => collect($card->getActions())->map(fn($a, $name) => [
-                    'name'   => $name,
-                    'method' => $a['method'],
-                    'url'    => route('jasmine.dashboard.card.action', [$id, $name]),
-                ])->values(),
-            ];
-        })->filter()->values();
+        $cards = Card::serializeAll(
+            array_filter(Jasmine::getDashboardCards(), fn(Card $card) => $card->visibleTo($user)),
+            $request,
+            fn(string $id, string $action) => route('jasmine.dashboard.card.action', [$id, $action]),
+        );
 
         return Inertia::render('Dashboard', ['cards' => $cards]);
     }
 
     public function dashboardCardAction(Request $request, string $card, string $action) {
         $card = Jasmine::getDashboardCard($card) ?? abort(404);
-        $action = $card->getAction($action) ?? abort(404);
+        abort_unless($card->visibleTo(AuthController::guard()->user()), 403);
 
+        $action = $card->getAction($action) ?? abort(404);
         abort_unless($request->isMethod($action['method']), 405);
 
         return ($action['handler'])($request);

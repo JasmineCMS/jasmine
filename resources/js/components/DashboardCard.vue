@@ -29,7 +29,7 @@ const {card} = defineProps<{card: DashboardCardData}>();
 
 const failed = ref(false);
 onErrorCaptured((err) => {
-  console.error(`[jasmine] dashboard card [${card.id}] failed:`, err);
+  console.error(`[jasmine] card [${card.id}] failed:`, err);
   failed.value = true;
   return false;
 });
@@ -45,9 +45,13 @@ async function call(name: string, payload: Record<string, unknown> = {}): Promis
   if (!action) throw new Error(`Unknown action [${name}] on card [${card.id}]`);
 
   const isGet = action.method === 'GET';
-  const url = isGet
-    ? action.url + (Object.keys(payload).length ? '?' + new URLSearchParams(payload as Record<string, string>) : '')
-    : action.url;
+  // the action url may already carry a query (a breadable widget's carries the browse filters)
+  let url = action.url;
+  if (isGet && Object.keys(payload).length) {
+    const u = new URL(action.url, window.location.origin);
+    for (const [k, v] of Object.entries(payload)) u.searchParams.set(k, String(v));
+    url = u.toString();
+  }
 
   const res = await fetch(url, {
     method: action.method,

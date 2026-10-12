@@ -96,6 +96,10 @@ Route::name('jasmine.')->middleware([AppMiddleware::class, HandleInertiaRequests
 
                     Route::post('/reorder', 'reorder')->name('reorder');
 
+                    Route::match(['GET', 'POST', 'PUT', 'DELETE'],
+                        '/widget/{widget}/{action}', 'widgetAction'
+                    )->name('widget.action');
+
                     Route::get('/{breadableId}/edit', 'edit')->name('edit');
                     Route::put('/{breadableId}/edit', 'save');
 

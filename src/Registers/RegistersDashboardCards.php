@@ -2,17 +2,17 @@
 
 namespace Jasmine\Jasmine\Registers;
 
-use Jasmine\Jasmine\Dashboard\DashboardCard;
+use Jasmine\Jasmine\Cards\Card;
 
 trait RegistersDashboardCards
 {
-    /** @var array<string, DashboardCard> */
+    /** @var array<string, Card> */
     private array $dashboardCards = [];
 
-    /** @var array<string, DashboardCard> */
+    /** @var array<string, Card> */
     private array $sortedDashboardCards;
 
-    /** @return array<string, DashboardCard> */
+    /** @return array<string, Card> */
     public function getDashboardCards(): array {
         if (isset($this->sortedDashboardCards)) return $this->sortedDashboardCards;
 
@@ -22,11 +22,11 @@ trait RegistersDashboardCards
         return $this->sortedDashboardCards;
     }
 
-    public function getDashboardCard(string $id): ?DashboardCard {
+    public function getDashboardCard(string $id): ?Card {
         return $this->dashboardCards[$id] ?? null;
     }
 
-    public function registerDashboardCard(string $id, DashboardCard $card): static {
+    public function registerDashboardCard(string $id, Card $card): static {
         $this->dashboardCards[$id] = $card;
 
         unset($this->sortedDashboardCards);
