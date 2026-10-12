@@ -86,7 +86,7 @@
     "dev": [
       "@putenv COMPOSER_VENDOR_DIR=./vendor",
       "Composer\\Config::disableProcessTimeout",
-      "pnpm exec concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php laravel/artisan serve\" \"php laravel/artisan queue:listen --tries=1 --timeout=0\" \"php laravel/artisan pail --timeout=0\" \"pnpm run dev\" --names=server,queue,logs,vite --kill-others"
+      "pnpm exec concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php laravel/artisan serve --port=8010\" \"php laravel/artisan queue:listen --tries=1 --timeout=0\" \"php laravel/artisan pail --timeout=0\" \"pnpm run dev\" --names=server,queue,logs,vite --kill-others"
     ],
     "preview": [
       "@putenv COMPOSER_VENDOR_DIR=./vendor",
@@ -94,7 +94,7 @@
       "pnpm run build",
       "@artisan vendor:publish --tag jasmine-assets",
       "@artisan optimize:clear",
-      "pnpm exec concurrently -c \"#93c5fd,#c4b5fd,#fb7185\" \"php laravel/artisan serve\" \"php laravel/artisan queue:listen --tries=1 --timeout=0\" \"php laravel/artisan pail --timeout=0\" --names=server,queue,logs --kill-others"
+      "pnpm exec concurrently -c \"#93c5fd,#c4b5fd,#fb7185\" \"php laravel/artisan serve --port=8010\" \"php laravel/artisan queue:listen --tries=1 --timeout=0\" \"php laravel/artisan pail --timeout=0\" --names=server,queue,logs --kill-others"
     ]
   }
 }
