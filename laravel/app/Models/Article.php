@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Http\Request;
 use Jasmine\Jasmine\Bread\Breadable;
 use Jasmine\Jasmine\Bread\BreadableInterface;
+use Jasmine\Jasmine\Bread\BrowseContext;
 use Jasmine\Jasmine\Bread\Fields\CodeField;
 use Jasmine\Jasmine\Bread\Fields\FileField;
 use Jasmine\Jasmine\Bread\Fields\GeocodingField;
@@ -22,6 +24,7 @@ use Jasmine\Jasmine\Bread\Manifest\FieldsManifest;
 use Jasmine\Jasmine\Bread\Manifest\Section;
 use Jasmine\Jasmine\Bread\Sortable;
 use Jasmine\Jasmine\Bread\Translatable;
+use Jasmine\Jasmine\Cards\Card;
 
 class Article extends Model implements BreadableInterface, Sortable
 {
@@ -38,6 +41,7 @@ class Article extends Model implements BreadableInterface, Sortable
 
     public $translatable = ['title', 'content'];
 
+    /** @return BelongsTo<Author, $this> */
     public function author(): BelongsTo {
         return $this->belongsTo(Author::class);
     }
@@ -58,6 +62,49 @@ class Article extends Model implements BreadableInterface, Sortable
             'tags_count',
             'tags.name',
             'tags.articles_count',
+        ];
+    }
+
+    public static function browseWidgets(): array {
+        return [
+            // vue card, props resolved against the filtered rows
+            'summary' => Card::vueFile(resource_path('js/jasmine-cards/ArticleSummary.vue'),
+                fn(Request $request, BrowseContext $ctx) => [
+                    'shown'    => $ctx->query()->count(),
+                    'total'    => static::query()->count(),
+                    'filtered' => $ctx->filters !== [] || $ctx->search !== null,
+                ],
+            )->priority(10),
+
+            // blade card
+            'authors' => Card::blade(function (Request $request, BrowseContext $ctx) {
+                $authors = $ctx->query()->reorder()
+                    ->select('author_id')->selectRaw('count(*) as articles')
+                    ->groupBy('author_id')->orderByDesc('articles')
+                    ->limit(5)->with('author:id,name')->get();
+
+                return view('jasmine.widgets.top-authors', [
+                    'authors' => $authors,
+                    'max'     => max(1, $authors->max('articles')),
+                ]);
+            })->priority(20),
+
+            // vue card with an action, which sees the same filtered rows
+            'spotlight' => Card::vueFile(resource_path('js/jasmine-cards/ArticleSpotlight.vue'))
+                ->get('random', function (Request $request, BrowseContext $ctx) {
+                    /** @var static|null $article */
+                    $article = $ctx->query()->inRandomOrder()->with('author:id,name')->first();
+
+                    return ['article' => $article ? [
+                        'title'  => $article->getTranslation('title', $ctx->locale ?? app()->getLocale()),
+                        'author' => $article->author?->name,
+                        'url'    => route('jasmine.bread.edit', [
+                            'breadable'   => static::getBreadableKey(),
+                            'breadableId' => $article->getKey(),
+                        ]),
+                    ] : null];
+                })
+                ->priority(30),
         ];
     }
 
