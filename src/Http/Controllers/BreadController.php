@@ -160,8 +160,8 @@ class BreadController extends Controller
         }
 
         // timestamps
-        if ($model->usesTimestamps()) foreach ([$model->getUpdatedAtColumn(), $model->getCreatedAtColumn()] as $ts) {
-            if (!$ts || in_array($ts, $data)) continue;
+        foreach ($breadable->class::browseableTimestamps() as $ts) {
+            if (in_array($ts, $data)) continue;
 
             $columns[] = new Column(data: $ts, filtering: 'date', render: self::dateRender($model, $ts));
         }

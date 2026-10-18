@@ -62,6 +62,14 @@ trait Breadable
         return [];
     }
 
+    /** @return list<string> */
+    public static function browseableTimestamps(): array {
+        $model = new static;
+        if (!$model->usesTimestamps()) return [];
+
+        return array_values(array_filter([$model->getUpdatedAtColumn(), $model->getCreatedAtColumn()]));
+    }
+
     public function browseActions(): array {
         $context = new BreadableContext($this::getBreadableKey(), $this::class);
 

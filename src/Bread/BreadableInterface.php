@@ -32,6 +32,9 @@ interface BreadableInterface
     /** @return array<string|int, Column|string|array|Closure> */
     public static function browseableColumns(): array;
 
+    /** @return list<string> timestamp columns appended to the browse table, unless browseableColumns() already lists them */
+    public static function browseableTimestamps(): array;
+
     /** @return array<string|int, Action|null> */
     public function browseActions(): array;
 
