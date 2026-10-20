@@ -81,7 +81,9 @@ const parseLabel = useLabel();
 </script>
 
 <template>
-  <nav class="flex-1 overflow-y-auto py-4 px-2 space-y-0.5">
+  <nav
+    class="flex-1 overflow-y-auto py-4 px-2 space-y-0.5 [scrollbar-width:thin] [scrollbar-color:rgb(255_255_255/0.15)_transparent]"
+  >
     <template v-for="(i, id) in sbMenu" :key="id">
       <!-- Parent (has children) -->
       <Disclosure v-if="isParent(i)" v-slot="{open}" as="div" :default-open="i.opened || isItemActive(i)">
