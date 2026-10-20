@@ -1,8 +1,9 @@
 import {useI18n} from 'vue-i18n';
 
+/** An identifier made readable: `lead_target` and `leadTarget` read "Lead Target", `URL` stays whole. */
 const humanize = (s: string) =>
   s
-    .split(/[.\-_]|(?=[A-Z])/)
+    .split(/[.\-_]|(?<=[a-z0-9])(?=[A-Z])/)
     .filter(Boolean)
     .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
     .join(' ');
@@ -37,6 +38,17 @@ export function useLabel() {
    */
   return (id: string, ...scope: string[]): string => {
     if (!id) return '';
+
+    /**
+     * Text rather than an identifier: a label or a sentence written out in
+     * full. Looked up as it stands, and shown as it stands when nothing
+     * translates it; its full stops are punctuation, not scope, so one that
+     * has any cannot be a key at all.
+     */
+    if (/\s/.test(id)) {
+      const hit = id.includes('.') ? undefined : buildKeys(id, scope).find((k) => te(k));
+      return hit ? t(hit) : id;
+    }
 
     if (id.includes('.')) {
       const parts = id.split('.');

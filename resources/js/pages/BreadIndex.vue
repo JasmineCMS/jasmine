@@ -21,7 +21,7 @@ interface BrowseAction {
   url?: string;
   target: '_self' | '_blank' | '_top' | '_parent';
   confirm?: {[key: string]: {[key: string]: string}};
-  label: string;
+  label?: string;
   classes?: string;
 }
 
@@ -50,7 +50,7 @@ const props = defineProps<{
 const route = inject('route') as typeof routeFn;
 
 const page = usePage();
-const {t} = useI18n();
+const {t, te} = useI18n();
 
 const env = computed(() => page.props._env);
 
@@ -148,10 +148,32 @@ const breadLocale = computed<string | null>({
 
 const parseLabel = useLabel();
 
+/**
+ * A filter option by its translation, most specific first: this column's, then
+ * any of the breadable's filters', then any filter's. An option with a full
+ * stop is a value (a domain, a version), never a key, and shows as it is.
+ */
+const filterLabel =
+  (column: string) =>
+  (opt: string | boolean): string => {
+    const value = String(opt);
+    if (value.includes('.')) return value;
+
+    const key = props.breadable.key;
+    const hit = [
+      `manifest.${key}.filters.${column}.${value}`,
+      `manifest.${key}.filters.${value}`,
+      `manifest.filters.${value}`,
+    ].find((k) => te(k));
+
+    return hit ? t(hit) : value;
+  };
+
 const columns = computed<Column[]>((): Column[] =>
   [...props.breadable.columns, {data: 'j_actions', label: 'actions'}].map((i: Column) => ({
     ...i,
     label: parseLabel(i.label, props.breadable.key, 'columns'),
+    filterLabel: filterLabel(i.data),
   })),
 );
 
@@ -205,7 +227,7 @@ const buildAction = (action: BrowseAction) => {
 
 const resolveAction = (action: BrowseAction) => ({
   ...buildAction(action),
-  title: parseLabel(action.name, props.breadable.key, 'actions'),
+  title: parseLabel(action.label || action.name, props.breadable.key, 'actions'),
   method: action.method,
   classes: action.classes,
   icon: action.icon,

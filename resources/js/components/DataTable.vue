@@ -13,6 +13,8 @@ export interface Column {
   sortable?: boolean;
   searchable?: boolean;
   filtering?: 'date' | Array<string | boolean> | null;
+  /** What a filter option reads as; the option itself when not given. */
+  filterLabel?: (opt: string | boolean) => string;
   html?: boolean;
 }
 
@@ -212,7 +214,8 @@ const activeChips = computed<FilterChip[]>(() => {
         if (text) out.push({key: data, label, text, remove: () => clearFilter(data)});
       } else {
         for (const v of val) {
-          out.push({key: `${data}::${String(v)}`, label, text: String(v), remove: () => removeValue(data, v)});
+          const text = col?.filterLabel ? col.filterLabel(v) : String(v);
+          out.push({key: `${data}::${String(v)}`, label, text, remove: () => removeValue(data, v)});
         }
       }
     } else if (val != null && val !== '') {
@@ -451,7 +454,9 @@ const goToPage = (page: number | string | null) => {
                             </svg>
                           </span>
                           <span class="truncate">
-                            <slot :name="`f_${col.data}`" :col="col" :opt="opt">{{ String(opt) }}</slot>
+                            <slot :name="`f_${col.data}`" :col="col" :opt="opt">{{
+                              col.filterLabel ? col.filterLabel(opt) : String(opt)
+                            }}</slot>
                           </span>
                         </button>
                       </div>

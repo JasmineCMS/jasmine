@@ -99,7 +99,7 @@ trait Breadable
                     'breadableId' => $this->getKey(),
                 ]),
                 permission: $context->permission('delete'),
-                confirm: ['are you sure want to delete delete :title' => ['title' => $this->getTitle()]],
+                confirm: ['are_you_sure_you_want_to_delete' => ['i' => $this->getTitle()]],
                 method: 'DELETE',
             ),
         ];
