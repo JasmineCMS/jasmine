@@ -78,6 +78,11 @@
 }
 
 @layer base {
+  /* Light only: opt out of OS dark mode for native controls and browser auto-darkening */
+  :root {
+    color-scheme: only light;
+  }
+
   /* Smooth the new typeface */
   body {
     -webkit-font-smoothing: antialiased;

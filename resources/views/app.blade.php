@@ -2,11 +2,12 @@
 <html
     lang="{{ str_replace('_', '-', app()->getLocale()) }}"
     dir="{{ in_array(app()->getLocale(), ['ar','dv','fa','ha','he','ks','ku','ps','sd','ur','yi']) ? 'rtl' : 'ltr' }}"
-    class="h-full bg-gray-50 dark:bg-gray-900"
+    class="h-full bg-gray-50"
 >
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="only light">
     {{ Jasmine::vite($page) }}
     @foreach(Jasmine::getCustomStyles() as $style)
         <link rel="stylesheet" href="{{ $style }}">
