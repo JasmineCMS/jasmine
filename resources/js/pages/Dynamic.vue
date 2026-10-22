@@ -56,6 +56,7 @@ onMounted(() => {
   style.setAttribute('type', 'text/tailwindcss');
   style.textContent = `
     @import "tailwindcss";
+    @custom-variant dark (&:where(.dark, .dark *));
     ${extractTheme(appCss)}
   `;
   document.head.appendChild(style);
