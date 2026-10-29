@@ -116,18 +116,29 @@ const getValue = (row: T, col: Column) => get(row, col.data);
 // --- Search ---
 const searchPhrase = ref<string>(query.value?.q ?? '');
 
+// Last phrase sent to the query. Compared instead of query.value.q, which lags
+// behind until the visit's response lands.
+let pushedPhrase = searchPhrase.value;
+
 const pushSearch = debounce((val: string) => {
   if (!query.value) return;
-  if ((query.value.q ?? '') === val) return;
+  if (pushedPhrase === val) return;
+  pushedPhrase = val;
   query.value = {...query.value, q: val || null, page: 1};
 }, 300);
 
 watch(searchPhrase, (val) => pushSearch(val));
 
+// Only sync the input when q changes from elsewhere (reset, history navigation);
+// the echo of our own push must not clobber what was typed while it was in flight.
 watch(
   () => query.value?.q,
   (val) => {
-    if ((val ?? '') !== searchPhrase.value) searchPhrase.value = val ?? '';
+    const v = val ?? '';
+    if (v === pushedPhrase) return;
+    pushSearch.cancel();
+    pushedPhrase = v;
+    searchPhrase.value = v;
   },
 );
 
