@@ -4,6 +4,7 @@ import {Disclosure, DisclosureButton, DisclosurePanel} from '@headlessui/vue';
 import {computed, inject} from 'vue';
 import {route as routeFn} from 'ziggy-js';
 import {useLabel} from '@/js/composeables/useLabel.ts';
+import {useStoredRef} from '@/js/composeables/useStoredRef.ts';
 
 type IsRoute = string | {r: string; p?: Record<string, string | number | boolean>} | null;
 
@@ -77,6 +78,14 @@ const iconClasses = (icon: string | undefined): string | string[] | null => {
 
 const onNavigate = () => emit('navigate');
 
+// Remembered open/closed state of parent groups, keyed by menu id.
+const openGroups = useStoredRef<Record<string, boolean>>('jasmine.sidebar.groups', {});
+
+const isDefaultOpen = (id: string | number, item: SideBarParent): boolean =>
+  openGroups.value[id] ?? (!!item.opened || isItemActive(item));
+
+const onToggleGroup = (id: string | number, wasOpen: boolean) => (openGroups.value[id] = !wasOpen);
+
 const parseLabel = useLabel();
 </script>
 
@@ -86,8 +95,9 @@ const parseLabel = useLabel();
   >
     <template v-for="(i, id) in sbMenu" :key="id">
       <!-- Parent (has children) -->
-      <Disclosure v-if="isParent(i)" v-slot="{open}" as="div" :default-open="i.opened || isItemActive(i)">
+      <Disclosure v-if="isParent(i)" v-slot="{open}" as="div" :default-open="isDefaultOpen(id, i)">
         <DisclosureButton
+          @click="onToggleGroup(id, open)"
           :title="collapsed ? parseLabel(i.title, 'menu') : ''"
           :class="[
             'relative w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer',

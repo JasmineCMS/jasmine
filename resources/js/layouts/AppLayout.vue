@@ -9,6 +9,7 @@ import {Combobox, ComboboxInput, ComboboxOption, ComboboxOptions} from '@headles
 import type {route as routeFn} from 'ziggy-js';
 
 import {useFlashSwal} from '@/js/composeables/useFlashSwal.ts';
+import {useStoredRef} from '@/js/composeables/useStoredRef.ts';
 import SidebarMenu from '@/js/components/SidebarMenu.vue';
 import LocaleLinks from '@/js/components/LocaleLinks.vue';
 import NotificationBell from '@/js/components/NotificationBell.vue';
@@ -23,7 +24,7 @@ const user = computed(() => usePage().props._user);
 const info = computed(() => usePage().props._info);
 
 /* ---------- State ---------- */
-const sidebarCollapsed = ref(false);
+const sidebarCollapsed = useStoredRef('jasmine.sidebar.collapsed', false);
 const mobileOpen = ref(false);
 
 const toggleSidebar = () => (sidebarCollapsed.value = !sidebarCollapsed.value);
