@@ -590,13 +590,14 @@ class BreadController extends Controller
         }
 
         return Inertia::render('BreadEdit', [
-            'breadable' => Inertia::once(fn() => [
+            // not once: the manifest depends on the record and the query string
+            'breadable' => [
                 'key'      => $model instanceof JasminePage ? 'pages' : $breadable->key,
                 'singular' => $breadable->class::getSingularName(),
                 'plural'   => $breadable->class::getPluralName(),
                 'manifest' => $manifest->toArray(),
                 'fields'   => $manifest->getFields(),
-            ])->as("breadable.edit.$breadable->key." . $locale),
+            ],
 
             'locales'   => Inertia::once(fn() => $locale ? Jasmine::getLocales() : [])
                 ->as('breadable.locales.' . $breadable->key),
