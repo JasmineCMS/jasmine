@@ -1,14 +1,8 @@
-<script setup>
+<script>
 import * as Vue from 'vue';
 import * as Inertia from '@inertiajs/vue3';
-import {defineAsyncComponent, onMounted} from 'vue';
+import {defineAsyncComponent} from 'vue';
 import {loadModule} from 'vue3-sfc-loader';
-import appCss from '@/css/app.css?raw';
-
-const page = defineProps({
-  sfc: {type: String, required: true},
-  props: {type: Object, default: () => ({})},
-});
 
 const jasmine = {};
 const key = (v) => v.replace('/resources/', '@jasmine/').replace(/\.ts$/, '');
@@ -23,18 +17,51 @@ for (const [path, mod] of Object.entries(
 ))
   jasmine[key(path)] = {__esModule: true, ...mod};
 
-const Comp = defineAsyncComponent(() =>
-  loadModule('/Index.vue', {
-    moduleCache: {vue: Vue, '@inertiajs/vue3': Inertia, ...jasmine},
-    getFile: () => page.sfc,
-    addStyle(css) {
-      const el = document.createElement('style');
-      el.textContent = css;
-      document.head.appendChild(el);
-    },
-    additionalBabelParserPlugins: ['typescript'],
-  }),
-);
+// by source, for the life of the tab: a remount reuses the compiled page instead of running babel again
+const compiled = new Map();
+
+function compile(sfc) {
+  const styles = [];
+
+  const component = defineAsyncComponent(() =>
+    loadModule('/Index.vue', {
+      // a copy per source: the loader caches by path here, and every page is /Index.vue
+      moduleCache: {vue: Vue, '@inertiajs/vue3': Inertia, ...jasmine},
+      getFile: () => sfc,
+      addStyle(css) {
+        const el = document.createElement('style');
+        el.textContent = css;
+        document.head.appendChild(el);
+        styles.push(el);
+      },
+      additionalBabelParserPlugins: ['typescript'],
+    }),
+  );
+
+  return {component, styles};
+}
+
+function resolve(sfc) {
+  if (!compiled.has(sfc)) compiled.set(sfc, compile(sfc));
+  const {component, styles} = compiled.get(sfc);
+
+  // pages share a scope id, so the one on screen has to stay last in the cascade
+  document.head.append(...styles);
+
+  return component;
+}
+</script>
+
+<script setup>
+import {computed, onMounted} from 'vue';
+import appCss from '@/css/app.css?raw';
+
+const page = defineProps({
+  sfc: {type: String, required: true},
+  props: {type: Object, default: () => ({})},
+});
+
+const Comp = computed(() => resolve(page.sfc));
 
 function extractTheme(css) {
   const start = css.indexOf('@theme');
