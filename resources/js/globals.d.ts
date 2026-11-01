@@ -1,6 +1,6 @@
 import '@inertiajs/core';
 import type {Config, route as routeFn} from 'ziggy-js';
-import {createHeadManager, type Page, Router} from '@inertiajs/core';
+import {createHeadManager, type Method, type Page, Router} from '@inertiajs/core';
 import enSchema from '../../resources/locales/ui/en.json';
 import type {DefineLocaleMessage} from 'vue-i18n';
 import type {SweetAlertOptions} from 'sweetalert2';
@@ -8,6 +8,11 @@ import type {SweetAlertOptions} from 'sweetalert2';
 import type {SideBarItems} from '@/js/components/SidebarMenu.vue';
 
 type LocaleSchema = typeof enSchema;
+
+export type FlashSwal = SweetAlertOptions & {
+  nonce?: string;
+  submit?: {url: string; method?: Method};
+};
 
 declare global {}
 
@@ -29,7 +34,7 @@ declare module '@inertiajs/core' {
       _notifications_unread?: number;
       _notifications?: {poll: number; channel: string | null; echo: Record<string, unknown> | null};
       _ssos?: {[provider: string]: {name: string; icon: string}};
-      _swal?: null | SweetAlertOptions;
+      _swal?: null | FlashSwal;
     };
   }
 }

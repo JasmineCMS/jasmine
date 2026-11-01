@@ -420,6 +420,33 @@ Relation::enforceMorphMap(['admin_user' => \Jasmine\Jasmine\Models\JasmineUser::
 
 Apps without an enforced morph map keep storing the class name.
 
+### Flash dialogs
+
+Flash `swal` to the session to show a [SweetAlert2](https://sweetalert2.github.io/) dialog on the next page.
+Its value is the dialog's options:
+
+```php
+return back()->with('swal', ['icon' => 'success', 'title' => 'Saved', 'toast' => true]);
+```
+
+To send the answer back to the server, add `submit`. Confirming the dialog sends it to `url` through Inertia,
+so the response can flash its own dialog. Dismissing it sends nothing.
+
+```php
+return back()->with('swal', [
+    'title'            => 'Terminate early',
+    'input'            => 'date',
+    'showCancelButton' => true,
+    'submit'           => [
+        'url'    => route('contracts.terminate', $contract),
+        'method' => 'post', // lowercase, defaults to post
+    ],
+]);
+```
+
+The answer arrives as `value`, here `$request->input('value')`. An object answer is sent as is, so its keys become
+the request's fields.
+
 ### Route groups
 
 You can register your own route groups inside Jasmine's route scope — useful both for
