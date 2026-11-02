@@ -72,7 +72,7 @@ provide<JasmineCardApi>('jasmine:card', {id: card.id, actions, call});
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-lg border bg-white shadow-sm dark:bg-gray-900">
+  <div class="overflow-hidden rounded-lg border bg-white shadow-sm dark:bg-gray-900 print:shadow-none">
     <div v-if="failed" class="p-4 text-sm text-red-600">
       {{ $t('Dashboard.card_failed') }}
     </div>

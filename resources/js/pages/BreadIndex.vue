@@ -462,7 +462,7 @@ const fake = async () => {
       <template #fallback>
         <div class="mb-4 h-24 animate-pulse rounded-lg border bg-white dark:bg-gray-900 print:hidden" />
       </template>
-      <CardGrid v-if="widgets?.length" :cards="widgets" class="mb-4 print:hidden" />
+      <CardGrid v-if="widgets?.length" :cards="widgets" class="mb-4" />
     </Deferred>
 
     <DataTable
