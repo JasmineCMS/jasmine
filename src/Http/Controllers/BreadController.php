@@ -298,6 +298,18 @@ class BreadController extends Controller
         return $requested ?? Jasmine::getLocales()[0] ?? app()->getLocale();
     }
 
+    /** @return non-empty-list<positive-int> the breadable's page sizes, the first being the default */
+    private static function browsePerPageOptions(BreadableContext $breadable): array {
+        $options = method_exists($breadable->class, 'browsePerPageOptions')
+            ? $breadable->class::browsePerPageOptions() : [];
+
+        $options = array_values(array_unique(array_filter(
+            array_map(intval(...), $options), fn(int $n) => $n > 0,
+        )));
+
+        return $options ?: [10, 25, 50, 100];
+    }
+
     /** @return array<string, Card> */
     private static function browseWidgets(BreadableContext $breadable): array {
         return method_exists($breadable->class, 'browseWidgets') ? $breadable->class::browseWidgets() : [];
@@ -338,15 +350,229 @@ class BreadController extends Controller
         $group = $request->input('group');
 
         $columns = self::browseColumns($breadable, $model);
+        $perPageOptions = self::browsePerPageOptions($breadable);
 
         // input validation
         $request->validate([
             ...self::browseRules(),
             'sortBy'  => ['nullable', 'string'],
             'sort'    => ['nullable', 'string', 'in:asc,desc'],
-            'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'perPage' => ['nullable', 'integer', 'min:1', 'max:' . max($perPageOptions)],
         ]);
 
+        $query = self::browseQuery($breadable, $model, $columns, $request, $reordering);
+
+        // a size the breadable does not offer (an old link, say) falls back to its default
+        $perPage = in_array($request->integer('perPage'), $perPageOptions, true)
+            ? $request->integer('perPage') : $perPageOptions[0];
+
+        $locale = self::browseLocale($model, $request->input('_locale'));
+
+        $widgets = array_filter(self::browseWidgets($breadable), fn(Card $w) => $w->visibleTo($user));
+
+        $sorting = false;
+        if ($model instanceof Sortable) {
+            $sorting = ['by' => $model->determineOrderColumnName(), 'group_by' => $groupBy, 'groups' => null];
+            if ($groupBy) $sorting['groups'] = method_exists($model, 'getJasmineSortingGroups')
+                ? $model->getJasmineSortingGroups() : $breadable->newQuery()->select($groupBy)->distinct()
+                    ->orderBy($groupBy)->pluck($groupBy)
+                    ->map(fn($v) => ['v' => $v])->values()->all();
+        }
+
+        return Inertia::render('BreadIndex', [
+            'breadable' => Inertia::once(fn() => [
+                'key'      => $breadable->key,
+                'singular' => $breadable->class::getSingularName(),
+                'plural'   => $breadable->class::getPluralName(),
+                'sortable' => $sorting,
+                'perPage'  => $perPageOptions,
+                'columns'  => array_map(function (Column $c) use ($breadable, $model) {
+                    if ($c->filtering === []) {
+                        $res = [];
+                        if (!$c->isRelation()) $res = $breadable->newQuery()->distinct()->whereNotNull($c->data)
+                            ->orderBy($c->data)->pluck($c->data)->toArray();
+                        else {
+                            // Walk the dotted path (minus the trailing column list) to the terminal related model
+                            $parts = explode('.', $c->data);
+                            $relCols = array_pop($parts);
+                            $firstCol = explode(',', $relCols)[0];
+
+                            $inst = $model;
+                            foreach ($parts as $p) {
+                                $method = Str::camel($p);
+                                if (!method_exists($inst, $method)) {
+                                    $inst = null;
+                                    break;
+                                }
+                                $inst = $inst->{$method}()->getRelated();
+                            }
+
+                            // TODO: limit? or maybe round-trip lookup (autocomplete)
+                            if ($inst) $res = $inst->newQuery()->distinct()->whereNotNull($firstCol)
+                                ->orderBy($firstCol)->pluck($firstCol)->toArray();
+                        }
+
+                        $c->filterable(array_map(fn($v) => match (true) {
+                            is_bool($v) => $v ? '_T' : '_F',
+                            default     => $v,
+                        }, $res));
+                    }
+
+                    return $c->toArray();
+                }, $columns),
+            ])->as('breadable.index.' . $breadable->key),
+            'locales'   => Inertia::once(fn() => $locale ? Jasmine::getLocales() : [])->as('breadable.locales.' . $breadable->key),
+            'locale'    => $locale,
+            'can'       => Inertia::once(function () use ($user, $breadable) {
+                $res = ['b'];
+                if ($user->jCan($breadable->permission('read'))) $res[] = 'r';
+                if ($user->jCan($breadable->permission('edit'))) $res[] = 'e';
+                if ($user->jCan($breadable->permission('add'))) $res[] = 'a';
+                if ($user->jCan($breadable->permission('delete'))) $res[] = 'd';
+                if ($user->jCan($breadable->permission('export'))) $res[] = 'x';
+
+                return $res;
+            })->as('breadable.can.' . $breadable->key),
+            ...($widgets ? ['widgets' => Inertia::defer(fn() => Card::serializeAll($widgets, $request,
+                fn(string $id, string $action) => route('jasmine.bread.widget.action', [
+                    'breadable' => $breadable->key,
+                    'widget'    => $id,
+                    'action'    => $action,
+                    // the action sees what the page shows
+                    ...$request->only(['filters', 'q', '_locale']),
+                ]),
+                self::browseContext($breadable, $model, $columns, $request->only(['filters', 'q', '_locale'])),
+            ))] : []),
+            'paginator' => $query
+                ->when($reordering && $groupBy && $group !== null, fn(Builder $q) => $q->where($groupBy, $group))
+                ->when($reordering, fn(Builder $q) => $q->ordered())
+                ->paginate($reordering ? max(1, (clone $query)->count()) : $perPage)
+                ->through(function (Model&BreadableInterface $m) use ($columns, $locale, $user) {
+                    $res = self::browseRow($m, $columns, $locale);
+
+                    $actions = array_filter($m->browseActions(),
+                        fn(?Action $i) => $i && (!$i->permission || $user->jCan($i->permission)));
+
+                    $res['jasmine']['actions'] = array_map(fn(string $k, Action $i) => [
+                        ...$i->toArray(),
+                        'url' => $i->handler ? route('jasmine.bread.action', [
+                            'breadable'   => $m::getBreadableKey(),
+                            'breadableId' => $m->getKey(),
+                            'action'      => $k,
+                        ]) : $i->url,
+                    ], array_keys($actions), $actions);
+
+                    return self::fireEvent('retrievedForIndex', $m, $res);
+                }),
+        ]);
+    }
+
+    /**
+     * Every row the browse page's filters, search and sorting select — not just one page of
+     * them — as a CSV download, one column per browse column.
+     */
+    public function export(Request $request) {
+        /** @var BreadableContext $breadable */
+        $breadable = $request->route('breadable');
+
+        /** @var JasmineUser $user */
+        $user = AuthController::guard()->user();
+
+        abort_unless($user->jCan($breadable->permission('browse'))
+            && $user->jCan($breadable->permission('export')), 403);
+
+        $request->validate([
+            ...self::browseRules(),
+            'sortBy' => ['nullable', 'string'],
+            'sort'   => ['nullable', 'string', 'in:asc,desc'],
+        ]);
+
+        $model = $breadable->newInstance();
+        $columns = self::browseColumns($breadable, $model);
+        $locale = self::browseLocale($model, $request->input('_locale'));
+        $query = self::browseQuery($breadable, $model, $columns, $request);
+
+        // the rows are read in chunks, which only line up when the order has no ties
+        if ($model->getKeyName()) $query->orderBy($model->getQualifiedKeyName());
+
+        $filename = $breadable->key . '-' . now()->format('Y-m-d_His') . '.csv';
+
+        return response()->streamDownload(function () use ($breadable, $columns, $locale, $query) {
+            $out = fopen('php://output', 'w');
+
+            // a BOM, so Excel reads the file as UTF-8 rather than the system codepage
+            fwrite($out, "\xEF\xBB\xBF");
+
+            fputcsv($out, array_map(
+                fn(Column $c) => Jasmine::label($c->label, $breadable->key, 'columns'), $columns
+            ), escape: '');
+
+            foreach ($query->lazy(500) as $m) {
+                /** @var Model&BreadableInterface $m */
+                $row = self::fireEvent('retrievedForIndex', $m, self::browseRow($m, $columns, $locale)) ?? [];
+
+                fputcsv($out, array_map(
+                    fn(Column $c) => self::csvValue($row[$c->data] ?? null, $c->html), $columns
+                ), escape: '');
+            }
+
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** A browse cell as CSV text. */
+    private static function csvValue(mixed $v, bool $html): string {
+        $v = match (true) {
+            $v === null                              => '',
+            is_bool($v)                              => $v ? '1' : '0',
+            $v instanceof \BackedEnum                => (string)$v->value,
+            $v instanceof \UnitEnum                  => $v->name,
+            $v instanceof DateTimeInterface          => $v->format('Y-m-d H:i:s'),
+            is_scalar($v), $v instanceof \Stringable => (string)$v,
+            default                                  => json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '',
+        };
+
+        if ($html) $v = trim(html_entity_decode(strip_tags($v), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+        // a cell starting like a formula would be run by a spreadsheet app; numbers are left alone
+        if ($v !== '' && !is_numeric($v) && in_array($v[0], ['=', '+', '-', '@', "\t", "\r"], true)) $v = "'$v";
+
+        return $v;
+    }
+
+    /**
+     * A record's browse row: each column's (rendered) value, plus the title and public url.
+     *
+     * @param Column[] $columns
+     */
+    private static function browseRow(Model&BreadableInterface $m, array $columns, ?string $locale): array {
+        if ($locale) {
+            /** @var Translatable $translatable scoped alias — a @var on $m would retype it for the whole closure */
+            $translatable = $m;
+            $translatable->setLocale($locale);
+        }
+
+        $res = ['jasmine' => ['title' => $m->getTitle()]];
+
+        foreach ($columns as $col) {
+            $v = $res[$col->data] = data_get($m, $col->data);
+            if ($col->render instanceof Closure) $res[$col->data] = ($col->render)($v, $m);
+        }
+
+        if ($v = $m->getPublicUrl()) $res['jasmine']['public_url'] = $v;
+
+        return $res;
+    }
+
+    /**
+     * The browse query: the columns' aggregates and relations loaded, narrowed down to the
+     * request's filters and search and sorted as it asks — paging aside.
+     *
+     * @param Column[] $columns
+     */
+    private static function browseQuery(
+        BreadableContext $breadable, Model $model, array $columns, Request $request, bool $reordering = false,
+    ): Builder {
         // initiate an eloquent query
         $query = $breadable->newQuery();
 
@@ -393,149 +619,40 @@ class BreadController extends Controller
             if (!array_key_exists($path, $eagerLoads)) $query->with($path);
         }
 
-        $locale = self::browseLocale($model, $request->input('_locale'));
+        return $query
+            ->tap(fn(Builder $q) => self::applyBrowseConstraints($q, $columns, $request->input('filters'), $request->input('q')))
+            ->when($reordering ? null : $request->input('sortBy'), function (Builder $q, $v) use ($columns, $request) {
+                $col = array_find($columns, fn(Column $i) => $i->data === $v);
+                if (!$col?->sortable) return;
 
-        $widgets = array_filter(self::browseWidgets($breadable), fn(Card $w) => $w->visibleTo($user));
+                $dir = $request->input('sort', 'asc');
 
-        $sorting = false;
-        if ($model instanceof Sortable) {
-            $sorting = ['by' => $model->determineOrderColumnName(), 'group_by' => $groupBy, 'groups' => null];
-            if ($groupBy) $sorting['groups'] = method_exists($model, 'getJasmineSortingGroups')
-                ? $model->getJasmineSortingGroups() : $breadable->newQuery()->select($groupBy)->distinct()
-                    ->orderBy($groupBy)->pluck($groupBy)
-                    ->map(fn($v) => ['v' => $v])->values()->all();
-        }
+                if (!$col->isRelation()) {
+                    $q->orderBy($v, $dir);
 
-        return Inertia::render('BreadIndex', [
-            'breadable' => Inertia::once(fn() => [
-                'key'      => $breadable->key,
-                'singular' => $breadable->class::getSingularName(),
-                'plural'   => $breadable->class::getPluralName(),
-                'sortable' => $sorting,
-                'columns'  => array_map(function (Column $c) use ($breadable, $model) {
-                    if ($c->filtering === []) {
-                        $res = [];
-                        if (!$c->isRelation()) $res = $breadable->newQuery()->distinct()->whereNotNull($c->data)
-                            ->orderBy($c->data)->pluck($c->data)->toArray();
-                        else {
-                            // Walk the dotted path (minus the trailing column list) to the terminal related model
-                            $parts = explode('.', $c->data);
-                            $relCols = array_pop($parts);
-                            $firstCol = explode(',', $relCols)[0];
+                    return;
+                }
 
-                            $inst = $model;
-                            foreach ($parts as $p) {
-                                $method = Str::camel($p);
-                                if (!method_exists($inst, $method)) {
-                                    $inst = null;
-                                    break;
-                                }
-                                $inst = $inst->{$method}()->getRelated();
-                            }
+                $parts = explode('.', $v);
+                if (count($parts) !== 2) abort(400, 'Sorting by nested relations is not supported');
 
-                            // TODO: limit? or maybe round-trip lookup (autocomplete)
-                            if ($inst) $res = $inst->newQuery()->distinct()->whereNotNull($firstCol)
-                                ->orderBy($firstCol)->pluck($firstCol)->toArray();
-                        }
+                [$relation, $relationCol] = $parts;
+                $relation = Str::camel($relation);
 
-                        $c->filterable(array_map(fn($v) => match (true) {
-                            is_bool($v) => $v ? '_T' : '_F',
-                            default     => $v,
-                        }, $res));
-                    }
+                /** @var Relation $rel */
+                $rel = $q->getModel()->{$relation}();
+                $sub = $rel->getRelated()->newQuery()->select($relationCol);
 
-                    return $c->toArray();
-                }, $columns),
-            ])->as('breadable.index.' . $breadable->key),
-            'locales'   => Inertia::once(fn() => $locale ? Jasmine::getLocales() : [])->as('breadable.locales.' . $breadable->key),
-            'locale'    => $locale,
-            'can'       => Inertia::once(function () use ($user, $breadable) {
-                $res = ['b'];
-                if ($user->jCan($breadable->permission('read'))) $res[] = 'r';
-                if ($user->jCan($breadable->permission('edit'))) $res[] = 'e';
-                if ($user->jCan($breadable->permission('add'))) $res[] = 'a';
-                if ($user->jCan($breadable->permission('delete'))) $res[] = 'd';
+                if ($rel instanceof BelongsTo) {
+                    $sub->whereColumn($rel->getQualifiedOwnerKeyName(), $rel->getQualifiedForeignKeyName());
+                } elseif ($rel instanceof HasOne) {
+                    $sub->whereColumn($rel->getQualifiedForeignKeyName(), $rel->getQualifiedParentKeyName())->take(1);
+                } else {
+                    abort(400, 'Cannot sort by this relation type');
+                }
 
-                return $res;
-            })->as('breadable.can.' . $breadable->key),
-            ...($widgets ? ['widgets' => Inertia::defer(fn() => Card::serializeAll($widgets, $request,
-                fn(string $id, string $action) => route('jasmine.bread.widget.action', [
-                    'breadable' => $breadable->key,
-                    'widget'    => $id,
-                    'action'    => $action,
-                    // the action sees what the page shows
-                    ...$request->only(['filters', 'q', '_locale']),
-                ]),
-                self::browseContext($breadable, $model, $columns, $request->only(['filters', 'q', '_locale'])),
-            ))] : []),
-            'paginator' => $query
-                ->tap(fn(Builder $q) => self::applyBrowseConstraints($q, $columns, $request->input('filters'), $request->input('q')))
-                ->when($reordering ? null : request('sortBy'), function (Builder $q, $v) use ($columns) {
-                    $col = array_find($columns, fn(Column $i) => $i->data === $v);
-                    if (!$col?->sortable) return;
-
-                    $dir = request('sort', 'asc');
-
-                    if (!$col->isRelation()) {
-                        $q->orderBy($v, $dir);
-
-                        return;
-                    }
-
-                    $parts = explode('.', $v);
-                    if (count($parts) !== 2) abort(400, 'Sorting by nested relations is not supported');
-
-                    [$relation, $relationCol] = $parts;
-                    $relation = Str::camel($relation);
-
-                    /** @var Relation $rel */
-                    $rel = $q->getModel()->{$relation}();
-                    $sub = $rel->getRelated()->newQuery()->select($relationCol);
-
-                    if ($rel instanceof BelongsTo) {
-                        $sub->whereColumn($rel->getQualifiedOwnerKeyName(), $rel->getQualifiedForeignKeyName());
-                    } elseif ($rel instanceof HasOne) {
-                        $sub->whereColumn($rel->getQualifiedForeignKeyName(), $rel->getQualifiedParentKeyName())->take(1);
-                    } else {
-                        abort(400, 'Cannot sort by this relation type');
-                    }
-
-                    $q->orderBy($sub, $dir);
-                })
-                ->when($reordering && $groupBy && $group !== null, fn(Builder $q) => $q->where($groupBy, $group))
-                ->when($reordering, fn(Builder $q) => $q->ordered())
-                ->paginate($reordering ? max(1, (clone $query)->count()) : request('perPage', 10))
-                ->through(function (Model&BreadableInterface $m) use ($columns, $locale, $user) {
-                    if ($locale) {
-                        /** @var Translatable $translatable scoped alias — a @var on $m would retype it for the whole closure */
-                        $translatable = $m;
-                        $translatable->setLocale($locale);
-                    }
-
-                    $res = ['jasmine' => ['title' => $m->getTitle()]];
-
-                    foreach ($columns as $col) {
-                        $v = $res[$col->data] = data_get($m, $col->data);
-                        if ($col->render instanceof Closure) $res[$col->data] = ($col->render)($v, $m);
-                    }
-
-                    if ($v = $m->getPublicUrl()) $res['jasmine']['public_url'] = $v;
-
-                    $actions = array_filter($m->browseActions(),
-                        fn(?Action $i) => $i && (!$i->permission || $user->jCan($i->permission)));
-
-                    $res['jasmine']['actions'] = array_map(fn(string $k, Action $i) => [
-                        ...$i->toArray(),
-                        'url' => $i->handler ? route('jasmine.bread.action', [
-                            'breadable'   => $m::getBreadableKey(),
-                            'breadableId' => $m->getKey(),
-                            'action'      => $k,
-                        ]) : $i->url,
-                    ], array_keys($actions), $actions);
-
-                    return self::fireEvent('retrievedForIndex', $m, $res);
-                }),
-        ]);
+                $q->orderBy($sub, $dir);
+            });
     }
 
     public function edit(Request $request) {

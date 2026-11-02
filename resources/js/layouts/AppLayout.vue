@@ -111,7 +111,9 @@ const icons = {
 </script>
 
 <template>
-  <div class="h-screen flex bg-slate-50 text-slate-900 overflow-hidden">
+  <div
+    class="h-screen flex bg-slate-50 text-slate-900 overflow-hidden print:block print:h-auto print:overflow-visible print:bg-white"
+  >
     <TransitionRoot as="template" :show="mobileOpen">
       <Dialog class="relative z-40 sm:hidden" @close="mobileOpen = false">
         <TransitionChild
@@ -278,7 +280,7 @@ const icons = {
     </TransitionRoot>
 
     <aside
-      class="hidden sm:flex bg-ink-900 text-slate-300 flex-col shrink-0 transition-[width] duration-300 ease-in-out"
+      class="hidden sm:flex bg-ink-900 text-slate-300 flex-col shrink-0 transition-[width] duration-300 ease-in-out print:hidden"
       :class="sidebarCollapsed ? 'w-16' : 'w-64'"
     >
       <div class="h-16 flex items-center px-4 border-b border-white/5">
@@ -313,8 +315,10 @@ const icons = {
       </button>
     </aside>
 
-    <div class="flex-1 flex flex-col min-w-0">
-      <header class="h-16 bg-white border-b border-slate-200 flex items-center gap-2 px-3 sm:px-4 shrink-0">
+    <div class="flex-1 flex flex-col min-w-0 print:block">
+      <header
+        class="h-16 bg-white border-b border-slate-200 flex items-center gap-2 px-3 sm:px-4 shrink-0 print:hidden"
+      >
         <button
           type="button"
           @click="mobileOpen = true"
@@ -483,7 +487,7 @@ const icons = {
 
       <nav
         v-if="$slots.breadcrumbs || $slots.actions"
-        class="h-12 bg-white border-b border-slate-200 flex items-center gap-3 px-3 sm:px-4 shrink-0"
+        class="h-12 bg-white border-b border-slate-200 flex items-center gap-3 px-3 sm:px-4 shrink-0 print:hidden"
         :aria-label="$t('layout.breadcrumb')"
       >
         <ol class="flex flex-1 items-center gap-1.5 min-w-0 text-sm overflow-x-auto no-scrollbar">
@@ -514,7 +518,7 @@ const icons = {
         </div>
       </nav>
 
-      <main class="flex-1 overflow-y-auto p-4 lg:p-6">
+      <main class="flex-1 overflow-y-auto p-4 lg:p-6 print:overflow-visible print:p-0">
         <slot>
           <div class="max-w-5xl">
             <h1 class="text-2xl font-semibold tracking-tight">{{ $t('layout.welcome_back') }}</h1>
@@ -547,7 +551,7 @@ const icons = {
       </main>
 
       <footer
-        class="bg-white border-t border-slate-200 px-4 sm:px-6 py-3 sm:py-0 sm:h-12 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-500 shrink-0"
+        class="bg-white border-t border-slate-200 px-4 sm:px-6 py-3 sm:py-0 sm:h-12 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-500 shrink-0 print:hidden"
       >
         <a href="https://github.com/JasmineCMS/jasmine" target="_blank">
           <i class="fab fa-github" />

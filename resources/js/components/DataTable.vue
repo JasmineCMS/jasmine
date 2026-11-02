@@ -16,6 +16,8 @@ export interface Column {
   /** What a filter option reads as; the option itself when not given. */
   filterLabel?: (opt: string | boolean) => string;
   html?: boolean;
+  /** Left out of the printout when false, e.g. a column of buttons. */
+  printable?: boolean;
 }
 
 export type FilterValue = string | Array<string | boolean> | null;
@@ -265,7 +267,10 @@ const goToPage = (page: number | string | null) => {
       </div>
 
       <!-- Search -->
-      <div v-if="searchable" class="me-auto relative w-full sm:w-auto sm:max-w-xs sm:flex-1 max-md:order-3">
+      <div
+        v-if="searchable"
+        class="me-auto relative w-full sm:w-auto sm:max-w-xs sm:flex-1 max-md:order-3 print:hidden"
+      >
         <div class="pointer-events-none absolute inset-y-0 inset-s-0 flex items-center ps-3">
           <svg
             class="h-4 w-4 text-gray-400 dark:text-gray-500"
@@ -291,7 +296,7 @@ const goToPage = (page: number | string | null) => {
       </div>
 
       <!-- Actions -->
-      <div v-if="$slots.actions" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+      <div v-if="$slots.actions" class="flex flex-wrap items-center gap-3 w-full sm:w-auto print:hidden">
         <slot name="actions" />
       </div>
     </div>
@@ -310,7 +315,7 @@ const goToPage = (page: number | string | null) => {
           type="button"
           @click="chip.remove()"
           :aria-label="$t('DataTable.remove_chip_filter', {label: chip.label})"
-          class="inline-flex size-4 items-center justify-center rounded-full text-brand-500 transition-colors hover:bg-brand-100 hover:text-brand-700 dark:hover:bg-brand-500/20 cursor-pointer"
+          class="print:hidden inline-flex size-4 items-center justify-center rounded-full text-brand-500 transition-colors hover:bg-brand-100 hover:text-brand-700 dark:hover:bg-brand-500/20 cursor-pointer"
         >
           <svg
             class="size-3"
@@ -327,13 +332,13 @@ const goToPage = (page: number | string | null) => {
       <button
         type="button"
         @click="clearAllFilters"
-        class="text-xs font-medium text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
+        class="print:hidden text-xs font-medium text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
         v-text="$t('DataTable.clear_filters')"
       />
     </div>
 
     <!-- Table -->
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto print:overflow-visible">
       <table class="min-w-full border-separate border-spacing-0">
         <thead>
           <!-- Header row -->
@@ -341,7 +346,7 @@ const goToPage = (page: number | string | null) => {
             <th
               v-if="reordering"
               scope="col"
-              class="sticky top-0 z-10 w-12 bg-white/75 px-4 py-3.5 backdrop-blur-sm dark:bg-gray-900/75"
+              class="sticky top-0 z-10 w-12 bg-white/75 px-4 py-3.5 backdrop-blur-sm dark:bg-gray-900/75 print:hidden"
             />
             <th
               v-for="col in cols"
@@ -349,7 +354,8 @@ const goToPage = (page: number | string | null) => {
               scope="col"
               class=""
               :class="[
-                'sticky top-0 z-10',
+                'sticky top-0 z-10 print:static print:px-2 print:py-2 print:border-b print:border-gray-300',
+                {'print:hidden': col.printable === false},
                 'ltr:first:rounded-l-md rtl:first:rounded-r-md ltr:last:rounded-r-md rtl:last:rounded-l-md',
                 'bg-white/75 px-4 py-3.5 text-start text-sm font-semibold text-gray-900',
                 'backdrop-blur-sm backdrop-filter dark:border-white/15 dark:bg-gray-900/75 dark:text-white',
@@ -384,7 +390,7 @@ const goToPage = (page: number | string | null) => {
                     </svg>
                     <svg
                       v-else
-                      class="h-3 w-3 text-gray-300 group-hover:text-gray-400 dark:text-gray-600 dark:group-hover:text-gray-500"
+                      class="print:hidden h-3 w-3 text-gray-300 group-hover:text-gray-400 dark:text-gray-600 dark:group-hover:text-gray-500"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-hidden="true"
@@ -395,7 +401,7 @@ const goToPage = (page: number | string | null) => {
                 </button>
                 <slot v-else :name="`h_${col.data}`" :col="col"><span v-text="col.label" /></slot>
 
-                <Popover v-if="isFilterable(col)" as="div" class="relative inline-flex">
+                <Popover v-if="isFilterable(col)" as="div" class="relative inline-flex print:hidden">
                   <PopoverButton
                     :title="$t('DataTable.filter_item', {item: col.label})"
                     :aria-label="$t('DataTable.filter_item', {item: col.label})"
@@ -482,9 +488,9 @@ const goToPage = (page: number | string | null) => {
           <tr
             v-for="(row, idx) in rows"
             :key="keyOf(row) ?? idx"
-            class="group transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
+            class="group transition-colors hover:bg-slate-50 dark:hover:bg-white/5 print:break-inside-avoid"
           >
-            <td v-if="reordering" class="border-b border-slate-100 px-4 py-3.5 dark:border-white/5">
+            <td v-if="reordering" class="border-b border-slate-100 px-4 py-3.5 dark:border-white/5 print:hidden">
               <button
                 type="button"
                 class="dnd-handle inline-flex size-6 items-center justify-center rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
@@ -502,7 +508,8 @@ const goToPage = (page: number | string | null) => {
             <td
               v-for="col in cols"
               :key="col.data"
-              class="border-b border-slate-100 px-4 py-3.5 text-sm font-medium whitespace-nowrap text-gray-900 dark:border-white/5 dark:text-white"
+              class="border-b border-slate-100 px-4 py-3.5 text-sm font-medium whitespace-nowrap text-gray-900 dark:border-white/5 dark:text-white print:px-2 print:py-1.5 print:text-xs print:whitespace-normal print:border-gray-200"
+              :class="{'print:hidden': col.printable === false}"
             >
               <slot :name="col.data" :col="col" :row="row" :val="getValue(row, col)">
                 <span v-if="col.html" v-html="getValue(row, col)" />
@@ -532,7 +539,7 @@ const goToPage = (page: number | string | null) => {
           keypath="DataTable.showing"
           tag="p"
           scope="global"
-          class="hidden text-sm text-gray-700 sm:block dark:text-gray-300"
+          class="hidden text-sm text-gray-700 sm:block print:block dark:text-gray-300"
         >
           <template #from
             ><span class="font-medium tnum">{{ paginator.from ?? 0 }}</span></template
@@ -549,7 +556,7 @@ const goToPage = (page: number | string | null) => {
           v-if="query"
           :value="query.perPage ?? paginator.per_page"
           @change="setPerPage(Number(($event.target as HTMLSelectElement).value))"
-          class="cursor-pointer rounded-md border-0 bg-white py-1 ltr:ps-2 ltr:pe-9 rtl:pe-2 rtl:ps-9 text-sm text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-600 dark:bg-gray-800 dark:text-gray-300 dark:ring-white/10 dark:hover:bg-gray-700"
+          class="print:hidden cursor-pointer rounded-md border-0 bg-white py-1 ltr:ps-2 ltr:pe-9 rtl:pe-2 rtl:ps-9 text-sm text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-600 dark:bg-gray-800 dark:text-gray-300 dark:ring-white/10 dark:hover:bg-gray-700"
         >
           <option v-for="n in perPageOptions" :key="n" :value="n">
             {{ $t('DataTable.per_page', {n}) }}
@@ -557,7 +564,11 @@ const goToPage = (page: number | string | null) => {
         </select>
       </div>
 
-      <nav v-if="paginator.last_page > 1" class="flex items-center gap-1" :aria-label="$t('DataTable.pagination')">
+      <nav
+        v-if="paginator.last_page > 1"
+        class="flex items-center gap-1 print:hidden"
+        :aria-label="$t('DataTable.pagination')"
+      >
         <!-- Previous -->
         <button
           type="button"

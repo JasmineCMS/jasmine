@@ -88,6 +88,7 @@ Route::name('jasmine.')->middleware([AppMiddleware::class, HandleInertiaRequests
             Route::controller(BreadCtl::class)->name('bread.')
                 ->prefix('/bread/{breadable}')->group(function () {
                     Route::get('/', 'index')->name('index');
+                    Route::get('/export', 'export')->name('export');
 
                     Route::get('/create', 'edit')->name('create');
                     Route::post('/create', 'save');
@@ -110,8 +111,6 @@ Route::name('jasmine.')->middleware([AppMiddleware::class, HandleInertiaRequests
                     )->name('action');
 
                     Route::delete('/{breadableId}', 'delete')->name('delete');
-
-                    // TODO: export (csv)
                 });
 
             Route::controller(PageCtl::class)->name('page.')->prefix('/page/{jasminePage}')

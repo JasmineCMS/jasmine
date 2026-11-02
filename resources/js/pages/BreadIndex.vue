@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {Deferred, Head, Link, router, usePage} from '@inertiajs/vue3';
-import {computed, inject, ref} from 'vue';
+import {computed, inject, onBeforeUnmount, onMounted, ref} from 'vue';
 import {useI18n} from 'vue-i18n';
 import Swal from '@/js/lib/Swal';
 import type {Method} from '@inertiajs/core';
@@ -38,9 +38,11 @@ const props = defineProps<{
     singular: string;
     plural: string;
     sortable: false | {by: string; group_by: string | null; groups: {v: any; l?: string}[] | null};
+    /** page sizes offered, the first being the default */
+    perPage: number[];
     columns: Column[];
   };
-  can: Array<'b' | 'r' | 'e' | 'a' | 'd'>;
+  can: Array<'b' | 'r' | 'e' | 'a' | 'd' | 'x'>;
   locales: Array<string>;
   locale: null | string;
   paginator: Paginator<BreadRow>;
@@ -105,7 +107,7 @@ const q = computed<QueryState>({
 
     if (v.sortBy) data.sortBy = v.sortBy;
     if (v.sort === 'desc') data.sort = v.sort;
-    if (v.perPage && v.perPage !== 10) data.perPage = v.perPage;
+    if (v.perPage && v.perPage !== (props.breadable.perPage?.[0] ?? 10)) data.perPage = v.perPage;
     if ((v.page || 1) > 1) data.page = v.page;
     if (v.q) data.q = v.q;
 
@@ -170,7 +172,7 @@ const filterLabel =
   };
 
 const columns = computed<Column[]>((): Column[] =>
-  [...props.breadable.columns, {data: 'j_actions', label: 'actions'}].map((i: Column) => ({
+  [...props.breadable.columns, {data: 'j_actions', label: 'actions', printable: false}].map((i: Column) => ({
     ...i,
     label: parseLabel(i.label, props.breadable.key, 'columns'),
     filterLabel: filterLabel(i.data),
@@ -279,6 +281,22 @@ const onReorder = (ids: Array<string | number>) =>
     },
   );
 
+// the export takes what the table shows — filters, search, sorting, content locale — minus the paging
+const exportUrl = computed(() => {
+  const params = sp();
+  for (const k of ['page', 'perPage', 'reordering', 'group']) params.delete(k);
+  const qs = params.toString();
+  return route('jasmine.bread.export', {breadable: props.breadable.key}) + (qs ? `?${qs}` : '');
+});
+
+// stamped on any print, the button's or the browser's own
+const printedAt = ref('');
+const stampPrint = () => (printedAt.value = new Date().toLocaleString(page.props._locale as string));
+onMounted(() => window.addEventListener('beforeprint', stampPrint));
+onBeforeUnmount(() => window.removeEventListener('beforeprint', stampPrint));
+
+const print = () => window.print();
+
 const fake = async () => {
   let {isConfirmed, value} = await Swal.fire({
     icon: 'question',
@@ -348,6 +366,48 @@ const fake = async () => {
         </select>
       </template>
       <button
+        type="button"
+        @click="print"
+        :title="$t('BreadIndex.print')"
+        class="inline-flex items-center justify-center rounded-xl py-1.5 px-4 text-sm font-medium text-gray-600 bg-white border border-gray-300 transition-colors cursor-pointer hover:border-brand-400 hover:text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+      >
+        <svg
+          class="-ms-1 me-2 h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+          <path d="M6 14h12v7H6z" />
+        </svg>
+        {{ $t('BreadIndex.print') }}
+      </button>
+      <a
+        v-if="can.includes('x')"
+        :href="exportUrl"
+        download
+        :title="$t('BreadIndex.export_csv')"
+        class="inline-flex items-center justify-center rounded-xl py-1.5 px-4 text-sm font-medium text-gray-600 bg-white border border-gray-300 transition-colors cursor-pointer hover:border-brand-400 hover:text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+      >
+        <svg
+          class="-ms-1 me-2 h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+        </svg>
+        {{ $t('BreadIndex.export_csv') }}
+      </a>
+      <button
         v-if="can.includes('a') && env !== 'production'"
         type="button"
         @click.prevent="fake"
@@ -388,16 +448,27 @@ const fake = async () => {
       </Link>
     </template>
 
+    <!-- what the printout is of; the page's own chrome stays off paper -->
+    <div class="hidden print:block mb-4">
+      <h1 class="text-xl font-semibold" v-text="parseLabel(breadable.plural, breadable.key)" />
+      <p class="mt-1 text-xs text-gray-600">
+        <span v-if="q.q">{{ $t('BreadIndex.search') }}: <b v-text="q.q" /> · </span>
+        <span v-if="breadLocale && locales.length > 1">{{ $t('locales.' + breadLocale) }} · </span>
+        <span v-if="printedAt" v-text="$t('BreadIndex.printed_at', {at: printedAt})" />
+      </p>
+    </div>
+
     <Deferred v-if="hasWidgets" data="widgets">
       <template #fallback>
-        <div class="mb-4 h-24 animate-pulse rounded-lg border bg-white dark:bg-gray-900" />
+        <div class="mb-4 h-24 animate-pulse rounded-lg border bg-white dark:bg-gray-900 print:hidden" />
       </template>
-      <CardGrid v-if="widgets?.length" :cards="widgets" class="mb-4" />
+      <CardGrid v-if="widgets?.length" :cards="widgets" class="mb-4 print:hidden" />
     </Deferred>
 
     <DataTable
       :paginator="paginator"
       :columns="columns"
+      :per-page-options="breadable.perPage"
       v-model:query="q"
       :reordering="reordering"
       @reorder="onReorder"

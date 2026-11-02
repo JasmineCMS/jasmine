@@ -41,6 +41,6 @@ trait RegistersBreadables
             'hidden'   => !AuthController::guard()->user()->jCan('models.' . $key . '.browse'),
         ], $menuPriority);
 
-        foreach (['browse', 'read', 'edit', 'add', 'delete'] as $i) $this->registerPermission("models.$key.$i");
+        foreach (['browse', 'read', 'edit', 'add', 'delete', 'export'] as $i) $this->registerPermission("models.$key.$i");
     }
 }

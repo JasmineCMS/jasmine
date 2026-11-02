@@ -62,6 +62,15 @@ trait Breadable
         return [];
     }
 
+    /**
+     * The page sizes the browse table offers, in the order shown; the first is the default.
+     *
+     * @return non-empty-list<positive-int>
+     */
+    public static function browsePerPageOptions(): array {
+        return [10, 25, 50, 100];
+    }
+
     /** @return list<string> */
     public static function browseableTimestamps(): array {
         $model = new static;

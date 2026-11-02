@@ -131,7 +131,11 @@
     "fake_how_many": "How many?",
     "new_item": "New {item}",
     "reorder": "Reorder",
-    "done": "Done"
+    "done": "Done",
+    "print": "Print",
+    "export_csv": "Export CSV",
+    "search": "Search",
+    "printed_at": "Printed {at}"
   },
   "BreadEdit": {
     "new": "New",

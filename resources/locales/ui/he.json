@@ -306,7 +306,11 @@
     "fake_how_many": "כמה?",
     "new_item": "{item} חדש",
     "reorder": "סידור",
-    "done": "סיום"
+    "done": "סיום",
+    "print": "הדפסה",
+    "export_csv": "ייצוא CSV",
+    "search": "חיפוש",
+    "printed_at": "הודפס {at}"
   },
   "BreadEdit": {
     "new": "חדש",

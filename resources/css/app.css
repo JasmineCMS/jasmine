@@ -101,3 +101,9 @@ textarea:disabled,
 select:disabled {
   @apply bg-gray-100 text-gray-500 cursor-not-allowed;
 }
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+}

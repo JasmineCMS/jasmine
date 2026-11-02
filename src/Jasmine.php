@@ -71,6 +71,58 @@ class Jasmine
         return $loaded[$locale] = [...$merge('ui'), 'manifest' => (object)$merge('manifest')];
     }
 
+    /**
+     * A manifest label translated to the ui locale, the way the client's useLabel() reads it:
+     * the id under every ordered subset of its scope, most specific first, the `manifest.` tier
+     * ahead of the bare one; an untranslated identifier is humanized, written-out text kept.
+     *
+     * @param string $id stable identifier (column data, action name, …), may inline scope via dots
+     * @param string ...$scope context segments, entity first: (entity, type)
+     */
+    public function label(string $id, string ...$scope): string {
+        if ($id === '') return '';
+
+        $messages = json_decode(json_encode($this->loadUiLocale(app()->getLocale())), true) ?? [];
+        $lookup = function (string $id, array $scope) use ($messages): ?string {
+            $n = count($scope);
+            $subsets = [];
+            for ($mask = (1 << $n) - 1; $mask >= 0; $mask--) {
+                $subset = [];
+                for ($i = 0; $i < $n; $i++) if ($mask & (1 << $i)) $subset[] = $scope[$i];
+                $subsets[] = $subset;
+            }
+            // most segments first; ties keep their order (usort is stable)
+            usort($subsets, fn($a, $b) => count($b) <=> count($a));
+
+            $base = array_map(fn($s) => implode('.', [...$s, $id]), $subsets);
+
+            foreach ([...array_map(fn($k) => "manifest.$k", $base), ...$base] as $key) {
+                $hit = $messages;
+                foreach (explode('.', $key) as $seg) {
+                    if (!is_array($hit) || !array_key_exists($seg, $hit)) continue 2;
+                    $hit = $hit[$seg];
+                }
+                if (is_string($hit)) return $hit;
+            }
+
+            return null;
+        };
+
+        // text rather than an identifier: its full stops are punctuation, not scope
+        if (preg_match('/\s/u', $id)) return str_contains($id, '.') ? $id : ($lookup($id, $scope) ?? $id);
+
+        if (str_contains($id, '.')) {
+            $parts = explode('.', $id);
+            $id = array_pop($parts);
+            $scope = [...array_filter($scope, fn($s) => $s !== ''), ...$parts];
+        }
+
+        return $lookup($id, $scope) ?? implode(' ', array_map(
+            fn($w) => mb_strtoupper(mb_substr($w, 0, 1)) . mb_substr($w, 1),
+            preg_split('/[.\-_]|(?<=[a-z0-9])(?=[A-Z])/', $id, -1, PREG_SPLIT_NO_EMPTY),
+        ));
+    }
+
     private ?array $uiLocales = null;
 
     public function getUiLocales(): array {

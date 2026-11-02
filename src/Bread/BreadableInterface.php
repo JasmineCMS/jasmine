@@ -18,6 +18,7 @@ use Jasmine\Jasmine\Cards\Card;
  * @method static null|array jasmineOnSaved(Model|BreadableInterface $model)
  * @method static null|array jasmineOnDeleting(Model|BreadableInterface $model)
  * @method static array<string, Card> browseWidgets()
+ * @method static list<int> browsePerPageOptions() page sizes of the browse table, the first is the default
  */
 interface BreadableInterface
 {
