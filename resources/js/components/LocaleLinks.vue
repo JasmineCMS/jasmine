@@ -8,7 +8,9 @@ const page = usePage();
 const change = (locale: string) => {
   router.reload({
     data: {locale: locale},
-    only: ['_locale', '_i18n'],
+    // every prop on the page, not just the ui strings: pages render text the server translated (labels, enums,
+    // a dynamic page's own words), and a partial reload is what brings once-props like _i18n back fresh
+    only: Object.keys(page.props),
     preserveErrors: true,
     onSuccess: (res) => {
       i18n.setLocaleMessage(locale, res.props._i18n);
