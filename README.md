@@ -280,6 +280,28 @@ Jasmine::registerDashboardCard('orders', DashboardCard::vueFile(
 ));
 ```
 
+#### What a vue card can import
+
+Vue cards are compiled in the browser, so they can only import what Jasmine hands them:
+
+- `vue` and `@inertiajs/vue3`
+- `vue-i18n`, `@headlessui/vue` and `@vueuse/integrations/useSortable`, fetched the first time a card imports one
+- Jasmine's own components, layouts, composables and helpers under `@jasmine/js/...`, e.g.
+  `@jasmine/js/layouts/AppLayout.vue` or `@jasmine/js/lib/Swal`
+
+For editor support (types and autocompletion), put a `tsconfig.json` next to your card files that extends the one
+Jasmine ships. It maps all of the above to declarations inside the package, so nothing needs to be installed:
+
+```json
+{
+  "extends": "../../vendor/jasminecms/jasmine/tsconfig.dynamic.json",
+  "include": ["**/*.ts", "**/*.d.ts", "**/*.vue"]
+}
+```
+
+Adjust the `extends` path to where the file sits, and don't set `compilerOptions.paths` in it: that would replace
+Jasmine's mappings instead of adding to them.
+
 #### Card options
 
 - `->width(int)` — grid width in columns, 1–12 (cards are always full width on mobile). Default `4`.

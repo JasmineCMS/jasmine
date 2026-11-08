@@ -2,7 +2,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/dynamic-types.ts",
     "format": "prettier --write **/*.{json,yaml,yml,js,ts,vue,css}",
     "type-check": "vue-tsc --build",
     "prepare": "husky"

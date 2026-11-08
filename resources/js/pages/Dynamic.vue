@@ -3,6 +3,7 @@ import * as Vue from 'vue';
 import * as Inertia from '@inertiajs/vue3';
 import {defineAsyncComponent} from 'vue';
 import {loadModule} from 'vue3-sfc-loader';
+import {lazy} from '@/js/dynamic-modules';
 
 const jasmine = {};
 const key = (v) => v.replace('/resources/', '@jasmine/').replace(/\.ts$/, '');
@@ -16,14 +17,6 @@ for (const [path, mod] of Object.entries(
   }),
 ))
   jasmine[key(path)] = {__esModule: true, ...mod};
-
-// third-party modules a page may import, fetched only when one does. these are the app's own instances,
-// so injection-based apis (useI18n, headlessui's providers) see the same plugin state as the rest of the app
-const lazy = {
-  '@vueuse/integrations/useSortable': () => import('@vueuse/integrations/useSortable'),
-  'vue-i18n': () => import('vue-i18n'),
-  '@headlessui/vue': () => import('@headlessui/vue'),
-};
 
 // by source, for the life of the tab: a remount reuses the compiled page instead of running babel again
 const compiled = new Map();

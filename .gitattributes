@@ -18,6 +18,7 @@ CHANGELOG.md            export-ignore
 /laravel                export-ignore
 /tests                  export-ignore
 /script_post_update.php export-ignore
+/scripts                export-ignore
 /phpunit.xml            export-ignore
 /phpstan.neon           export-ignore
 /pint.json              export-ignore
