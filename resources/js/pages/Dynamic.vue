@@ -17,6 +17,14 @@ for (const [path, mod] of Object.entries(
 ))
   jasmine[key(path)] = {__esModule: true, ...mod};
 
+// third-party modules a page may import, fetched only when one does. these are the app's own instances,
+// so injection-based apis (useI18n, headlessui's providers) see the same plugin state as the rest of the app
+const lazy = {
+  '@vueuse/integrations/useSortable': () => import('@vueuse/integrations/useSortable'),
+  'vue-i18n': () => import('vue-i18n'),
+  '@headlessui/vue': () => import('@headlessui/vue'),
+};
+
 // by source, for the life of the tab: a remount reuses the compiled page instead of running babel again
 const compiled = new Map();
 
@@ -27,6 +35,9 @@ function compile(sfc) {
     loadModule('/Index.vue', {
       // a copy per source: the loader caches by path here, and every page is /Index.vue
       moduleCache: {vue: Vue, '@inertiajs/vue3': Inertia, ...jasmine},
+      loadModule: async (id) => {
+        if (lazy[id]) return {__esModule: true, ...(await lazy[id]())};
+      },
       getFile: () => sfc,
       addStyle(css) {
         const el = document.createElement('style');
